@@ -270,17 +270,33 @@
   <div style="background:white; padding:25px; width:400px; border-radius:12px;">
 
     <h3 id="modalTaskTitle"></h3>
-    <p id="modalTaskInstructions"></p>
+
+    <!-- Platform & Type -->
+    <p><strong>Platform:</strong> <span id="modalPlatform"></span></p>
+    <p><strong>Task Type:</strong> <span id="modalType"></span></p>
+
+    <!-- Instructions -->
+    <div id="modalTaskInstructions" style="margin:10px 0;"></div>
+
+    <!-- Clickable Link -->
+    <p>
+      <strong>Open Link:</strong>
+      <a id="modalTaskLink" href="#" target="_blank" style="color:#6c5ce7;">
+        Go to Task
+      </a>
+    </p>
+
     <p><strong id="modalTaskReward"></strong></p>
 
     <input type="file" id="proofInput" accept="image/*" style="margin:15px 0;">
 
-    <button id="submitProofBtn" style="padding:8px 15px;background:#00b894;color:white;border:none;border-radius:6px;">
+    <button id="submitProofBtn"
+      style="padding:8px 15px;background:#00b894;color:white;border:none;border-radius:6px;">
       Submit Proof
     </button>
 
     <button id="cancelTaskBtn"
-            style="margin-left:10px;padding:8px 15px;background:#d63031;color:white;border:none;border-radius:6px;">
+      style="margin-left:10px;padding:8px 15px;background:#d63031;color:white;border:none;border-radius:6px;">
       Cancel
     </button>
 

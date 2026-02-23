@@ -419,21 +419,63 @@ def get_tasks(request):
 # ==========================
 # CREATE TASK (POST FROM FORM)
 # ==========================
-
 @login_required
 def get_single_task(request, task_id):
+
+    # 🔒 Block non-members
+    if not request.user.is_member:
+        return JsonResponse({
+            "error": "Membership required."
+        }, status=403)
+    
     try:
         task = Task.objects.get(id=task_id)
     except Task.DoesNotExist:
         return JsonResponse({"error": "Task not found"}, status=404)
 
+    # Dynamic instructions
+    if task.task_type == "like":
+        instructions = [
+            f"Click the link below.",
+            f"Like the post on {task.platforms}.",
+            "Take a screenshot as proof."
+        ]
+
+    elif task.task_type == "follow":
+        instructions = [
+            "Click the link below.",
+            f"Follow the page on {task.platforms}.",
+            "Take a screenshot showing you followed."
+        ]
+
+    elif task.task_type == "comment":
+        instructions = [
+            "Click the link below.",
+            f"Leave a genuine comment on the post.",
+            "Take a screenshot of your comment."
+        ]
+
+    elif task.task_type == "subscribe":
+        instructions = [
+            "Click the link below.",
+            "Subscribe to the channel.",
+            "Take a screenshot as proof."
+        ]
+
+    else:
+        instructions = [task.instructions]
+
     return JsonResponse({
         "id": task.id,
         "title": task.title,
-        "instructions": task.instructions,
         "payout": task.payout,
         "available": task.available,
+        "platform": task.platforms,
+        "task_type": task.get_task_type_display(),
+        "instructions": instructions,
+        "link": task.link
     })
+
 
 @csrf_exempt
 @login_required
@@ -484,6 +526,12 @@ def create_task(request):
 @csrf_exempt
 @login_required
 def complete_task(request, task_id):
+
+    # 🔒 Block non-members
+    if not request.user.is_member:
+        return JsonResponse({
+            "error": "Membership required."
+        }, status=403)
 
     if request.method != "POST":
         return JsonResponse({"error": "POST required"}, status=400)

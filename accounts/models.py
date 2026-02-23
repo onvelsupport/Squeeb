@@ -21,9 +21,12 @@ class Task(models.Model):
     short_desc = models.CharField(max_length=255, default="")
     platforms = models.CharField(max_length=120, default="")
 
+
     TASK_TYPES = (
-        ("normal", "Normal"),
-        ("membership", "Membership"),
+    ("like", "Like"),
+    ("follow", "Follow"),
+    ("comment", "Comment"),
+    ("subscribe", "Subscribe"),
     )
 
     task_type = models.CharField(

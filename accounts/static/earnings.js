@@ -110,33 +110,72 @@ document.addEventListener("DOMContentLoaded", () => {
      (Event delegation for dynamic buttons)
   ===================================================== */
 
-  document.addEventListener("click", async function (e) {
+document.addEventListener("click", async function (e) {
 
-    if (e.target.classList.contains("select-task-btn")) {
+  const button = e.target.closest(".select-task-btn");
 
-      selectedTaskId = e.target.dataset.id;
+  if (!button) return;
 
-      try {
-        const res = await fetch(`/api/task/${selectedTaskId}/`, {
-          credentials: "include"
-        });
+  selectedTaskId = button.dataset.id;
 
-        const task = await res.json();
+  try {
+    const res = await fetch(`/api/task/${selectedTaskId}/`, {
+      credentials: "include"
+    });
 
-        document.getElementById("modalTaskTitle").textContent = task.title;
-        document.getElementById("modalTaskInstructions").textContent = task.instructions;
-        document.getElementById("modalTaskReward").textContent =
-          `Earn £${task.payout}`;
-
-        taskModal.style.display = "flex";
-
-      } catch (err) {
-        console.error("Modal load error:", err);
-      }
+    if (!res.ok) {
+      console.error("Task fetch failed:", res.status);
+      return;
     }
 
-  });
+    const task = await res.json();
 
+    document.getElementById("modalTaskTitle").textContent = task.title;
+    document.getElementById("modalPlatform").textContent = task.platforms || "";
+    document.getElementById("modalType").textContent = task.task_type || "";
+
+    // ===== Instructions (safe version)
+const instructionsBox = document.getElementById("modalTaskInstructions");
+instructionsBox.innerHTML = "";
+
+if (typeof task.instructions === "string" && task.instructions.trim() !== "") {
+
+  const lines = task.instructions
+    .split("\n")
+    .filter(line => line.trim() !== "");
+
+  instructionsBox.innerHTML = `
+    <ul style="padding-left:18px;">
+      ${lines.map(line => `<li>${line}</li>`).join("")}
+    </ul>
+  `;
+
+} else {
+  instructionsBox.innerHTML = `
+    <ul style="padding-left:18px;">
+      <li>No instructions provided.</li>
+    </ul>
+  `;
+}
+
+    // Link
+    const linkEl = document.getElementById("modalTaskLink");
+    if (task.link) {
+      linkEl.href = task.link;
+      linkEl.style.display = "inline";
+    } else {
+      linkEl.style.display = "none";
+    }
+
+    document.getElementById("modalTaskReward").textContent =
+      `Earn £${task.payout}`;
+
+    taskModal.style.display = "flex";
+
+  } catch (err) {
+    console.error("Modal load error:", err);
+  }
+});
 
   /* =====================================================
      6️⃣ SUBMIT PROOF (COMPLETE TASK)
