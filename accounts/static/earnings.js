@@ -136,26 +136,31 @@ document.addEventListener("click", async function (e) {
     const task = await res.json();
 
     document.getElementById("modalTaskTitle").textContent = task.title;
-    document.getElementById("modalPlatform").textContent = task.platforms || "";
+    document.getElementById("modalPlatform").textContent = task.platform || "";
     document.getElementById("modalType").textContent = task.task_type || "";
 
     // ===== Instructions (safe version)
 const instructionsBox = document.getElementById("modalTaskInstructions");
 instructionsBox.innerHTML = "";
 
-if (typeof task.instructions === "string" && task.instructions.trim() !== "") {
-
-  const lines = task.instructions
-    .split("\n")
-    .filter(line => line.trim() !== "");
+if (Array.isArray(task.instructions) && task.instructions.length > 0) {
 
   instructionsBox.innerHTML = `
     <ul style="padding-left:18px;">
-      ${lines.map(line => `<li>${line}</li>`).join("")}
+      ${task.instructions.map(step => `<li>${step}</li>`).join("")}
+    </ul>
+  `;
+
+} else if (typeof task.instructions === "string" && task.instructions.trim() !== "") {
+
+  instructionsBox.innerHTML = `
+    <ul style="padding-left:18px;">
+      <li>${task.instructions}</li>
     </ul>
   `;
 
 } else {
+
   instructionsBox.innerHTML = `
     <ul style="padding-left:18px;">
       <li>No instructions provided.</li>
