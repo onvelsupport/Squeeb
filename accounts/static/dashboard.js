@@ -107,10 +107,10 @@ submitTaskBtn?.addEventListener("click", async () => {
     const link = document.getElementById("taskLink").value;
     const platform = document.getElementById("taskPlatform").value;
 
-    if (!platform) {
-        alert("Please select a platform.");
-        return;
-    }
+    if (taskType !== "subscribe" && !platform) {
+    alert("Please select a platform.");
+    return;
+}
 
     if (!quantity || quantity <= 0) {
         alert("Enter a valid quantity.");
@@ -133,9 +133,10 @@ submitTaskBtn?.addEventListener("click", async () => {
             },
             body: JSON.stringify({
                 platform: platform,
-                followers: quantity,
-                link: link
-            })
+               followers: quantity,
+               link: link,
+               task_type: taskType
+})
         });
 
         const data = await res.json();
@@ -147,6 +148,13 @@ submitTaskBtn?.addEventListener("click", async () => {
 
         alert("Task created successfully!");
 
+        console.log("SENDING:", {
+    platform: platform,
+    followers: quantity,
+    link: link,
+    task_type: taskType
+});
+
         // update balance UI instantly
         document.getElementById("balanceAmount").textContent =
             "£" + parseFloat(data.new_balance).toFixed(2);
@@ -157,8 +165,9 @@ submitTaskBtn?.addEventListener("click", async () => {
         loadTasks();
 
     } catch (err) {
-        alert("Network error.");
-    }
+    console.error("REAL ERROR:", err);
+    alert("Check console.");
+}
 
     submitTaskBtn.disabled = false;
 });
@@ -413,6 +422,8 @@ let currentPrice = 0;
 
 
 // ===== OPEN MODAL =====
+let taskType = null;
+
 document.querySelectorAll(".select-btn").forEach(button => {
     button.addEventListener("click", function () {
 
@@ -429,25 +440,26 @@ document.querySelectorAll(".select-btn").forEach(button => {
         quantityInput.value = "";
         totalDisplay.innerText = "£0.00";
 
-        const type = this.dataset.type;
+        taskType = this.dataset.type;
 
         // Default settings
         platformGroup.style.display = "block";
 
-        if (type === "youtube") {
+        if (taskType === "subscribe") {
             quantityLabel.innerText = "Number of Subscribers You Want";
             platformGroup.style.display = "none";
+            document.getElementById("taskPlatform").value = "YouTube";
             document.getElementById("taskLink").placeholder =
                 "Enter your YouTube channel link";
         }
 
-        else if (type === "like") {
+        else if (taskType === "like") {
             quantityLabel.innerText = "Number of Likes You Want";
             document.getElementById("taskLink").placeholder =
                 "Enter your post link";
         }
 
-        else if (type === "comment") {
+        else if (taskType === "comment") {
             quantityLabel.innerText = "Number of Comments You Want";
             document.getElementById("taskLink").placeholder =
                 "Enter your post link";

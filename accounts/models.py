@@ -33,7 +33,7 @@ class Task(models.Model):
     task_type = models.CharField(
         max_length=20,
         choices=TASK_TYPES,
-        default="normal"
+        default="follow"
     )
 
     instructions = models.TextField(default="Follow the task instructions.")
@@ -49,6 +49,43 @@ class Task(models.Model):
     @property
     def platform_profit_per_action(self):
         return self.cost_per_action - self.worker_reward
+
+    @property
+    def unit(self):
+        units = {
+         "follow": "follower",
+         "like": "like",
+         "comment": "comment",
+         "subscribe": "subscriber",
+     }
+        return units.get(self.task_type, "task")
+    
+    @property
+    def dynamic_instructions(self):
+        instructions_map = {
+         "like": [
+            "Click the link below.",
+            f"Like the post on {self.platforms}.",
+            "Take a screenshot as proof."
+         ],
+        "follow": [
+            "Click the link below.",
+            f"Follow the page on {self.platforms}.",
+            "Take a screenshot showing you followed."
+        ],
+        "comment": [
+            "Click the link below.",
+            "Leave a genuine comment on the post.",
+            "Take a screenshot of your comment."
+        ],
+        "subscribe": [
+            "Click the link below.",
+            "Subscribe to the channel.",
+            "Take a screenshot as proof."
+             ],
+        }
+
+        return instructions_map.get(self.task_type, [self.instructions])
 
 
 class TaskCompletion(models.Model):

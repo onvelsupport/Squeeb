@@ -572,6 +572,53 @@ a {
   }
 }
 
+
+/* ===== EARNINGS PAGE TASK STYLE ===== */
+
+#taskList {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.earn-task-card {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: #ffffff;
+  padding: 25px 30px;
+  border-radius: 14px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+}
+
+.earn-task-left {
+  flex: 1;
+}
+
+.earn-task-left h3 {
+  margin: 0 0 6px 0;
+}
+
+.earn-task-left p {
+  margin: 4px 0;
+}
+
+.earn-task-right {
+  display: flex;
+  align-items: center;
+}
+
+.select-task-btn {
+  background: #6c5ce7;
+  color: white;
+  border: none;
+  padding: 10px 22px;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
 /* =====================================================
    ADVERTISE POPUP MODAL
 ===================================================== */

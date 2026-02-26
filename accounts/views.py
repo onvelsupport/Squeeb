@@ -422,48 +422,10 @@ def get_tasks(request):
 @login_required
 def get_single_task(request, task_id):
 
-    # 🔒 Block non-members
     if not request.user.is_member:
-        return JsonResponse({
-            "error": "Membership required."
-        }, status=403)
-    
-    try:
-        task = Task.objects.get(id=task_id)
-    except Task.DoesNotExist:
-        return JsonResponse({"error": "Task not found"}, status=404)
+        return JsonResponse({"error": "Membership required."}, status=403)
 
-    # Dynamic instructions
-    if task.task_type == "like":
-        instructions = [
-            f"Click the link below.",
-            f"Like the post on {task.platforms}.",
-            "Take a screenshot as proof."
-        ]
-
-    elif task.task_type == "follow":
-        instructions = [
-            "Click the link below.",
-            f"Follow the page on {task.platforms}.",
-            "Take a screenshot showing you followed."
-        ]
-
-    elif task.task_type == "comment":
-        instructions = [
-            "Click the link below.",
-            f"Leave a genuine comment on the post.",
-            "Take a screenshot of your comment."
-        ]
-
-    elif task.task_type == "subscribe":
-        instructions = [
-            "Click the link below.",
-            "Subscribe to the channel.",
-            "Take a screenshot as proof."
-        ]
-
-    else:
-        instructions = [task.instructions]
+    task = get_object_or_404(Task, id=task_id)
 
     return JsonResponse({
         "id": task.id,
@@ -472,7 +434,7 @@ def get_single_task(request, task_id):
         "available": task.available,
         "platform": task.platforms,
         "task_type": task.get_task_type_display(),
-        "instructions": instructions,
+        "instructions": task.dynamic_instructions,
         "link": task.link
     })
 
@@ -489,12 +451,43 @@ def create_task(request):
         platform = data.get("platform")
         followers = int(data.get("followers"))
         link = data.get("link")
+        task_type = data.get("task_type")
+
+        if not task_type:
+            return JsonResponse(
+        {"error": "Task type is required."},
+        status=400
+    )
 
     except Exception:
         return JsonResponse({"error": "Invalid data"}, status=400)
 
-    cost_per_action = Decimal("0.15")   # what advertiser pays
-    worker_reward = Decimal("0.10")     # what worker earns
+    pricing = {
+    "follow": {
+        "cost": Decimal("0.15"),
+        "reward": Decimal("0.10"),
+    },
+    "like": {
+        "cost": Decimal("0.07"),
+        "reward": Decimal("0.05"),
+    },
+    "comment": {
+        "cost": Decimal("0.60"),
+        "reward": Decimal("0.40"),
+    },
+    "subscribe": {
+        "cost": Decimal("0.20"),
+        "reward": Decimal("0.10"),
+    },
+}
+
+    task_pricing = pricing.get(task_type)
+
+    if not task_pricing:
+        return JsonResponse({"error": "Invalid task type"}, status=400)
+
+    cost_per_action = task_pricing["cost"]
+    worker_reward = task_pricing["reward"]
 
     total_cost = cost_per_action * followers
 
@@ -510,15 +503,16 @@ def create_task(request):
 
     # ✅ CREATE TASK
     Task.objects.create(
-        creator=user,  # make sure this field exists in model
-        title=f"{platform} Followers Task",
+    creator=user,
+    title=f"{platform} {task_type.capitalize()} Task",
     cost_per_action=cost_per_action,
     worker_reward=worker_reward,
     available=followers,
     platforms=platform,
     link=link,
-    short_desc="Follow the page and earn.",
-    total_budget=total_cost
+    short_desc="Complete the task and earn.",
+    total_budget=total_cost,
+    task_type=task_type 
 )
 
     return JsonResponse({

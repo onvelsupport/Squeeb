@@ -84,20 +84,25 @@ document.addEventListener("DOMContentLoaded", () => {
       }
 
       data.tasks.forEach(task => {
-        taskList.innerHTML += `
-          <div style="background:#fff;padding:20px;margin-bottom:20px;border-radius:12px;">
-            <h3>${task.title}</h3>
-            <p>${task.instructions}</p>
-            <p><strong>£${task.payout}</strong> per action</p>
-            <p>${task.available} tasks remaining</p>
+  taskList.innerHTML += `
+  <div class="earn-task-card">
 
-            <button class="select-task-btn" data-id="${task.id}"
-              style="margin-top:10px;padding:8px 15px;background:#6c5ce7;color:white;border:none;border-radius:6px;">
-              Select Task
-            </button>
-          </div>
-        `;
-      });
+    <div class="earn-task-left">
+      <h3>${task.title}</h3>
+      <p>${task.instructions}</p>
+      <p><strong>£${task.payout}</strong> per ${task.task_type}</p>
+      <p>${task.available} tasks remaining</p>
+    </div>
+
+    <div class="earn-task-right">
+      <button class="select-task-btn" data-id="${task.id}">
+        Select Task
+      </button>
+    </div>
+
+  </div>
+`;
+});
 
     } catch (err) {
       console.error("Task load error:", err);
