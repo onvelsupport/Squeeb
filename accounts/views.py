@@ -18,19 +18,19 @@ import json
 # PUBLIC PAGES
 # ==========================
 def homepage(request):
-    return render(request, "index.html")
+    return render(request, "accounts/index.html")
 
 def login_page(request):
-    return render(request, "login.html")
+    return render(request, "accounts/login.html")
 
 def signup_page(request):
-    return render(request, "signup.html")
+    return render(request, "accounts/signup.html")
 
 def about(request):
-    return render(request, "about.html")
+    return render(request, "accounts/about.html")
 
 def forgot_password_page(request):
-    return render(request, "forgot_password.html")
+    return render(request, "accounts/forgot_password.html")
 
 def marketplace_page(request):
     category = request.GET.get("category")
