@@ -1,0 +1,74 @@
+:root{
+  --accent: #F1F5FB;
+  --primary: #0D6EFD;
+  --primary-hover: #0A58CA;
+  --muted: #6b7280;
+  --bg: #ffffff;
+  --card-radius: 14px;
+  --shadow: 0 10px 30px rgba(16,24,40,0.06);
+  --gap: 18px;
+  font-family: Inter, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+}
+
+*{box-sizing:border-box}
+html,body{height:100%;margin:0;background:var(--bg);color:#111}
+.login-page{min-height:100vh;display:flex;align-items:center;justify-content:center;background:var(--accent);padding:40px 16px}
+
+/* center card */
+.login-wrapper{min-height:100vh}
+.login-card{
+  width:100%;
+  max-width:420px;
+  background: #fff;
+  border-radius: var(--card-radius);
+  box-shadow: var(--shadow);
+  overflow:hidden;
+  padding-top:22px;
+  margin: 40px auto;
+}
+
+/* brand */
+.brand-logo{height:48px;display:block;margin:0 auto 12px}
+
+/* headings */
+.login-card h1{font-size:18px;margin-bottom:0;color:var(--primary)}
+.login-card p.text-muted{color:var(--muted);margin-bottom:18px}
+
+/* inputs */
+.input-group .input-group-text{border:0;background:transparent;color:var(--muted)}
+.form-control{border:1px solid #e6e9ef;border-left:0;border-radius:8px;padding:12px 14px}
+.input-group .form-control:focus{box-shadow:0 0 0 4px rgba(13,110,253,0.08);border-color:var(--primary)}
+
+/* password toggle button */
+.btn-toggle{background:transparent;border:0;color:var(--muted);width:44px}
+.btn-toggle:focus{outline:none}
+
+/* main button */
+.btn-primary{
+  background:var(--primary);
+  border-color:var(--primary);
+  color:#fff;
+  border-radius:10px;
+  padding:12px 18px;
+  font-weight:700;
+  box-shadow:0 8px 20px rgba(13,110,253,0.12);
+}
+.btn-primary:hover{background:var(--primary-hover);border-color:var(--primary-hover)}
+
+/* outline create account */
+.btn-outline-primary{
+  background:transparent;border:1px solid var(--primary);color:var(--primary);border-radius:10px;padding:12px 18px;font-weight:600
+}
+.btn-outline-primary:hover{background:var(--primary);color:#fff;border-color:var(--primary-hover)}
+
+/* small helpers */
+.text-warning{color:#f59e0b}
+.form-footer{margin-top:-6px}
+.signup p{margin-bottom:8px}
+.login-foot{border-top:1px solid #f3f4f6;padding-top:12px}
+
+/* responsiveness */
+@media (max-width:480px){
+  .login-card{margin:20px 8px}
+  .brand-logo{height:40px}
+}

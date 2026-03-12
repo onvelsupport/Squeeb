@@ -1,0 +1,1253 @@
+/* ===============================
+   HEADER
+================================= */
+.topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: #fff;
+  padding: 12px 24px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+  position: sticky;
+  top: 0;
+  z-index: 50;
+}
+
+.logo img {
+  width: 140px;
+}
+
+/* search */
+.search-bar {
+  display: flex;
+  align-items: center;
+  background: #f1f1f1;
+  padding: 6px 14px;
+  border-radius: 6px;
+  gap: 8px;
+  width: 260px;
+}
+
+.search-bar input {
+  border: none;
+  background: transparent;
+  outline: none;
+  font-size: 14px;
+}
+
+/* NAVIGATION */
+.main-nav {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+
+.main-nav a {
+  font-weight: 600;
+  color: #555;
+}
+
+.main-nav i {
+  margin-right: 6px;
+}
+
+
+/* ===============================
+   DELETE
+================================= */
+.card-actions{
+  display:flex;
+  gap:10px;
+  margin-top:10px;
+}
+
+.delete-btn{
+  display:inline-block;
+  margin-top:10px;
+  background:#e04545;
+  color:white;
+  padding:8px 12px;
+  border-radius:8px;
+  font-size:13px;
+}
+
+.delete-btn:hover{
+  opacity:.9;
+}
+
+
+
+
+/* ===============================
+   DROPDOWN MENUS
+================================= */
+.nav-more,
+.profile-dropdown {
+  position: relative;
+  cursor: pointer;
+  font-weight: 600;
+  color: #3A5BA0;
+}
+
+.more-menu,
+.profile-menu {
+  display: none;
+  position: absolute;
+  background: #fff;
+  padding: 12px 0;
+  border-radius: 10px;
+  top: 28px;
+  right: 0;
+  width: 200px;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.2);
+}
+
+.more-menu a,
+.profile-menu a {
+  display: block;
+  padding: 10px 16px;
+  font-size: 14px;
+  color: #555;
+}
+
+.more-menu a:hover,
+.profile-menu a:hover {
+  background: #f0f0f0;
+}
+
+.nav-more:hover .more-menu,
+.profile-dropdown:hover .profile-menu {
+  display: block;
+}
+
+/* top icons */
+.top-icons {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+}
+
+.notification {
+  position: relative;
+  font-size: 20px;
+  color: #3A5BA0;
+}
+
+.notification .badge {
+  position: absolute;
+  top: -6px;
+  right: -10px;
+  background: red;
+  color: white;
+  font-size: 10px;
+  padding: 2px 6px;
+  border-radius: 999px;
+}
+
+.profile-avatar {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+}
+ody {
+  margin:0;
+  font-family:system-ui;
+  background:#f5f6f8;
+}
+
+.topbar {
+  display:flex;
+  align-items:center;
+  gap:24px;
+  padding:14px 24px;
+  background:white;
+  border-bottom:1px solid #eee;
+}
+
+/* ✅ FIXED SEARCH SIZE */
+.search {
+  flex: 0 0 250px !important;
+  width: 1000px !important;
+  position: relative;
+}
+
+.search input {
+  width: 100% !important;
+  padding:12px 42px;
+  border-radius:30px;
+  border:1px solid #ddd;
+}
+
+.search i {
+  position:absolute;
+  right:14px;
+  top:50%;
+  transform:translateY(-50%);
+  color:#3A5BA0;
+}
+
+nav a {
+  margin:0 10px;
+  color:#444;
+  text-decoration:none;
+}
+
+nav .active {
+  color:#3A5BA0;
+  font-weight:600;
+}
+
+.layout {
+  display:flex;
+}
+
+.sidebar {
+  width:260px;
+  background:white;
+  padding:20px;
+  border-right:1px solid #eee;
+}
+
+.sidebar ul {
+  list-style:none;
+  padding:0;
+}
+
+.sidebar li {
+  padding:10px;
+  border-radius:8px;
+  cursor:pointer;
+}
+
+.sidebar li:hover {
+  background:#f0edff;
+  color:#3A5BA0;
+}
+
+.main {
+  flex:1;
+  padding:30px;
+}
+
+.product-grid {
+  display:grid;
+  grid-template-columns:repeat(auto-fill,minmax(240px,1fr));
+  gap:24px;
+}
+
+.card {
+  background:white;
+  border-radius:12px;
+  padding:14px;
+  box-shadow:0 2px 6px rgba(0,0,0,.05);
+  transition:.2s;
+}
+
+.card:hover {
+  transform:translateY(-4px);
+}
+
+.card img {
+  width:100%;
+  height:180px;
+  object-fit:cover;
+  border-radius:8px;
+}
+
+.price {
+  font-size:18px;
+  font-weight:700;
+}
+
+.old {
+  text-decoration:line-through;
+  color:#999;
+  font-size:14px;
+}
+
+.badge {
+  background:#ffe9d6;
+  color:#ff7a00;
+  padding:4px 8px;
+  border-radius:6px;
+  font-size:12px;
+}
+
+.stats {
+  font-size:12px;
+  color:#666;
+  display:flex;
+  gap:12px;
+  margin-top:8px;
+}
+
+.btn {
+  margin-top:12px;
+  width:100%;
+  padding:10px;
+  border-radius:8px;
+  border:none;
+  background:#3A5BA0;
+  color:white;
+  cursor:pointer;
+}
+
+.btn:hover {
+  opacity:.9;
+}
+
+
+/* ===============================
+   CATEGORY
+================================= */
+.modal-box select{
+  width:100%;
+  padding:12px;
+  margin-bottom:12px;
+  border:1px solid #ddd;
+  border-radius:10px;
+  font-size:14px;
+}
+
+.seller{
+  font-size:13px;
+  color:#666;
+  margin:6px 0 10px;
+}
+
+
+.photo-count{
+  font-size:12px;
+  color:#666;
+  display:block;
+  margin-bottom:6px;
+}
+
+
+/* ===============================
+   GLOBAL
+================================= */
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: "Inter", Arial, sans-serif;
+  background: #f5f5f5;
+  color: #333;
+}
+
+a {
+  text-decoration: none;
+  color: inherit;
+}
+
+.sold-badge{
+  background:red;
+  color:white;
+  padding:6px 10px;
+  border-radius:8px;
+  font-size:12px;
+  position:absolute;
+  margin:10px;
+}
+
+.sold-btn{
+  background:#222;
+  color:white;
+  padding:8px 12px;
+  border-radius:8px;
+  font-size:13px;
+}
+
+
+
+/* ===============================
+   HEADER
+================================= */
+.topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: #fff;
+  padding: 12px 24px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+  position: sticky;
+  top: 0;
+  z-index: 50;
+}
+
+.logo img {
+  width: 140px;
+}
+
+/* search */
+.search-bar {
+  display: flex;
+  align-items: center;
+  background: #f1f1f1;
+  padding: 6px 14px;
+  border-radius: 6px;
+  gap: 8px;
+  width: 260px;
+}
+
+.search-bar input {
+  border: none;
+  background: transparent;
+  outline: none;
+  font-size: 14px;
+}
+
+/* NAVIGATION */
+.main-nav {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+
+.main-nav a {
+  font-weight: 600;
+  color: #555;
+}
+
+.main-nav i {
+  margin-right: 6px;
+}
+
+/* ===============================
+   DROPDOWN MENUS
+================================= */
+.nav-more,
+.profile-dropdown {
+  position: relative;
+  cursor: pointer;
+  font-weight: 600;
+  color: #3A5BA0;
+}
+
+.more-menu,
+.profile-menu {
+  display: none;
+  position: absolute;
+  background: #fff;
+  padding: 12px 0;
+  border-radius: 10px;
+  top: 28px;
+  right: 0;
+  width: 200px;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.2);
+}
+
+.more-menu a,
+.profile-menu a {
+  display: block;
+  padding: 10px 16px;
+  font-size: 14px;
+  color: #555;
+}
+
+.more-menu a:hover,
+.profile-menu a:hover {
+  background: #f0f0f0;
+}
+
+.nav-more:hover .more-menu,
+.profile-dropdown:hover .profile-menu {
+  display: block;
+}
+
+/* top icons */
+.top-icons {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+}
+
+.notification {
+  position: relative;
+  font-size: 20px;
+  color: #3A5BA0;
+}
+
+.notification .badge {
+  position: absolute;
+  top: -6px;
+  right: -10px;
+  background: red;
+  color: white;
+  font-size: 10px;
+  padding: 2px 6px;
+  border-radius: 999px;
+}
+
+.profile-avatar {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+}
+
+/* ===============================
+   LAYOUT GRID
+================================= */
+.dashboard-container {
+  display: grid;
+  grid-template-columns: 260px 1fr 320px;
+  gap: 22px;
+  padding: 26px;
+}
+
+/* ===============================
+   LEFT SIDEBAR
+================================= */
+.sidebar {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.user-card {
+  background: #fff;
+  padding: 20px;
+  border-radius: 16px;
+  text-align: center;
+  box-shadow: 0 3px 8px rgba(0,0,0,0.08);
+}
+
+.avatar-big {
+  width: 85px;
+  border-radius: 50%;
+}
+
+.follow-box {
+  font-size: 13px;
+  margin-top: 10px;
+  color: #777;
+}
+
+/* small sidebar feature cards */
+.side-feature {
+  background: #fff;
+  padding: 14px;
+  border-radius: 16px;
+  font-size: 14px;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.06);
+}
+
+/* ===============================
+   MAIN CONTENT
+================================= */
+.main-area {
+  display: flex;
+  flex-direction: column;
+  gap: 28px;
+}
+
+/* welcome text */
+.welcome-text {
+  font-size: 16px;
+  margin-bottom: 10px;
+}
+
+/* balance card */
+.balance-card {
+  background: #fff;
+  border-radius: 20px;
+  padding: 24px;
+  box-shadow: 0 3px 10px rgba(0,0,0,0.08);
+}
+
+.balance-card h1 {
+  margin: 8px 0 18px;
+  font-size: 32px;
+}
+
+/* balance buttons */
+.balance-btns {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 20px;
+}
+
+.balance-btns button {
+  padding: 10px 28px;
+  border: none;
+  border-radius: 8px;
+  font-weight: 700;
+  cursor: pointer;
+  background: #3A5BA0;
+  color: white;
+}
+
+.balance-btns .withdraw {
+  background: #e04545;
+}
+
+/* balance stats */
+.balance-stats {
+  display: flex;
+  justify-content: space-between;
+  font-size: 14px;
+  gap: 20px;
+}
+
+/* task section */
+.tasks-section {
+  margin-top: 10px;
+}
+
+/* dynamic task cards */
+.task-card {
+  display: flex;
+  align-items: center;
+  padding: 16px;
+  background: #fff;
+  border-radius: 16px;
+  margin-top: 14px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+}
+
+.task-card img {
+  width: 58px;
+  margin-right: 16px;
+}
+
+.task-btn {
+  margin-left: auto;
+  background: #13c15c;
+  color: white;
+  border: none;
+  padding: 8px 20px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 700;
+}
+
+.tag {
+  font-size: 12px;
+  padding: 4px 8px;
+  color: #444;
+}
+
+/* ===============================
+   RIGHT PANEL
+================================= */
+.right-panel {
+  background: #fff;
+  padding: 20px;
+  border-radius: 20px;
+  box-shadow: 0 3px 10px rgba(0,0,0,0.07);
+}
+
+.activity {
+  display: flex;
+  gap: 12px;
+  margin: 16px 0;
+  font-size: 14px;
+}
+
+.activity img {
+  width: 36px;
+}
+
+.view-more {
+  display: block;
+  color: #3A5BA0;
+  font-weight: 600;
+  margin-top: 20px;
+}
+
+/* ===============================
+   RESPONSIVE (MOBILE / TABLET)
+================================= */
+
+/* Collapse to 1 column */
+@media screen and (max-width: 980px) {
+  .dashboard-container {
+    grid-template-columns: 1fr;
+  }
+
+  .sidebar,
+  .right-panel {
+    order: 2;
+  }
+
+  .main-area {
+    order: 1;
+  }
+
+  .topbar {
+    flex-wrap: wrap;
+  }
+
+  .search-bar {
+    width: 100%;
+    margin-top: 10px;
+  }
+
+  .main-nav {
+    display: none;
+  }
+}
+
+/* Tablet layout */
+@media screen and (max-width: 1280px) {
+  .dashboard-container {
+    grid-template-columns: 260px 1fr;
+  }
+
+  .right-panel {
+    display: none;
+  }
+}
+
+/* ===============================
+   MODAL
+================================= */
+.modal-bg {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.45);
+  backdrop-filter: blur(3px);
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+.modal-box {
+  background: #fff;
+  padding: 26px;
+  border-radius: 18px;
+  width: 90%;
+  max-width: 420px;
+  box-shadow: 0 8px 30px rgba(0,0,0,0.25);
+}
+
+.modal-close {
+  float: right;
+  font-size: 26px;
+  cursor: pointer;
+  color: #555;
+}
+
+.modal-icon {
+  width: 70px;
+  display: block;
+  margin: 0 auto 18px;
+}
+
+.modal-content h2 {
+  font-size: 22px;
+  text-align: center;
+  margin: 0 0 12px;
+}
+
+.modal-start-btn {
+  background: #3A5BA0;
+  color: #fff;
+  border: none;
+  padding: 12px 0;
+  width: 100%;
+  border-radius: 10px;
+  font-weight: bold;
+  cursor: pointer;
+  margin-top: 18px;
+}
+
+
+/* =====================================================
+   EARN POPUP MODAL (Dashboard UI Style)
+===================================================== */
+
+.earn-modal-bg {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.45);
+  backdrop-filter: blur(4px);
+  justify-content: center;
+  align-items: center;
+  z-index: 2000;
+}
+
+.earn-modal {
+  background: #fff;
+  padding: 30px;
+  border-radius: 22px;
+  max-width: 900px;
+  width: 90%;
+  box-shadow: 0 8px 30px rgba(0,0,0,0.25);
+  position: relative;
+}
+
+.earn-close {
+  position: absolute;
+  top: 15px;
+  right: 18px;
+  background: none;
+  border: none;
+  font-size: 28px;
+  cursor: pointer;
+  color: #333;
+}
+
+.earn-title {
+  text-align: center;
+  font-size: 22px;
+  font-weight: 700;
+  margin-bottom: 26px;
+}
+
+.earn-options {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 26px;
+}
+
+.earn-card {
+  background: #fff;
+  border-radius: 16px;
+  padding: 24px;
+  text-align: center;
+  box-shadow: 0 3px 10px rgba(0,0,0,0.08);
+}
+
+.earn-card h3 {
+  font-size: 18px;
+  margin-bottom: 16px;
+  color: #111;
+}
+
+.earn-icons img {
+  width: 48px;
+  margin: 6px;
+}
+
+.earn-img {
+  width: 180px;
+  margin: 12px auto;
+  display: block;
+}
+
+.earn-card p {
+  font-size: 14px;
+  color: #444;
+  margin: 14px 0 20px;
+}
+
+.earn-btn {
+  border: none;
+  background: #000;
+  color: #fff;
+  padding: 12px 0;
+  border-radius: 10px;
+  width: 100%;
+  font-weight: 700;
+  cursor: pointer;
+}
+/* Fix padding in earn modal */
+.earn-modal p {
+  line-height: 1.45;
+}
+
+/* Make modal scroll on mobile */
+@media screen and (max-width: 768px) {
+  .earn-options {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* =====================================================
+   ADVERTISE POPUP MODAL
+===================================================== */
+
+.ad-modal-bg {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.45);
+  backdrop-filter: blur(4px);
+  justify-content: center;
+  align-items: center;
+  z-index: 2200;
+}
+
+.ad-modal {
+  background: #fff;
+  padding: 30px;
+  border-radius: 22px;
+  max-width: 900px;
+  width: 90%;
+  box-shadow: 0 8px 30px rgba(0,0,0,0.25);
+  position: relative;
+}
+
+.ad-close {
+  position: absolute;
+  top: 15px;
+  right: 18px;
+  background: none;
+  border: none;
+  font-size: 28px;
+  cursor: pointer;
+  color: #333;
+}
+
+.ad-title {
+  text-align: center;
+  font-size: 22px;
+  font-weight: 700;
+  margin-bottom: 26px;
+}
+
+.ad-options {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 26px;
+}
+
+.ad-card {
+  background: #fff;
+  border-radius: 16px;
+  padding: 24px;
+  text-align: center;
+  box-shadow: 0 3px 10px rgba(0,0,0,0.08);
+}
+
+.ad-card h3 {
+  font-size: 18px;
+  margin-bottom: 16px;
+  color: #000;
+}
+
+.ad-icons img {
+  width: 48px;
+  margin: 6px;
+}
+
+.ad-img {
+  width: 150px;
+  margin: 10px auto 18px;
+  display: block;
+}
+
+.ad-card p {
+  font-size: 14px;
+  color: #444;
+  line-height: 1.4;
+  margin-bottom: 18px;
+}
+
+.ad-btn {
+  border: none;
+  background: #3e0387;
+  color: #fff;
+  padding: 12px 0;
+  border-radius: 10px;
+  width: 100%;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+/* MOBILE */
+@media screen and (max-width: 768px) {
+  .ad-options {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* ======================
+   FUND MODAL
+====================== */
+.modal-bg {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.55);
+  display: none;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+}
+
+.modal-card {
+  width: 360px;
+  max-width: 90%;
+  background: #fff;
+  border-radius: 14px;
+  padding: 18px 18px 16px;
+  position: relative;
+}
+
+.modal-title { margin: 0 0 6px; }
+.modal-sub { margin: 0 0 12px; opacity: 0.8; font-size: 14px; }
+
+.modal-input {
+  width: 100%;
+  padding: 12px;
+  border: 1px solid #ddd;
+  border-radius: 10px;
+  outline: none;
+  margin-bottom: 12px;
+}
+
+.modal-action {
+  width: 100%;
+  padding: 12px;
+  border: none;
+  border-radius: 10px;
+  cursor: pointer;
+}
+
+.modal-close {
+  position: absolute;
+  top: 10px;
+  right: 12px;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  font-size: 16px;
+}
+
+.modal-msg {
+  margin: 10px 0 0;
+  font-size: 13px;
+}
+
+/* ======================
+   TASK LIST (NEW STYLE)
+====================== */
+.task-row{
+  display:flex;
+  gap:18px;
+  background:#fff;
+  border-radius:16px;
+  padding:18px;
+  margin-top:14px;
+  box-shadow:0 2px 8px rgba(0,0,0,0.06);
+  align-items:flex-start;
+}
+
+.task-left{
+  width:120px;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  gap:12px;
+}
+
+.task-big-icon{
+  width:74px;
+  height:74px;
+  object-fit:contain;
+}
+
+.task-select-btn{
+  width:100%;
+  padding:10px 0;
+  border:1px solid #ddd;
+  border-radius:10px;
+  background:#fff;
+  font-weight:700;
+  cursor:pointer;
+}
+
+.task-mid{
+  flex:1;
+}
+
+.task-title{
+  margin:0 0 6px;
+  font-size:20px;
+}
+
+.task-earn{
+  margin:0 0 8px;
+  font-size:14px;
+}
+
+.task-desc{
+  margin:0 0 12px;
+  font-size:14px;
+  color:#444;
+  line-height:1.4;
+}
+
+.task-platforms{
+  display:flex;
+  align-items:center;
+  gap:10px;
+}
+
+.task-platform-label{
+  font-size:14px;
+  font-weight:600;
+}
+
+.platform-icons{
+  display:flex;
+  gap:8px;
+  align-items:center;
+}
+
+.platform-icon{
+  width:22px;
+  height:22px;
+  object-fit:contain;
+}
+
+.task-right{
+  min-width:170px;
+  display:flex;
+  justify-content:flex-end;
+}
+
+.task-badge{
+  background:#1f9d4a;
+  color:#fff;
+  font-weight:700;
+  font-size:12px;
+  padding:8px 10px;
+  border-radius:10px;
+  white-space:nowrap;
+}
+
+/* ======================
+   TASK LIST (SCREENSHOT STYLE)
+====================== */
+.task-row{
+  display:flex;
+  gap:18px;
+  background:#fff;
+  border-radius:16px;
+  padding:18px;
+  margin-top:14px;
+  box-shadow:0 2px 8px rgba(0,0,0,0.06);
+  align-items:flex-start;
+  border: 1px solid #eee;
+}
+
+.task-left{
+  width:140px;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  gap:14px;
+}
+
+.task-big-icon{
+  width:90px;
+  height:90px;
+  object-fit:contain;
+}
+
+.task-select-btn{
+  width:110px;
+  padding:12px 0;
+  border:1px solid #ddd;
+  border-radius:10px;
+  background:#fff;
+  font-weight:700;
+  cursor:pointer;
+  letter-spacing: 1px;
+}
+
+.task-mid{
+  flex:1;
+  padding-top: 6px;
+}
+
+.task-title{
+  margin:0 0 8px;
+  font-size:22px;
+}
+
+.task-earn{
+  margin:0 0 10px;
+  font-size:14px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid #eee;
+}
+
+.task-desc{
+  margin:12px 0 14px;
+  font-size:14px;
+  color:#444;
+  line-height:1.45;
+  max-width: 680px;
+}
+
+.task-platforms{
+  display:flex;
+  align-items:center;
+  gap:10px;
+}
+
+.task-platform-label{
+  font-size:14px;
+  font-weight:700;
+}
+
+.platform-icons{
+  display:flex;
+  gap:8px;
+  align-items:center;
+}
+
+.platform-icon{
+  width:22px;
+  height:22px;
+  object-fit:contain;
+}
+
+.task-right{
+  min-width:180px;
+  display:flex;
+  justify-content:flex-end;
+  align-items:flex-start;
+  padding-top: 70px;
+}
+
+.task-badge{
+  background:#1f9d4a;
+  color:#fff;
+  font-weight:700;
+  font-size:12px;
+  padding:8px 10px;
+  border-radius:10px;
+  white-space:nowrap;
+}
+
+.modal-bg{
+  display:none;
+  position:fixed;
+  inset:0;
+  background:rgba(0,0,0,0.45);
+  justify-content:center;
+  align-items:center;
+  z-index:3000;
+}
+
+.modal-box{
+  background:white;
+  padding:22px;
+  border-radius:12px;
+  width:360px;
+}
+
+.modal-box input,
+.modal-box textarea{
+  width:100%;
+  margin:8px 0;
+  padding:10px;
+}
+
+.modal-close{
+  float:right;
+  border:none;
+  background:none;
+  font-size:18px;
+  cursor:pointer;
+}
+
