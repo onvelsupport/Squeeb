@@ -72,7 +72,7 @@ def forgot_password_api(request):
 # ==========================
 @login_required
 def dashboard(request):
-    return render(request, "dashboard.html")
+    return render(request, "accounts/dashboard.html")
 
 
 # ==========================
