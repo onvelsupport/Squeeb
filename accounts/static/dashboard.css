@@ -936,3 +936,238 @@ a {
 }
 
 
+
+/* =========================================
+   IPHONE / MOBILE FIX
+========================================= */
+@media screen and (max-width: 768px) {
+  body {
+    overflow-x: hidden;
+    font-size: 16px;
+  }
+
+  .topbar {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    padding: 14px 16px;
+    gap: 12px;
+  }
+
+  .logo img {
+    width: 150px;
+    max-width: 100%;
+  }
+
+  .search-bar {
+    width: 100%;
+    margin: 0;
+    padding: 10px 14px;
+    border-radius: 12px;
+  }
+
+  .search-bar input {
+    width: 100%;
+    font-size: 16px;
+  }
+
+  .top-icons,
+  .main-nav {
+    display: none;
+  }
+
+  .dashboard-container {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 18px;
+    padding: 16px;
+  }
+
+  .sidebar,
+  .main-area,
+  .right-panel {
+    width: 100% !important;
+    max-width: 100% !important;
+  }
+
+  .sidebar {
+    order: 2;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  .main-area {
+    order: 1;
+    gap: 20px;
+  }
+
+  .right-panel {
+    display: none !important;
+  }
+
+  .user-card,
+  .side-feature,
+  .balance-card,
+  .task-row,
+  .task-card {
+    width: 100% !important;
+    max-width: 100% !important;
+    margin: 0 !important;
+    border-radius: 18px;
+  }
+
+  .welcome-text {
+    font-size: 18px;
+    margin-bottom: 0;
+  }
+
+  .balance-card {
+    padding: 20px;
+  }
+
+  .balance-card h1 {
+    font-size: 26px;
+  }
+
+  .balance-btns {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .balance-btns button {
+    width: 100%;
+    padding: 12px;
+  }
+
+  .balance-stats {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+
+  .task-row {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    padding: 18px;
+    gap: 14px;
+  }
+
+  .task-left {
+    width: 100%;
+    align-items: flex-start;
+  }
+
+  .task-big-icon {
+    width: 60px;
+    height: 60px;
+  }
+
+  .task-mid {
+    width: 100%;
+  }
+
+  .task-title {
+    font-size: 16px;
+    line-height: 1.35;
+  }
+
+  .task-earn,
+  .task-desc,
+  .task-platform-label {
+    font-size: 14px;
+  }
+
+  .task-desc {
+    line-height: 1.5;
+    word-break: break-word;
+  }
+
+  .task-platforms {
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .task-right {
+    width: 100%;
+    min-width: 0;
+    justify-content: stretch;
+  }
+
+  .task-select-btn,
+  .select-btn,
+  .task-btn {
+    width: 100%;
+    padding: 12px;
+  }
+
+  .task-card {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    padding: 18px;
+    gap: 14px;
+  }
+
+  .task-content {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+    width: 100%;
+  }
+
+  .task-details h3 {
+    font-size: 16px;
+    line-height: 1.4;
+  }
+
+  .task-details p {
+    font-size: 14px;
+    line-height: 1.5;
+  }
+
+  .desc {
+    max-width: 100%;
+  }
+
+  .platforms {
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+
+  .platforms img {
+    width: 20px;
+    height: 20px;
+  }
+
+  .side-feature {
+    font-size: 15px;
+    line-height: 1.4;
+    padding: 16px;
+  }
+
+  .modal-card,
+  .modal-box,
+  .earn-modal,
+  .ad-modal,
+  .task-action-container {
+    width: 95%;
+    max-width: 95%;
+    padding: 20px;
+  }
+
+  .earn-options,
+  .ad-options {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+}
+
+@media screen and (max-width: 768px) {
+  .side-feature {
+    display: none;
+  }
+}
