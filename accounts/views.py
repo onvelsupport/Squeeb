@@ -178,7 +178,7 @@ def cart_page(request):
     # calculate total
     total = sum(p.price for p in products)
 
-    return render(request, "cart.html", {
+    return render(request, "accounts/cart.html", {
         "products": products,
         "total": total
     })
@@ -214,7 +214,7 @@ def seller_history(request):
         is_sold=True
     ).order_by("-id")
 
-    return render(request, "seller_history.html", {
+    return render(request, "accounts/seller_history.html", {
         "products": sold_products
     })
 
