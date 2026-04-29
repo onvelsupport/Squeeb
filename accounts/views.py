@@ -62,6 +62,8 @@ def forgot_password_api(request):
         email = data.get("email")
         return JsonResponse({"message": "If this email exists, a reset link was sent."})
 
+    return JsonResponse({"error": "POST method required"}, status=400)
+
 
 # ==========================
 # AUTH HTML + PROTECTED PAGE
@@ -122,7 +124,7 @@ def logout_user(request):
 
 
 # ==========================
-# STRIPE WALLET FUNDING
+# REAL STRIPE WALLET FUNDING
 # ==========================
 @csrf_exempt
 @login_required
@@ -145,7 +147,7 @@ def create_funding_checkout(request):
         status="pending"
     )
 
-    YOUR_DOMAIN = getattr(settings, "SITE_URL", "https://socialmint.cc")
+    site_url = getattr(settings, "SITE_URL", "http://127.0.0.1:8000")
 
     session = stripe.checkout.Session.create(
         payment_method_types=["card"],
@@ -168,8 +170,8 @@ def create_funding_checkout(request):
             "user_id": str(request.user.id),
             "purpose": "wallet_funding",
         },
-        success_url=f"{YOUR_DOMAIN}/dashboard/?funding=success",
-        cancel_url=f"{YOUR_DOMAIN}/dashboard/?funding=cancelled",
+        success_url=f"{site_url}/dashboard/?funding=success",
+        cancel_url=f"{site_url}/dashboard/?funding=cancelled",
     )
 
     payment.stripe_session_id = session.id

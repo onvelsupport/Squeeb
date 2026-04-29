@@ -119,80 +119,6 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
 
-  // ===== SUBMIT TASK =====
-  const submitTaskBtn = document.getElementById("submitTaskBtn");
-
-  submitTaskBtn?.addEventListener("click", async () => {
-    const quantity = parseInt(quantityInput.value);
-    const link = document.getElementById("taskLink").value;
-    const platform = document.getElementById("taskPlatform").value;
-
-    if (taskType !== "subscribe" && !platform) {
-      alert("Please select a platform.");
-      return;
-    }
-
-    if (!quantity || quantity <= 0) {
-      alert("Enter a valid quantity.");
-      return;
-    }
-
-    if (!link) {
-      alert("Enter your link.");
-      return;
-    }
-
-    submitTaskBtn.disabled = true;
-
-    try {
-      const res = await fetch("/create-task/", {
-        method: "POST",
-        credentials: "include",
-        headers: {
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify({
-          platform: platform,
-          followers: quantity,
-          link: link,
-          task_type: taskType
-        })
-      });
-
-      const data = await res.json();
-
-      if (!res.ok) {
-        alert(data.error || "Something went wrong.");
-        submitTaskBtn.disabled = false;
-        return;
-      }
-
-      alert("Task created successfully!");
-
-      console.log("SENDING:", {
-        platform: platform,
-        followers: quantity,
-        link: link,
-        task_type: taskType
-      });
-
-      document.getElementById("balanceAmount").textContent =
-        "£" + parseFloat(data.new_balance).toFixed(2);
-
-      taskModal.style.display = "none";
-
-      loadUser();
-      loadTasks();
-
-    } catch (err) {
-      console.error("REAL ERROR:", err);
-      alert("Check console.");
-    }
-
-    submitTaskBtn.disabled = false;
-  });
-
-
   // ================================
   // LOGOUT
   // ================================
@@ -218,7 +144,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
 
   // ================================
-  // FUND MODAL
+  // FUND MODAL - REAL STRIPE FUNDING
   // ================================
   const fundModal = document.getElementById("fundModal");
   const fundBtn = document.querySelector(".fund");
@@ -228,56 +154,67 @@ document.addEventListener("DOMContentLoaded", () => {
   const fundMsg = document.getElementById("fundMsg");
 
   function openFundModal() {
+    if (!fundModal) return;
     fundMsg.textContent = "";
     fundAmountInput.value = "";
     fundModal.style.display = "flex";
+    fundAmountInput.focus();
   }
 
   function closeFundModal() {
+    if (!fundModal) return;
     fundModal.style.display = "none";
   }
 
   fundBtn?.addEventListener("click", openFundModal);
   fundClose?.addEventListener("click", closeFundModal);
 
+  fundModal?.addEventListener("click", (e) => {
+    if (e.target === fundModal) closeFundModal();
+  });
+
   fundSubmitBtn?.addEventListener("click", async () => {
     const amount = fundAmountInput.value;
 
     if (!amount || Number(amount) <= 0) {
-      fundMsg.textContent = "Enter valid amount.";
+      fundMsg.textContent = "Enter a valid amount.";
       return;
     }
 
     fundSubmitBtn.disabled = true;
-    fundMsg.textContent = "Funding...";
+    fundMsg.textContent = "Redirecting to Stripe...";
 
     try {
-      const res = await fetch("/api/demo-fund/", {
+      const res = await fetch("/api/create-funding-checkout/", {
         method: "POST",
         credentials: "include",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json"
+        },
         body: JSON.stringify({ amount })
       });
 
       const data = await res.json();
 
       if (!res.ok) {
-        fundMsg.textContent = data.error || "Failed.";
+        fundMsg.textContent = data.error || "Failed to start Stripe payment.";
         fundSubmitBtn.disabled = false;
         return;
       }
 
-      document.getElementById("balanceAmount").textContent = money(data.balance);
-      loadUser();
+      if (data.checkout_url) {
+        window.location.href = data.checkout_url;
+        return;
+      }
 
-      fundMsg.textContent = "Wallet funded!";
-      setTimeout(closeFundModal, 700);
+      fundMsg.textContent = "Stripe checkout URL was not returned.";
 
     } catch (err) {
+      console.error("FUND ERROR:", err);
       fundMsg.textContent = "Network error.";
+    } finally {
+      fundSubmitBtn.disabled = false;
     }
-
-    fundSubmitBtn.disabled = false;
   });
 
 
@@ -350,7 +287,7 @@ document.addEventListener("DOMContentLoaded", () => {
       document.getElementById("balanceAmount").textContent = money(data.balance);
       loadUser();
 
-      withdrawMsg.textContent = "Withdrawal successful (demo)!";
+      withdrawMsg.textContent = "Withdrawal successful.";
       setTimeout(closeWithdrawModal, 700);
 
     } catch (err) {
@@ -495,6 +432,75 @@ document.addEventListener("DOMContentLoaded", () => {
   window.addEventListener("click", function (e) {
     if (e.target === taskModal) {
       taskModal.style.display = "none";
+    }
+  });
+
+
+  // ================================
+  // SUBMIT TASK
+  // ================================
+  const submitTaskBtn = document.getElementById("submitTaskBtn");
+
+  submitTaskBtn?.addEventListener("click", async () => {
+    const quantity = parseInt(quantityInput.value);
+    const link = document.getElementById("taskLink").value;
+    const platform = document.getElementById("taskPlatform").value;
+
+    if (taskType !== "subscribe" && !platform) {
+      alert("Please select a platform.");
+      return;
+    }
+
+    if (!quantity || quantity <= 0) {
+      alert("Enter a valid quantity.");
+      return;
+    }
+
+    if (!link) {
+      alert("Enter your link.");
+      return;
+    }
+
+    submitTaskBtn.disabled = true;
+
+    try {
+      const res = await fetch("/create-task/", {
+        method: "POST",
+        credentials: "include",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          platform: platform,
+          followers: quantity,
+          link: link,
+          task_type: taskType
+        })
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        alert(data.error || "Something went wrong.");
+        submitTaskBtn.disabled = false;
+        return;
+      }
+
+      alert("Task created successfully!");
+
+      document.getElementById("balanceAmount").textContent =
+        "£" + parseFloat(data.new_balance).toFixed(2);
+
+      taskModal.style.display = "none";
+
+      loadUser();
+      loadTasks();
+
+    } catch (err) {
+      console.error("REAL ERROR:", err);
+      alert("Check console.");
+    } finally {
+      submitTaskBtn.disabled = false;
     }
   });
 
