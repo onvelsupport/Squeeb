@@ -15,7 +15,7 @@ from .views import (
     forgot_password_api,
     create_funding_checkout,
     stripe_webhook,
-    demo_withdraw,
+    request_withdrawal,
     marketplace_page,
     sell_product,
     delete_product,
@@ -70,7 +70,7 @@ urlpatterns = [
     path("stripe/webhook/", stripe_webhook, name="stripe_webhook"),
 
     # Withdraw (still disabled safely)
-    path("api/demo-withdraw/", demo_withdraw, name="demo_withdraw_api"),
+    path("api/request-withdrawal/", request_withdrawal, name="request_withdrawal"),
 
     path("delete-product/<int:product_id>/", delete_product, name="delete_product"),
     path("edit-product/<int:product_id>/", edit_product, name="edit_product"),

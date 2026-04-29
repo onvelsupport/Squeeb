@@ -1,14 +1,7 @@
 document.addEventListener("DOMContentLoaded", () => {
 
-  // ================================
-  // FORMAT MONEY
-  // ================================
   const money = (n) => `£${parseFloat(n || 0).toFixed(2)}`;
 
-
-  // ================================
-  // MOBILE MENU
-  // ================================
   const mobileMenuBtn = document.getElementById("mobileMenuBtn");
   const mobileDropdown = document.getElementById("mobileDropdown");
   const mobileEarnLink = document.getElementById("mobileEarnLink");
@@ -27,10 +20,6 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
-
-  // ================================
-  // LOAD USER INFO
-  // ================================
   async function loadUser() {
     try {
       const res = await fetch("/api/user-info/", { credentials: "include" });
@@ -58,10 +47,6 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   }
 
-
-  // ================================
-  // LOAD TASKS
-  // ================================
   async function loadTasks() {
     const container = document.getElementById("taskList");
     if (!container) return;
@@ -88,7 +73,6 @@ document.addEventListener("DOMContentLoaded", () => {
           <div class="task-row">
             <div class="task-left">
               <img src="/static/img/${task.icon}" class="task-big-icon">
-
               <button class="task-select-btn" data-id="${task.id}">
                 SELECT
               </button>
@@ -96,14 +80,10 @@ document.addEventListener("DOMContentLoaded", () => {
 
             <div class="task-mid">
               <h3 class="task-title">${task.title}</h3>
-
               <p class="task-earn">
                 Earnings: <strong>${money(task.payout)} per action</strong>
               </p>
-
-              <p class="task-desc">
-                ${task.instructions}
-              </p>
+              <p class="task-desc">${task.instructions}</p>
             </div>
 
             <div class="task-right">
@@ -118,10 +98,6 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   }
 
-
-  // ================================
-  // LOGOUT
-  // ================================
   async function logout(e) {
     if (e) e.preventDefault();
 
@@ -142,10 +118,6 @@ document.addEventListener("DOMContentLoaded", () => {
     btn.addEventListener("click", logout);
   });
 
-
-  // ================================
-  // FUND MODAL - REAL STRIPE FUNDING
-  // ================================
   const fundModal = document.getElementById("fundModal");
   const fundBtn = document.querySelector(".fund");
   const fundClose = document.getElementById("fundClose");
@@ -217,10 +189,6 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   });
 
-
-  // ================================
-  // WITHDRAW MODAL
-  // ================================
   const withdrawModal = document.getElementById("withdrawModal");
   const withdrawBtn = document.querySelector(".withdraw");
   const withdrawClose = document.getElementById("withdrawClose");
@@ -269,7 +237,7 @@ document.addEventListener("DOMContentLoaded", () => {
     withdrawMsg.textContent = "Processing...";
 
     try {
-      const res = await fetch("/api/demo-withdraw/", {
+      const res = await fetch("/api/request-withdrawal/", {
         method: "POST",
         credentials: "include",
         headers: { "Content-Type": "application/json" },
@@ -284,10 +252,10 @@ document.addEventListener("DOMContentLoaded", () => {
         return;
       }
 
-      document.getElementById("balanceAmount").textContent = money(data.balance);
+      document.getElementById("balanceAmount").textContent = money(data.new_balance);
       loadUser();
 
-      withdrawMsg.textContent = "Withdrawal successful.";
+      withdrawMsg.textContent = data.message || "Withdrawal request submitted.";
       setTimeout(closeWithdrawModal, 700);
 
     } catch (err) {
@@ -298,10 +266,6 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   });
 
-
-  // ================================
-  // EARN MODAL
-  // ================================
   const earnModal = document.getElementById("earnModal");
   const earnClose = document.getElementById("earnClose");
 
@@ -329,10 +293,6 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   });
 
-
-  // ================================
-  // ADVERTISE MODAL
-  // ================================
   const adModal = document.getElementById("adModal");
   const adClose = document.getElementById("adClose");
 
@@ -360,8 +320,6 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   });
 
-
-  // ================= TASK ACTION MODAL =================
   const taskModal = document.getElementById("taskActionModal");
   const closeTaskModal = document.getElementById("taskActionClose");
 
@@ -435,10 +393,6 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   });
 
-
-  // ================================
-  // SUBMIT TASK
-  // ================================
   const submitTaskBtn = document.getElementById("submitTaskBtn");
 
   submitTaskBtn?.addEventListener("click", async () => {
@@ -504,10 +458,6 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   });
 
-
-  // ================================
-  // INIT
-  // ================================
   loadUser();
   loadTasks();
 

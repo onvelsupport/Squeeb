@@ -312,7 +312,7 @@ withdrawSubmitBtn?.addEventListener("click", async () => {
   withdrawMsg.textContent = "Processing...";
 
   try {
-    const res = await fetch("/api/demo-withdraw/", {
+    const res = await fetch("/api/request-withdrawal/", {
       method: "POST",
       credentials: "include",
       headers: { "Content-Type": "application/json" },

@@ -13,7 +13,7 @@ import json
 import stripe
 
 from accounts.models import Task
-from .models import Product, ProductImage, TaskCompletion, FundingPayment
+from .models import Product, ProductImage, TaskCompletion, FundingPayment, WithdrawalRequest
 
 
 stripe.api_key = settings.STRIPE_SECRET_KEY
@@ -334,14 +334,56 @@ def user_info(request):
 
 
 # ==========================
-# WITHDRAWAL DISABLED FOR NOW
+# WITHDRAWAL
+# ==========================
+# ==========================
+# WITHDRAWAL
 # ==========================
 @csrf_exempt
 @login_required
-def demo_withdraw(request):
+def request_withdrawal(request):
+    if request.method != "POST":
+        return JsonResponse({"error": "POST method required"}, status=400)
+
+    try:
+        data = json.loads(request.body.decode("utf-8") or "{}")
+        amount = Decimal(str(data.get("amount", "0")))
+        sort_code = data.get("sort_code", "").strip()
+        account_number = data.get("account_number", "").strip()
+    except Exception:
+        return JsonResponse({"error": "Invalid withdrawal request."}, status=400)
+
+    if amount < Decimal("5.00"):
+        return JsonResponse({"error": "Minimum withdrawal amount is £5.00."}, status=400)
+
+    if not sort_code or not account_number:
+        return JsonResponse({"error": "Bank details are required."}, status=400)
+
+    with transaction.atomic():
+        from django.contrib.auth import get_user_model
+        User = get_user_model()
+
+        user = User.objects.select_for_update().get(id=request.user.id)
+
+        if user.balance < amount:
+            return JsonResponse({"error": "Insufficient balance."}, status=400)
+
+        user.balance -= amount
+        user.save(update_fields=["balance"])
+
+        withdrawal = WithdrawalRequest.objects.create(
+            user=user,
+            amount=amount,
+            sort_code=sort_code,
+            account_number=account_number,
+            status="pending"
+        )
+
     return JsonResponse({
-        "error": "Automatic withdrawals are currently disabled. Withdrawals will be reviewed manually."
-    }, status=400)
+        "message": "Withdrawal request submitted. It will be reviewed manually.",
+        "new_balance": str(user.balance),
+        "withdrawal_id": withdrawal.id
+    })
 
 
 # ==========================

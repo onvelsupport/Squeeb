@@ -1,0 +1,17 @@
+# Python
+__pycache__/
+*.pyc
+
+# Django
+db.sqlite3
+media/
+staticfiles/
+
+# Env files (CRITICAL)
+.env
+
+# VS Code
+.vscode/
+
+# OS
+.DS_Store

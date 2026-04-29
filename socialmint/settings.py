@@ -10,7 +10,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-5wglxgm11qv8^oh*u^35+&^(6o&%bpa-xob-3jrhrcf0-=y9v5'
+SECRET_KEY = os.getenv("DJANGO_SECRET_KEY")
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
@@ -19,7 +19,8 @@ ALLOWED_HOSTS = [
     "socialmint.cc",
     "www.socialmint.cc",
     "socialmint.onrender.com",
-    '127.0.0.1' 
+    "127.0.0.1",
+    "localhost",
 ]
 
 # Application definition
