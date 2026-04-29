@@ -4,7 +4,6 @@ from django.contrib.auth import authenticate, login as django_login
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib.auth import logout
-from django.contrib import messages
 from django.conf import settings
 from django.utils import timezone
 from django.db import transaction
@@ -58,8 +57,6 @@ def marketplace_page(request):
 
 def forgot_password_api(request):
     if request.method == "POST":
-        data = json.loads(request.body)
-        email = data.get("email")
         return JsonResponse({"message": "If this email exists, a reset link was sent."})
 
     return JsonResponse({"error": "POST method required"}, status=400)
@@ -147,7 +144,7 @@ def create_funding_checkout(request):
         status="pending"
     )
 
-    site_url = getattr(settings, "SITE_URL", "http://127.0.0.1:8000")
+    site_url = settings.SITE_URL
 
     session = stripe.checkout.Session.create(
         payment_method_types=["card"],
@@ -227,18 +224,15 @@ def stripe_webhook(request):
 # ==========================
 @login_required
 def add_to_cart(request, product_id):
-    p = get_object_or_404(Product, id=product_id)
+    product = get_object_or_404(Product, id=product_id)
 
-    if p.seller == request.user:
+    if product.seller == request.user:
         return redirect("marketplace")
 
     cart = request.session.get("cart", {})
     product_id = str(product_id)
 
-    if product_id in cart:
-        cart[product_id] += 1
-    else:
-        cart[product_id] = 1
+    cart[product_id] = cart.get(product_id, 0) + 1
 
     request.session["cart"] = cart
     return redirect("marketplace")
@@ -272,21 +266,21 @@ def cart_page(request):
 def edit_product(request, product_id):
     if request.method == "POST":
         product_id = request.POST.get("product_id")
-        p = get_object_or_404(Product, id=product_id)
+        product = get_object_or_404(Product, id=product_id)
 
-        if p.seller != request.user:
+        if product.seller != request.user:
             return redirect("marketplace")
 
-        p.title = request.POST.get("title")
-        p.price = request.POST.get("price")
-        p.category = request.POST.get("category")
-        p.description = request.POST.get("description")
-        p.is_sold = True if request.POST.get("is_sold") else False
-        p.save()
+        product.title = request.POST.get("title")
+        product.price = request.POST.get("price")
+        product.category = request.POST.get("category")
+        product.description = request.POST.get("description")
+        product.is_sold = True if request.POST.get("is_sold") else False
+        product.save()
 
         files = request.FILES.getlist("images")
-        for f in files:
-            ProductImage.objects.create(product=p, image=f)
+        for file in files:
+            ProductImage.objects.create(product=product, image=file)
 
     return redirect("marketplace")
 
@@ -329,13 +323,10 @@ def user_info(request):
         "tasks_completed": user.tasks_completed,
         "referrals": user.referrals,
         "is_member": user.is_member,
-        "referral_link": f"https://socialmint.cc/signup/?ref={user.username}"
+        "referral_link": f"{settings.SITE_URL}/signup/?ref={user.username}"
     })
 
 
-# ==========================
-# WITHDRAWAL
-# ==========================
 # ==========================
 # WITHDRAWAL
 # ==========================
@@ -403,8 +394,8 @@ def sell_product(request):
 
         files = request.FILES.getlist("images")
 
-        for f in files:
-            ProductImage.objects.create(product=product, image=f)
+        for file in files:
+            ProductImage.objects.create(product=product, image=file)
 
         return redirect("marketplace")
 
@@ -444,17 +435,17 @@ def get_tasks(request):
 
     data = [
         {
-            "id": t.id,
-            "title": t.title,
-            "payout": str(t.worker_reward),
-            "available": t.available,
-            "icon": t.icon,
-            "instructions": t.instructions,
-            "short_desc": t.short_desc,
-            "platforms": t.platforms,
-            "task_type": t.task_type,
+            "id": task.id,
+            "title": task.title,
+            "payout": str(task.worker_reward),
+            "available": task.available,
+            "icon": task.icon,
+            "instructions": task.instructions,
+            "short_desc": task.short_desc,
+            "platforms": task.platforms,
+            "task_type": task.task_type,
         }
-        for t in tasks
+        for task in tasks
     ]
 
     return JsonResponse({"tasks": data})
