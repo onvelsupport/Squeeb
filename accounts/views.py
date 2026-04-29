@@ -602,6 +602,6 @@ def pay_membership(request):
 def more_page(request):
     return render(request, "accounts/more.html")
 
-
+@login_required
 def earnings(request):
     return render(request, "accounts/earnings.html")
