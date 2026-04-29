@@ -167,4 +167,4 @@ MEDIA_ROOT = BASE_DIR / "media"
 
 STRIPE_SECRET_KEY = os.getenv("STRIPE_SECRET_KEY")
 STRIPE_WEBHOOK_SECRET = os.getenv("STRIPE_WEBHOOK_SECRET")
-SITE_URL = os.getenv("SITE_URL", "http://127.0.0.1:8000")
+SITE_URL = os.getenv("SITE_URL", "https://socialmint.cc")
