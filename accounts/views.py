@@ -1,17 +1,22 @@
-from django.http import JsonResponse
+from django.http import JsonResponse, HttpResponse
 from django.views.decorators.csrf import csrf_exempt
 from django.contrib.auth import authenticate, login as django_login
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib.auth import logout
-from accounts.models import Task
-from decimal import Decimal
-from .models import Product, ProductImage, TaskCompletion
-
 from django.contrib import messages
+from django.conf import settings
+from django.utils import timezone
+from django.db import transaction
+from decimal import Decimal
 import json
+import stripe
+
+from accounts.models import Task
+from .models import Product, ProductImage, TaskCompletion, FundingPayment
 
 
+stripe.api_key = settings.STRIPE_SECRET_KEY
 
 
 # ==========================
@@ -20,30 +25,30 @@ import json
 def homepage(request):
     return render(request, "accounts/index.html")
 
+
 def login_page(request):
     return render(request, "accounts/login.html")
+
 
 def signup_page(request):
     return render(request, "accounts/signup.html")
 
+
 def about(request):
     return render(request, "accounts/about.html")
 
+
 def forgot_password_page(request):
     return render(request, "accounts/forgot_password.html")
+
 
 def marketplace_page(request):
     category = request.GET.get("category")
 
     if category and category != "all":
-        products = Product.objects.filter(
-            category=category,
-            is_sold=False
-        ).order_by("-id")
+        products = Product.objects.filter(category=category, is_sold=False).order_by("-id")
     else:
-        products = Product.objects.filter(
-            is_sold=False
-        ).order_by("-id")
+        products = Product.objects.filter(is_sold=False).order_by("-id")
 
     return render(request, "accounts/marketplace.html", {
         "products": products,
@@ -51,22 +56,13 @@ def marketplace_page(request):
     })
 
 
-
-
-
-
 def forgot_password_api(request):
     if request.method == "POST":
-        import json
         data = json.loads(request.body)
-
         email = data.get("email")
-
-        # TODO: send email logic
-        # e.g., EmailMessage("reset", "Here is your reset link...", ...)
-        
         return JsonResponse({"message": "If this email exists, a reset link was sent."})
-    
+
+
 # ==========================
 # AUTH HTML + PROTECTED PAGE
 # ==========================
@@ -89,18 +85,13 @@ def signup(request):
     email = data.get("email")
     password = data.get("password")
 
-    # CREATE USER
     from django.contrib.auth import get_user_model
     User = get_user_model()
 
     if User.objects.filter(username=username).exists():
         return JsonResponse({"error": "Username already exists"}, status=400)
 
-    User.objects.create_user(
-        username=username,
-        email=email,
-        password=password
-    )
+    User.objects.create_user(username=username, email=email, password=password)
 
     return JsonResponse({"message": "User created successfully"})
 
@@ -130,6 +121,104 @@ def logout_user(request):
     return JsonResponse({"message": "Logged out successfully"})
 
 
+# ==========================
+# STRIPE WALLET FUNDING
+# ==========================
+@csrf_exempt
+@login_required
+def create_funding_checkout(request):
+    if request.method != "POST":
+        return JsonResponse({"error": "POST method required"}, status=400)
+
+    try:
+        data = json.loads(request.body.decode("utf-8") or "{}")
+        amount = Decimal(str(data.get("amount", "0")))
+    except Exception:
+        return JsonResponse({"error": "Invalid amount"}, status=400)
+
+    if amount < Decimal("1.00"):
+        return JsonResponse({"error": "Minimum funding amount is £1.00"}, status=400)
+
+    payment = FundingPayment.objects.create(
+        user=request.user,
+        amount=amount,
+        status="pending"
+    )
+
+    YOUR_DOMAIN = getattr(settings, "SITE_URL", "https://socialmint.cc")
+
+    session = stripe.checkout.Session.create(
+        payment_method_types=["card"],
+        mode="payment",
+        customer_email=request.user.email or None,
+        line_items=[
+            {
+                "price_data": {
+                    "currency": "gbp",
+                    "product_data": {
+                        "name": "SocialMint Wallet Funding",
+                    },
+                    "unit_amount": int(amount * 100),
+                },
+                "quantity": 1,
+            }
+        ],
+        metadata={
+            "payment_id": str(payment.id),
+            "user_id": str(request.user.id),
+            "purpose": "wallet_funding",
+        },
+        success_url=f"{YOUR_DOMAIN}/dashboard/?funding=success",
+        cancel_url=f"{YOUR_DOMAIN}/dashboard/?funding=cancelled",
+    )
+
+    payment.stripe_session_id = session.id
+    payment.save(update_fields=["stripe_session_id"])
+
+    return JsonResponse({"checkout_url": session.url})
+
+
+@csrf_exempt
+def stripe_webhook(request):
+    payload = request.body
+    sig_header = request.META.get("HTTP_STRIPE_SIGNATURE")
+    endpoint_secret = settings.STRIPE_WEBHOOK_SECRET
+
+    try:
+        event = stripe.Webhook.construct_event(
+            payload,
+            sig_header,
+            endpoint_secret
+        )
+    except ValueError:
+        return HttpResponse(status=400)
+    except stripe.error.SignatureVerificationError:
+        return HttpResponse(status=400)
+
+    if event["type"] == "checkout.session.completed":
+        session = event["data"]["object"]
+        session_id = session.get("id")
+
+        try:
+            with transaction.atomic():
+                payment = FundingPayment.objects.select_for_update().get(
+                    stripe_session_id=session_id
+                )
+
+                if payment.status != "paid":
+                    user = payment.user
+                    user.balance = (user.balance or Decimal("0")) + payment.amount
+                    user.save(update_fields=["balance"])
+
+                    payment.status = "paid"
+                    payment.paid_at = timezone.now()
+                    payment.save(update_fields=["status", "paid_at"])
+
+        except FundingPayment.DoesNotExist:
+            return HttpResponse(status=404)
+
+    return HttpResponse(status=200)
+
 
 # ==========================
 # CART
@@ -138,7 +227,6 @@ def logout_user(request):
 def add_to_cart(request, product_id):
     p = get_object_or_404(Product, id=product_id)
 
-    # 🚫 STOP seller from buying own item
     if p.seller == request.user:
         return redirect("marketplace")
 
@@ -151,15 +239,13 @@ def add_to_cart(request, product_id):
         cart[product_id] = 1
 
     request.session["cart"] = cart
-
     return redirect("marketplace")
-
 
 
 @login_required
 def remove_from_cart(request, product_id):
     cart = request.session.get("cart", {})
-    product_id = str(product_id)  # session keys are strings
+    product_id = str(product_id)
 
     if product_id in cart:
         del cart[product_id]
@@ -168,20 +254,17 @@ def remove_from_cart(request, product_id):
     return redirect("cart_page")
 
 
-
 @login_required
 def cart_page(request):
-    cart = request.session.get("cart", [])
-
-    products = Product.objects.filter(id__in=cart)
-
-    # calculate total
-    total = sum(p.price for p in products)
+    cart = request.session.get("cart", {})
+    products = Product.objects.filter(id__in=cart.keys())
+    total = sum(p.price * cart.get(str(p.id), 1) for p in products)
 
     return render(request, "accounts/cart.html", {
         "products": products,
         "total": total
     })
+
 
 @login_required
 def edit_product(request, product_id):
@@ -196,7 +279,6 @@ def edit_product(request, product_id):
         p.price = request.POST.get("price")
         p.category = request.POST.get("category")
         p.description = request.POST.get("description")
-
         p.is_sold = True if request.POST.get("is_sold") else False
         p.save()
 
@@ -209,10 +291,7 @@ def edit_product(request, product_id):
 
 @login_required
 def seller_history(request):
-    sold_products = Product.objects.filter(
-        seller=request.user,
-        is_sold=True
-    ).order_by("-id")
+    sold_products = Product.objects.filter(seller=request.user, is_sold=True).order_by("-id")
 
     return render(request, "accounts/seller_history.html", {
         "products": sold_products
@@ -223,7 +302,6 @@ def seller_history(request):
 def mark_as_sold(request, product_id):
     product = get_object_or_404(Product, id=product_id)
 
-    # security → only seller can mark sold
     if product.seller != request.user:
         return redirect("marketplace")
 
@@ -233,11 +311,8 @@ def mark_as_sold(request, product_id):
     return redirect("marketplace")
 
 
-
-
-
 # ==========================
-# USER INFO (DASHBOARD)
+# USER INFO
 # ==========================
 @login_required
 def user_info(request):
@@ -245,86 +320,26 @@ def user_info(request):
 
     return JsonResponse({
         "username": user.username,
-
-        # default values until wallet system is implemented
         "followers": getattr(user, "followers", 0),
         "following": getattr(user, "following", 0),
         "balance": str(user.balance),
         "earnings": str(user.earnings),
-
         "tasks_completed": user.tasks_completed,
         "referrals": user.referrals,
         "is_member": user.is_member,
-
-        "referral_link": f"http://127.0.0.1:8000/signup/?ref={user.username}"
+        "referral_link": f"https://socialmint.cc/signup/?ref={user.username}"
     })
 
-@csrf_exempt
-@login_required
-def demo_fund(request):
-    if request.method != "POST":
-        return JsonResponse({"error": "POST method required"}, status=400)
 
-    try:
-        data = json.loads(request.body.decode("utf-8") or "{}")
-        amount = Decimal(str(data.get("amount", "0")))
-    except Exception:
-        return JsonResponse({"error": "Invalid JSON/amount"}, status=400)
-
-    if amount <= 0:
-        return JsonResponse({"error": "Amount must be greater than 0"}, status=400)
-
-    # Make sure your user model has a 'balance' field
-    if not hasattr(request.user, "balance"):
-        return JsonResponse({"error": "User model has no 'balance' field yet"}, status=500)
-
-    request.user.balance = (request.user.balance or Decimal("0")) + amount
-    request.user.save(update_fields=["balance"])
-
-    return JsonResponse({"message": "Demo funded", "balance": str(request.user.balance)})
-
-
+# ==========================
+# WITHDRAWAL DISABLED FOR NOW
+# ==========================
 @csrf_exempt
 @login_required
 def demo_withdraw(request):
-    if request.method != "POST":
-        return JsonResponse({"error": "POST method required"}, status=400)
-
-    try:
-        data = json.loads(request.body.decode("utf-8") or "{}")
-        amount = Decimal(str(data.get("amount", "0")))
-        sort_code = str(data.get("sort_code", "")).strip()
-        account_number = str(data.get("account_number", "")).strip()
-    except Exception:
-        return JsonResponse({"error": "Invalid JSON/amount"}, status=400)
-
-    if amount <= 0:
-        return JsonResponse({"error": "Amount must be greater than 0"}, status=400)
-
-    # UK sort code: 6 digits (allow 12-34-56 or 123456)
-    sc_digits = "".join(ch for ch in sort_code if ch.isdigit())
-    if len(sc_digits) != 6:
-        return JsonResponse({"error": "Sort code must be 6 digits (e.g. 12-34-56)."}, status=400)
-
-    # UK account number: 8 digits
-    if not account_number.isdigit() or len(account_number) != 8:
-        return JsonResponse({"error": "Account number must be 8 digits."}, status=400)
-
-    user = request.user
-
-    if user.balance < amount:
-        return JsonResponse({"error": "Insufficient balance."}, status=400)
-
-    # DEMO: deduct balance (no real payout)
-    user.balance = user.balance - amount
-    user.save(update_fields=["balance"])
-
     return JsonResponse({
-        "message": "Withdrawn (demo)",
-        "balance": str(user.balance),
-        "sort_code": f"{sc_digits[0:2]}-{sc_digits[2:4]}-{sc_digits[4:6]}",
-        "account_number": account_number[-4:].rjust(8, "*")  # mask for safety
-    })
+        "error": "Automatic withdrawals are currently disabled. Withdrawals will be reviewed manually."
+    }, status=400)
 
 
 # ==========================
@@ -334,7 +349,6 @@ def demo_withdraw(request):
 @login_required
 def sell_product(request):
     if request.method == "POST":
-
         product = Product.objects.create(
             seller=request.user,
             title=request.POST["title"],
@@ -353,7 +367,6 @@ def sell_product(request):
     return render(request, "accounts/sell.html")
 
 
-
 # ==========================
 # DELETE PRODUCT
 # ==========================
@@ -361,7 +374,6 @@ def sell_product(request):
 def delete_product(request, product_id):
     product = get_object_or_404(Product, id=product_id)
 
-    # security → only seller can delete
     if product.seller != request.user:
         return redirect("marketplace")
 
@@ -369,29 +381,17 @@ def delete_product(request, product_id):
     return redirect("marketplace")
 
 
-
-
 # ==========================
 # TASK APIs
 # ==========================
-
-
 @login_required
 def get_tasks(request):
-
-    # 🔒 Block non-members
     if not request.user.is_member:
-        return JsonResponse({
-            "error": "Membership required to access tasks."
-        }, status=403)
+        return JsonResponse({"error": "Membership required to access tasks."}, status=403)
 
-    # 1️⃣ Get tasks that still have availability
     tasks = Task.objects.filter(available__gt=0)
-
-    # 2️⃣ Exclude tasks created by this user
     tasks = tasks.exclude(creator=request.user)
 
-    # 3️⃣ Exclude tasks already completed by this user
     completed_task_ids = TaskCompletion.objects.filter(
         user=request.user
     ).values_list("task_id", flat=True)
@@ -416,12 +416,8 @@ def get_tasks(request):
     return JsonResponse({"tasks": data})
 
 
-# ==========================
-# CREATE TASK (POST FROM FORM)
-# ==========================
 @login_required
 def get_single_task(request, task_id):
-
     if not request.user.is_member:
         return JsonResponse({"error": "Membership required."}, status=403)
 
@@ -454,32 +450,17 @@ def create_task(request):
         task_type = data.get("task_type")
 
         if not task_type:
-            return JsonResponse(
-        {"error": "Task type is required."},
-        status=400
-    )
+            return JsonResponse({"error": "Task type is required."}, status=400)
 
     except Exception:
         return JsonResponse({"error": "Invalid data"}, status=400)
 
     pricing = {
-    "follow": {
-        "cost": Decimal("0.15"),
-        "reward": Decimal("0.10"),
-    },
-    "like": {
-        "cost": Decimal("0.07"),
-        "reward": Decimal("0.05"),
-    },
-    "comment": {
-        "cost": Decimal("0.60"),
-        "reward": Decimal("0.40"),
-    },
-    "subscribe": {
-        "cost": Decimal("0.20"),
-        "reward": Decimal("0.10"),
-    },
-}
+        "follow": {"cost": Decimal("0.15"), "reward": Decimal("0.10")},
+        "like": {"cost": Decimal("0.07"), "reward": Decimal("0.05")},
+        "comment": {"cost": Decimal("0.60"), "reward": Decimal("0.40")},
+        "subscribe": {"cost": Decimal("0.20"), "reward": Decimal("0.10")},
+    }
 
     task_pricing = pricing.get(task_type)
 
@@ -488,72 +469,60 @@ def create_task(request):
 
     cost_per_action = task_pricing["cost"]
     worker_reward = task_pricing["reward"]
-
     total_cost = cost_per_action * followers
 
     user = request.user
 
-    #  CHECK BALANCE
     if user.balance < total_cost:
         return JsonResponse({"error": "Insufficient balance"}, status=400)
 
-    #  DEDUCT BALANCE
     user.balance -= total_cost
     user.save(update_fields=["balance"])
 
-    #  CREATE TASK
     Task.objects.create(
-    creator=user,
-    title=f"{platform} {task_type.capitalize()} Task",
-    cost_per_action=cost_per_action,
-    worker_reward=worker_reward,
-    available=followers,
-    platforms=platform,
-    link=link,
-    short_desc="Complete the task and earn.",
-    total_budget=total_cost,
-    task_type=task_type 
-)
+        creator=user,
+        title=f"{platform} {task_type.capitalize()} Task",
+        cost_per_action=cost_per_action,
+        worker_reward=worker_reward,
+        available=followers,
+        platforms=platform,
+        link=link,
+        short_desc="Complete the task and earn.",
+        total_budget=total_cost,
+        task_type=task_type
+    )
 
     return JsonResponse({
         "message": "Task created successfully",
         "new_balance": str(user.balance)
     })
 
+
 @csrf_exempt
 @login_required
 def complete_task(request, task_id):
-
-    # Block non-members
     if not request.user.is_member:
-        return JsonResponse({
-            "error": "Membership required."
-        }, status=403)
+        return JsonResponse({"error": "Membership required."}, status=403)
 
     if request.method != "POST":
         return JsonResponse({"error": "POST required"}, status=400)
 
     task = get_object_or_404(Task, id=task_id)
 
-    #  Creator cannot complete own task
     if task.creator == request.user:
         return JsonResponse({"error": "You cannot complete your own task"}, status=400)
 
-    #  Already completed
     if TaskCompletion.objects.filter(user=request.user, task=task).exists():
         return JsonResponse({"error": "You already completed this task"}, status=400)
 
     if task.available <= 0:
         return JsonResponse({"error": "No slots remaining"}, status=400)
 
-    #  Reduce availability
     task.available -= 1
     task.save(update_fields=["available"])
 
-    #  Record completion
     TaskCompletion.objects.create(user=request.user, task=task)
 
-    #  Pay user
     request.user.balance += task.worker_reward
     request.user.earnings += task.worker_reward
     request.user.tasks_completed += 1
@@ -571,7 +540,6 @@ def complete_task(request, task_id):
 @csrf_exempt
 @login_required
 def pay_membership(request):
-
     if request.method != "POST":
         return JsonResponse({"error": "POST required"}, status=400)
 
@@ -595,7 +563,6 @@ def pay_membership(request):
     })
 
 
-
 @login_required
 def more_page(request):
     return render(request, "accounts/more.html")
@@ -603,4 +570,3 @@ def more_page(request):
 
 def earnings(request):
     return render(request, "accounts/earnings.html")
-

@@ -7,8 +7,8 @@ class User(AbstractUser):
     earnings = models.DecimalField(max_digits=10, decimal_places=2, default=0)
     tasks_completed = models.IntegerField(default=0)
     referrals = models.IntegerField(default=0)
-
     is_member = models.BooleanField(default=False)
+
 
 class Task(models.Model):
     creator = models.ForeignKey(User, on_delete=models.CASCADE, null=True, blank=True)
@@ -22,30 +22,22 @@ class Task(models.Model):
     short_desc = models.CharField(max_length=255, default="")
     platforms = models.CharField(max_length=120, default="")
 
-
     TASK_TYPES = (
-    ("like", "Like"),
-    ("follow", "Follow"),
-    ("comment", "Comment"),
-    ("subscribe", "Subscribe"),
+        ("like", "Like"),
+        ("follow", "Follow"),
+        ("comment", "Comment"),
+        ("subscribe", "Subscribe"),
     )
 
-    task_type = models.CharField(
-        max_length=20,
-        choices=TASK_TYPES,
-        default="follow"
-    )
-
+    task_type = models.CharField(max_length=20, choices=TASK_TYPES, default="follow")
     instructions = models.TextField(default="Follow the task instructions.")
     link = models.URLField(blank=True, null=True)
-
     total_budget = models.DecimalField(max_digits=10, decimal_places=2, default=0)
-
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
         return self.title
-    
+
     @property
     def platform_profit_per_action(self):
         return self.cost_per_action - self.worker_reward
@@ -53,36 +45,36 @@ class Task(models.Model):
     @property
     def unit(self):
         units = {
-         "follow": "follower",
-         "like": "like",
-         "comment": "comment",
-         "subscribe": "subscriber",
-     }
+            "follow": "follower",
+            "like": "like",
+            "comment": "comment",
+            "subscribe": "subscriber",
+        }
         return units.get(self.task_type, "task")
-    
+
     @property
     def dynamic_instructions(self):
         instructions_map = {
-         "like": [
-            "Click the link below.",
-            f"Like the post on {self.platforms}.",
-            "Take a screenshot as proof."
-         ],
-        "follow": [
-            "Click the link below.",
-            f"Follow the page on {self.platforms}.",
-            "Take a screenshot showing you followed."
-        ],
-        "comment": [
-            "Click the link below.",
-            "Leave a genuine comment on the post.",
-            "Take a screenshot of your comment."
-        ],
-        "subscribe": [
-            "Click the link below.",
-            "Subscribe to the channel.",
-            "Take a screenshot as proof."
-             ],
+            "like": [
+                "Click the link below.",
+                f"Like the post on {self.platforms}.",
+                "Take a screenshot as proof.",
+            ],
+            "follow": [
+                "Click the link below.",
+                f"Follow the page on {self.platforms}.",
+                "Take a screenshot showing you followed.",
+            ],
+            "comment": [
+                "Click the link below.",
+                "Leave a genuine comment on the post.",
+                "Take a screenshot of your comment.",
+            ],
+            "subscribe": [
+                "Click the link below.",
+                "Subscribe to the channel.",
+                "Take a screenshot as proof.",
+            ],
         }
 
         return instructions_map.get(self.task_type, [self.instructions])
@@ -92,15 +84,45 @@ class TaskCompletion(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     task = models.ForeignKey(Task, on_delete=models.CASCADE)
     proof = models.ImageField(upload_to="task_proofs/", null=True, blank=True)
-    approved = models.BooleanField(default=True)  # auto approve for now
+    approved = models.BooleanField(default=True)
     completed_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
-        unique_together = ("user", "task")  # prevents duplicate completion
+        unique_together = ("user", "task")
 
     def __str__(self):
         return f"{self.user.username} completed {self.task.title}"
 
+
+class FundingPayment(models.Model):
+    STATUS_CHOICES = (
+        ("pending", "Pending"),
+        ("paid", "Paid"),
+        ("failed", "Failed"),
+    )
+
+    user = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        related_name="funding_payments"
+    )
+    amount = models.DecimalField(max_digits=10, decimal_places=2)
+    stripe_session_id = models.CharField(
+        max_length=255,
+        unique=True,
+        blank=True,
+        null=True
+    )
+    status = models.CharField(
+        max_length=20,
+        choices=STATUS_CHOICES,
+        default="pending"
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+    paid_at = models.DateTimeField(blank=True, null=True)
+
+    def __str__(self):
+        return f"{self.user.username} - £{self.amount} - {self.status}"
 
 
 class Product(models.Model):
@@ -111,15 +133,16 @@ class Product(models.Model):
     image = models.ImageField(upload_to="products/")
     category = models.CharField(max_length=100)
     is_sold = models.BooleanField(default=False)
-
-
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
         return self.title
 
+
 class ProductImage(models.Model):
-    product = models.ForeignKey(Product, on_delete=models.CASCADE, related_name="images")
+    product = models.ForeignKey(
+        Product,
+        on_delete=models.CASCADE,
+        related_name="images"
+    )
     image = models.ImageField(upload_to="products/")
-
-

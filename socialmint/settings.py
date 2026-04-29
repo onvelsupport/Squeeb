@@ -173,3 +173,8 @@ CSRF_TRUSTED_ORIGINS = [
 # =============================
 MEDIA_URL = "/media/"
 MEDIA_ROOT = BASE_DIR / "media"
+
+
+STRIPE_SECRET_KEY = os.getenv("STRIPE_SECRET_KEY")
+STRIPE_WEBHOOK_SECRET = os.getenv("STRIPE_WEBHOOK_SECRET")
+SITE_URL = os.getenv("SITE_URL", "https://socialmint.cc")
