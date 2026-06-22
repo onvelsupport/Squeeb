@@ -18,7 +18,7 @@ DEBUG = True
 ALLOWED_HOSTS = [
     "squeeb.co.uk",
     "www.squeeb.co.uk",
-    "socialmint.onrender.com",
+    "squeeb.onrender.com",
     "127.0.0.1",
     "localhost",
 ]
