@@ -1,0 +1,52 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+
+# Virtual environment
+venv/
+env/
+ENV/
+
+# Environment variables
+.env
+
+# SQLite database
+db.sqlite3
+
+# Media uploads
+media/
+
+# Static files collected by collectstatic
+staticfiles/
+
+# VS Code
+.vscode/
+
+# PyCharm
+.idea/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+
+# Coverage
+.coverage
+htmlcov/
+
+# Pytest
+.pytest_cache/
+
+# Migrations (optional)
+# */migrations/*
+# !*/migrations/__init__.py
+
+# Build artifacts
+dist/
+build/
+
+# Node modules (if using frontend tooling)
+node_modules/
