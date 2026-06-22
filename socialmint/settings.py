@@ -16,8 +16,8 @@ SECRET_KEY = os.getenv("DJANGO_SECRET_KEY") or os.getenv("SECRET_KEY")
 DEBUG = True
 
 ALLOWED_HOSTS = [
-    "socialmint.cc",
-    "www.socialmint.cc",
+    "squeeb.co.uk",
+    "www.squeeb.co.uk",
     "socialmint.onrender.com",
     "127.0.0.1",
     "localhost",

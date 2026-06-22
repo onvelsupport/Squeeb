@@ -11,6 +11,6 @@ User = get_user_model()
 if not User.objects.filter(username="admin").exists():
     User.objects.create_superuser(
         username="admin",
-        email="admin@socialmint.cc",
+        email="admin@squeeb.co.uk",
         password="admin123"
     )

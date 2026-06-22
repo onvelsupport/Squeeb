@@ -155,7 +155,7 @@ def create_funding_checkout(request):
                 "price_data": {
                     "currency": "gbp",
                     "product_data": {
-                        "name": "SocialMint Wallet Funding",
+                        "name": "Squeeb Wallet Funding",
                     },
                     "unit_amount": int(amount * 100),
                 },
