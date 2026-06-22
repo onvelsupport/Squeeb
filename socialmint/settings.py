@@ -57,7 +57,7 @@ CORS_ALLOW_ALL_HEADERS = True
 CORS_ALLOW_CREDENTIALS = True
 
 
-ROOT_URLCONF = 'socialmint.urls'
+ROOT_URLCONF = 'squeeb.urls'
 
 TEMPLATES = [
     {
@@ -74,7 +74,7 @@ TEMPLATES = [
     },
 ]
 
-WSGI_APPLICATION = 'socialmint.wsgi.application'
+WSGI_APPLICATION = 'squeeb.wsgi.application'
 
 
 # Database
@@ -156,9 +156,9 @@ else:
 CSRF_TRUSTED_ORIGINS = [
     "http://127.0.0.1:8000",
     "http://localhost:8000",
-    "https://socialmint.cc",
-    "https://www.socialmint.cc",
-    "https://socialmint.onrender.com",
+    "https://squeeb.co.uk",
+    "https://www.squeeb.co.uk",
+    "https://squeeb.onrender.com",
 ]
 
 # =============================
@@ -170,4 +170,4 @@ MEDIA_ROOT = BASE_DIR / "media"
 
 STRIPE_SECRET_KEY = os.getenv("STRIPE_SECRET_KEY")
 STRIPE_WEBHOOK_SECRET = os.getenv("STRIPE_WEBHOOK_SECRET")
-SITE_URL = os.getenv("SITE_URL", "https://socialmint.cc")
+SITE_URL = os.getenv("SITE_URL", "https://squeeb.cc")

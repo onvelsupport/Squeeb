@@ -1,1 +1,1 @@
-web: gunicorn socialmint.wsgi
+web: gunicorn squeeb.wsgi
