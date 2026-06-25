@@ -173,6 +173,33 @@ searchInput?.addEventListener("input", async () => {
 });
 
 
+
+
+    // ==========================================================
+    // NOTIFICATION MENU
+    // ==========================================================
+const openNotifications = document.getElementById("openNotifications");
+const closeNotifications = document.getElementById("closeNotifications");
+const notificationOverlay = document.getElementById("notificationOverlay");
+const notificationPanel = document.getElementById("notificationPanel");
+
+function openNotificationPanel() {
+    notificationOverlay.classList.add("show");
+    notificationPanel.classList.add("show");
+}
+
+function closeNotificationPanel() {
+    notificationOverlay.classList.remove("show");
+    notificationPanel.classList.remove("show");
+}
+
+openNotifications?.addEventListener("click", openNotificationPanel);
+closeNotifications?.addEventListener("click", closeNotificationPanel);
+notificationOverlay?.addEventListener("click", closeNotificationPanel);
+
+
+
+
     // ==========================================================
     // MOBILE MENU
     // ==========================================================

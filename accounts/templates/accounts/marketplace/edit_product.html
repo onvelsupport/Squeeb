@@ -1,0 +1,157 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Edit Product | SQUEEB</title>
+
+    <link rel="stylesheet" href="{% static 'accounts/css/edit_product.css' %}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.2/cropper.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+
+<body>
+
+<header class="dashboard-topbar">
+    <a href="{% url 'dashboard' %}" class="brand">
+        <img src="{% static 'accounts/img/logo.png' %}" alt="SQUEEB Logo">
+    </a>
+
+    <nav class="dashboard-nav">
+        <a href="{% url 'dashboard' %}">Dashboard</a>
+        <a href="{% url 'sell' %}">Sell</a>
+        <a href="{% url 'marketplace' %}" class="active">Marketplace</a>
+        <a href="{% url 'seller_history' %}">Sold Items</a>
+    </nav>
+
+    <a href="{% url 'logout' %}" class="logout-btn logout">
+        <i class="fa fa-power-off"></i>
+    </a>
+</header>
+
+<main class="edit-page">
+
+    <section class="edit-hero">
+        <div>
+            <p class="eyebrow">SQUEEB Market</p>
+            <h1>Edit Product</h1>
+            <p>Update your product details, add more images, or mark the item as sold.</p>
+        </div>
+
+        <a href="{% url 'marketplace' %}" class="back-btn">
+            <i class="fa fa-arrow-left"></i>
+            Back to Marketplace
+        </a>
+    </section>
+
+    <section class="edit-layout">
+
+        <div class="edit-card">
+            <h2>Product Details</h2>
+
+            <form method="POST" enctype="multipart/form-data" class="edit-form">
+                {% csrf_token %}
+
+                <div class="form-group">
+                    <label for="title">Product Title</label>
+                    <input id="title" name="title" type="text" value="{{ product.title }}" required>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="price">Price (£)</label>
+                        <input id="price" name="price" type="number" step="0.01" value="{{ product.price }}" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="category">Category</label>
+                        <select id="category" name="category" required>
+                            <option value="beauty" {% if product.category == "beauty" %}selected{% endif %}>Health & Beauty</option>
+                            <option value="grocery" {% if product.category == "grocery" %}selected{% endif %}>Grocery</option>
+                            <option value="phones" {% if product.category == "phones" %}selected{% endif %}>Phones & Tablets</option>
+                            <option value="fashion" {% if product.category == "fashion" %}selected{% endif %}>Fashion</option>
+                            <option value="electronics" {% if product.category == "electronics" %}selected{% endif %}>Electronics</option>
+                            <option value="books" {% if product.category == "books" %}selected{% endif %}>Books</option>
+                            <option value="car_rent" {% if product.category == "car_rent" %}selected{% endif %}>Cars</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="description">Description</label>
+                    <textarea id="description" name="description" rows="6">{{ product.description }}</textarea>
+                </div>
+
+                <div class="checkbox-row">
+                    <input type="checkbox" name="is_sold" id="is_sold" {% if product.is_sold %}checked{% endif %}>
+                    <label for="is_sold">Mark this product as sold</label>
+                </div>
+
+                <div class="form-group">
+                    <label>Current Photos</label>
+
+                    <div class="current-images">
+                        {% for image in product.images.all %}
+                            <div class="current-image-card">
+                                <img src="{{ image.image.url }}" alt="{{ product.title }}">
+                            </div>
+                        {% empty %}
+                            {% if product.image %}
+                                <div class="current-image-card">
+                                    <img src="{{ product.image.url }}" alt="{{ product.title }}">
+                                </div>
+                            {% else %}
+                                <p class="muted-text">No current photos.</p>
+                            {% endif %}
+                        {% endfor %}
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="images">Add More Photos</label>
+
+                    <label for="images" class="upload-box">
+                        <i class="fa fa-cloud-upload-alt"></i>
+                        <strong>Click to add photos</strong>
+                        <span>PNG, JPG, JPEG accepted</span>
+                    </label>
+
+                    <input id="images" name="images" type="file" accept="image/*" multiple hidden>
+
+                    <p id="fileName" class="file-name">No new photos selected</p>
+
+                    <div id="imagePreviewGrid" class="image-preview-grid"></div>
+                </div>
+
+                <button type="submit" class="save-btn">
+                    <i class="fa fa-save"></i>
+                    Save Changes
+                </button>
+            </form>
+        </div>
+
+    </section>
+
+</main>
+
+<div class="crop-modal" id="cropModal">
+    <div class="crop-box">
+        <h3>Edit Image</h3>
+
+        <div class="crop-area">
+            <img id="cropImage" alt="Crop preview">
+        </div>
+
+        <div class="crop-actions">
+            <button type="button" id="cancelCropBtn">Cancel</button>
+            <button type="button" id="saveCropBtn">Save Edit</button>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.2/cropper.min.js"></script>
+<script src="{% static 'accounts/js/edit_product.js' %}"></script>
+
+</body>
+</html>

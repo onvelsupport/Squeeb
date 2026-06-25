@@ -37,6 +37,10 @@ from .views import (
     toggle_follow,
     recent_activities_api,
     notifications,
+    create_cart_checkout,
+    edit_product,
+    product_detail,
+    send_product_message,
 )
 
 urlpatterns = [
@@ -69,7 +73,6 @@ urlpatterns = [
     path("dashboard/", dashboard, name="dashboard"),
     path("more/", more_page, name="more_page"),
     path("earnings/", earnings, name="earnings"),
-    path("seller/history/", seller_history, name="seller_history"),
     path("withdrawals/", withdrawals, name="withdrawals"),
     path("api/search/", global_search, name="global_search"),
     path("notifications/", notifications, name="notifications"),
@@ -85,14 +88,18 @@ urlpatterns = [
     # ======================
     path("market/", marketplace_page, name="marketplace"),
     path("sell/", sell_product, name="sell"),
+      path("seller/history/", seller_history, name="seller_history"),
 
     path("cart/", cart_page, name="cart"),
     path("cart/add/<int:product_id>/", add_to_cart, name="add_to_cart"),
     path("cart/remove/<int:product_id>/", remove_from_cart, name="remove_from_cart"),
+    path("cart/create-checkout/",create_cart_checkout, name="create_cart_checkout"),
 
     path("delete-product/<int:product_id>/", delete_product, name="delete_product"),
-    path("edit-product/<int:product_id>/", edit_product, name="edit_product"),
+    path("product/<int:product_id>/edit/", edit_product, name="edit_product"),
     path("product/<int:product_id>/sold/", mark_as_sold, name="mark_as_sold"),
+    path("marketplace/product/<int:product_id>/", product_detail,name="product_detail",),
+    path("marketplace/product/<int:product_id>/message/",send_product_message, name="send_product_message"),
 
     # ======================
     # MEMBERSHIP

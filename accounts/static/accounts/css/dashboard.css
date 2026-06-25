@@ -1,3 +1,9 @@
+html,
+body{
+    width:100%;
+    overflow-x:hidden;
+}
+
 /* ==========================================================
    GLOBAL RESET
 ========================================================== */
@@ -195,6 +201,104 @@ a{
     display:none;
 }
 
+
+.notification-open-btn {
+    position: relative;
+}
+
+.notification-count {
+    position: absolute;
+    top: 6px;
+    right: 6px;
+    min-width: 18px;
+    height: 18px;
+    background: #ef4444;
+    color: #fff;
+    font-size: 11px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.notification-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(15, 23, 42, 0.35);
+    opacity: 0;
+    visibility: hidden;
+    transition: 0.25s ease;
+    z-index: 998;
+}
+
+.notification-panel {
+    position: fixed;
+    top: 0;
+    right: -420px;
+    width: 390px;
+    max-width: 90%;
+    height: 100vh;
+    background: #fff;
+    z-index: 999;
+    padding: 24px;
+    box-shadow: -20px 0 40px rgba(15, 23, 42, 0.15);
+    transition: right 0.3s ease;
+}
+
+.notification-overlay.show {
+    opacity: 1;
+    visibility: visible;
+}
+
+.notification-panel.show {
+    right: 0;
+}
+
+.notification-panel-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.notification-panel-header button {
+    border: none;
+    background: transparent;
+    font-size: 20px;
+    cursor: pointer;
+}
+
+.notification-item {
+    padding: 15px;
+    border-radius: 14px;
+    border: 1px solid #e5e7eb;
+    margin-bottom: 12px;
+}
+
+.notification-item.unread {
+    background: #f8fbff;
+    border-left: 4px solid #2563eb;
+}
+
+.notification-item h4 {
+    margin-bottom: 6px;
+}
+
+.notification-item p {
+    font-size: 14px;
+    color: #4b5563;
+}
+
+.notification-item span {
+    font-size: 12px;
+    color: #9ca3af;
+}
+
+.empty-notification {
+    text-align: center;
+    padding: 50px 10px;
+    color: #6b7280;
+}
 /* ==========================================================
    MAIN DASHBOARD LAYOUT
 ========================================================== */
@@ -920,48 +1024,79 @@ a{
    RESPONSIVE: MOBILE
 ========================================================== */
 
-@media(max-width:900px){
+@media (max-width:900px){
 
-    .dashboard-nav{
-        display:none;
+    .dashboard-topbar{
+
+        padding:16px;
+
+        display:flex;
+        align-items:center;
+        justify-content:space-between;
+
+        gap:10px;
     }
 
     .dashboard-search{
         display:none;
     }
 
+    .dashboard-nav{
+        display:none;
+    }
+
+    .brand img{
+        width:120px;
+    }
+
+    .top-actions{
+
+        display:flex;
+        align-items:center;
+
+        gap:8px;
+    }
+
+    .icon-btn,
+    .logout-btn{
+
+        width:42px;
+        height:42px;
+    }
+
     .mobile-menu-btn{
-        display:block;
-        background:none;
+
+        display:flex;
+
+        align-items:center;
+        justify-content:center;
+
+        width:42px;
+        height:42px;
+
         border:none;
-        font-size:25px;
-    }
 
-    .hero-section{
-        flex-direction:column;
-        align-items:flex-start;
-        gap:20px;
-    }
+        background:#eff6ff;
 
-    .membership-banner{
-        flex-direction:column;
-        gap:20px;
-        align-items:flex-start;
-    }
+        border-radius:50%;
 
-    .task-card{
-        flex-direction:column;
-        align-items:flex-start;
-    }
+        font-size:20px;
 
-    .task-action{
-        width:100%;
-        text-align:left;
+        color:#2563eb;
     }
 
 }
 
+.mobile-dropdown{
 
+    width:260px;
+
+    max-width:90vw;
+
+    right:15px;
+
+    top:75px;
+}
 /* ==========================================================
    RESPONSIVE: SMALL MOBILE
 ========================================================== */

@@ -23,9 +23,28 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     });
 
+    /* ==========================================================
+       PRODUCT IMAGE GALLERY
+    ========================================================== */
+
+    const mainImage = document.getElementById("mainProductImage");
+    const thumbnails = document.querySelectorAll(".thumbnail-btn");
+
+    thumbnails.forEach(button => {
+        button.addEventListener("click", () => {
+            const img = button.querySelector("img");
+
+            if (!img || !mainImage) return;
+
+            mainImage.src = img.src;
+
+            thumbnails.forEach(btn => btn.classList.remove("active"));
+            button.classList.add("active");
+        });
+    });
 
     /* ==========================================================
-       CLICK PRODUCT CARD TO OPEN DETAILS PAGE
+       RELATED PRODUCT CARD CLICK
     ========================================================== */
 
     document.querySelectorAll(".clickable-product").forEach(card => {
@@ -37,18 +56,6 @@ document.addEventListener("DOMContentLoaded", () => {
             }
         });
     });
-
-
-    /* ==========================================================
-       PREVENT BUTTONS INSIDE CARD FROM OPENING PRODUCT PAGE
-    ========================================================== */
-
-    document.querySelectorAll(".stop-card-click").forEach(item => {
-        item.addEventListener("click", (e) => {
-            e.stopPropagation();
-        });
-    });
-
 
     /* ==========================================================
        DELETE PRODUCT CONFIRMATION
@@ -65,7 +72,6 @@ document.addEventListener("DOMContentLoaded", () => {
             }
         });
     });
-
 
     /* ==========================================================
        LOGOUT
@@ -91,7 +97,6 @@ document.addEventListener("DOMContentLoaded", () => {
     document.querySelectorAll(".logout").forEach(btn => {
         btn.addEventListener("click", logout);
     });
-
 
     /* ==========================================================
        GLOBAL SEARCH BAR
@@ -146,7 +151,6 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     });
 
-
     /* ==========================================================
        CLOSE SEARCH RESULTS WHEN CLICKING OUTSIDE
     ========================================================== */
@@ -162,4 +166,28 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     });
 
+});
+
+
+
+/* ==========================================================
+   MESSAGE SELLER MODAL
+========================================================== */
+
+const openMessageModal = document.getElementById("openMessageModal");
+const closeMessageModal = document.getElementById("closeMessageModal");
+const messageModal = document.getElementById("messageModal");
+
+openMessageModal?.addEventListener("click", () => {
+    messageModal?.classList.add("show");
+});
+
+closeMessageModal?.addEventListener("click", () => {
+    messageModal?.classList.remove("show");
+});
+
+messageModal?.addEventListener("click", (e) => {
+    if (e.target === messageModal) {
+        messageModal.classList.remove("show");
+    }
 });

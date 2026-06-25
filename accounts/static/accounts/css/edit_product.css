@@ -1,0 +1,459 @@
+/* ==========================================================
+   GLOBAL RESET
+========================================================== */
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    background: #f4f7fc;
+    font-family: Arial, Helvetica, sans-serif;
+    color: #111827;
+}
+
+a {
+    text-decoration: none;
+    color: inherit;
+}
+
+/* ==========================================================
+   TOPBAR
+========================================================== */
+
+.dashboard-topbar {
+    background: #ffffff;
+    padding: 18px 40px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 20px;
+    border-bottom: 1px solid #e5e7eb;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+}
+
+.brand img {
+    width: 150px;
+}
+
+.dashboard-nav {
+    display: flex;
+    align-items: center;
+    gap: 25px;
+}
+
+.dashboard-nav a {
+    font-size: 14px;
+    font-weight: 600;
+    color: #475569;
+}
+
+.dashboard-nav a:hover,
+.dashboard-nav a.active {
+    color: #2563eb;
+}
+
+.logout-btn {
+    width: 45px;
+    height: 45px;
+    background: #fee2e2;
+    color: #dc2626;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+}
+
+/* ==========================================================
+   PAGE
+========================================================== */
+
+.edit-page {
+    width: 92%;
+    max-width: 1200px;
+    margin: auto;
+    padding: 40px 0 70px;
+}
+
+/* ==========================================================
+   HERO
+========================================================== */
+
+.edit-hero {
+    background: linear-gradient(135deg, #0f172a, #2563eb, #7c3aed);
+    color: white;
+    border-radius: 32px;
+    padding: 40px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 30px;
+    margin-bottom: 35px;
+}
+
+.eyebrow {
+    color: #bfdbfe;
+    text-transform: uppercase;
+    font-size: 13px;
+    font-weight: 700;
+    margin-bottom: 10px;
+}
+
+.edit-hero h1 {
+    font-size: 42px;
+    margin-bottom: 15px;
+}
+
+.edit-hero p {
+    color: #dbeafe;
+    line-height: 1.7;
+}
+
+.back-btn {
+    background: white;
+    color: #111827;
+    padding: 16px 25px;
+    border-radius: 18px;
+    font-weight: bold;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+/* ==========================================================
+   FORM CARD
+========================================================== */
+
+.edit-card {
+    background: white;
+    padding: 40px;
+    border-radius: 30px;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, .05);
+}
+
+.edit-card h2 {
+    margin-bottom: 28px;
+}
+
+.edit-form {
+    display: flex;
+    flex-direction: column;
+    gap: 25px;
+}
+
+.form-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+}
+
+.form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.form-group label,
+.checkbox-row label {
+    font-weight: 700;
+    color: #334155;
+}
+
+.form-group input,
+.form-group select,
+.form-group textarea {
+    width: 100%;
+    border: 1px solid #e2e8f0;
+    background: #f8fafc;
+    padding: 16px;
+    border-radius: 18px;
+    outline: none;
+    transition: .25s;
+    font-size: 15px;
+}
+
+.form-group input:focus,
+.form-group select:focus,
+.form-group textarea:focus {
+    border-color: #2563eb;
+    background: white;
+}
+
+.form-group textarea {
+    resize: vertical;
+}
+
+/* ==========================================================
+   CHECKBOX
+========================================================== */
+
+.checkbox-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    padding: 16px;
+    border-radius: 18px;
+}
+
+.checkbox-row input {
+    width: 18px;
+    height: 18px;
+}
+
+/* ==========================================================
+   CURRENT IMAGES
+========================================================== */
+
+.current-images {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+    gap: 14px;
+}
+
+.current-image-card {
+    border-radius: 16px;
+    overflow: hidden;
+    border: 1px solid #e5e7eb;
+    background: #f8fafc;
+}
+
+.current-image-card img {
+    width: 100%;
+    height: 135px;
+    object-fit: cover;
+    display: block;
+}
+
+.muted-text {
+    color: #64748b;
+}
+
+/* ==========================================================
+   IMAGE UPLOAD
+========================================================== */
+
+.upload-box {
+    border: 2px dashed #cbd5e1;
+    background: #f8fafc;
+    padding: 40px;
+    border-radius: 25px;
+    text-align: center;
+    cursor: pointer;
+    transition: .25s;
+}
+
+.upload-box:hover {
+    border-color: #2563eb;
+    background: #eff6ff;
+}
+
+.upload-box i {
+    font-size: 42px;
+    color: #2563eb;
+    margin-bottom: 16px;
+}
+
+.upload-box strong {
+    display: block;
+    margin-bottom: 8px;
+    font-size: 18px;
+}
+
+.upload-box span,
+.file-name {
+    color: #64748b;
+    font-size: 14px;
+}
+
+
+
+/* ==========================================================
+   EDIT PRODUCTS
+========================================================== */
+
+.edit-img-btn {
+    width: 100%;
+    border: none;
+    background: #2563eb;
+    color: white;
+    padding: 9px;
+    border-radius: 10px;
+    font-weight: 700;
+    cursor: pointer;
+}
+
+.preview-actions {
+    display: flex;
+    gap: 8px;
+    padding: 8px;
+    background: #f8fafc;
+}
+
+.crop-modal {
+    position: fixed;
+    inset: 0;
+    background: rgba(15, 23, 42, .75);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 9999;
+    padding: 20px;
+}
+
+.crop-modal.show {
+    display: flex;
+}
+
+.crop-box {
+    width: 100%;
+    max-width: 700px;
+    background: white;
+    border-radius: 24px;
+    padding: 24px;
+}
+
+.crop-box h3 {
+    margin-bottom: 15px;
+}
+
+.crop-area {
+    width: 100%;
+    max-height: 430px;
+    overflow: hidden;
+    background: #f1f5f9;
+    border-radius: 16px;
+}
+
+.crop-area img {
+    width: 100%;
+    max-height: 430px;
+    display: block;
+}
+
+.crop-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 12px;
+    margin-top: 18px;
+}
+
+.crop-actions button {
+    border: none;
+    padding: 12px 20px;
+    border-radius: 12px;
+    font-weight: 700;
+    cursor: pointer;
+}
+
+#cancelCropBtn {
+    background: #e5e7eb;
+}
+
+#saveCropBtn {
+    background: #111827;
+    color: white;
+}
+
+
+
+/* ==========================================================
+   NEW IMAGE PREVIEW
+========================================================== */
+
+.image-preview-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+    gap: 14px;
+    margin-top: 15px;
+}
+
+.preview-card {
+    border-radius: 16px;
+    overflow: hidden;
+    border: 1px solid #e5e7eb;
+    background: white;
+}
+
+.preview-card img {
+    width: 100%;
+    height: 135px;
+    object-fit: cover;
+    display: block;
+}
+
+.preview-actions {
+    padding: 8px;
+    background: #f8fafc;
+}
+
+.remove-img-btn {
+    width: 100%;
+    border: none;
+    background: #fee2e2;
+    color: #dc2626;
+    padding: 9px;
+    border-radius: 10px;
+    font-weight: 700;
+    cursor: pointer;
+}
+
+/* ==========================================================
+   SAVE BUTTON
+========================================================== */
+
+.save-btn {
+    border: none;
+    background: linear-gradient(135deg, #2563eb, #7c3aed);
+    color: white;
+    padding: 18px;
+    border-radius: 18px;
+    cursor: pointer;
+    font-size: 16px;
+    font-weight: bold;
+    transition: .3s;
+}
+
+.save-btn:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 15px 30px rgba(37, 99, 235, .25);
+}
+
+/* ==========================================================
+   RESPONSIVE
+========================================================== */
+
+@media (max-width: 800px) {
+    .dashboard-nav {
+        display: none;
+    }
+
+    .edit-hero {
+        flex-direction: column;
+        align-items: flex-start;
+        padding: 30px;
+    }
+
+    .edit-hero h1 {
+        font-size: 32px;
+    }
+
+    .form-row {
+        grid-template-columns: 1fr;
+    }
+
+    .edit-card {
+        padding: 25px;
+    }
+
+    .back-btn {
+        width: 100%;
+        justify-content: center;
+    }
+}
+

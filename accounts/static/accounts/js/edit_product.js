@@ -1,9 +1,4 @@
 document.addEventListener("DOMContentLoaded", () => {
-
-    /* ==========================================================
-       ELEMENTS
-    ========================================================== */
-
     const imageInput = document.getElementById("images");
     const fileName = document.getElementById("fileName");
     const previewGrid = document.getElementById("imagePreviewGrid");
@@ -15,18 +10,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     const priceInput = document.getElementById("price");
     const description = document.getElementById("description");
-    const form = document.querySelector(".sell-form");
-    const uploadBox = document.querySelector(".upload-box");
-
-    const searchInput = document.getElementById("globalSearchInput");
-    const searchResults = document.getElementById("searchResults");
-
-    const mobileMenuBtn = document.getElementById("mobileMenuBtn");
-    const mobileDropdown = document.getElementById("mobileDropdown");
-
-    /* ==========================================================
-       IMAGE UPLOAD, PREVIEW, REMOVE AND CROP
-    ========================================================== */
+    const form = document.querySelector(".edit-form");
 
     let selectedFiles = [];
     let cropper = null;
@@ -38,23 +22,21 @@ document.addEventListener("DOMContentLoaded", () => {
         selectedFiles = [...selectedFiles, ...newFiles];
 
         updateFileInput();
-        renderImagePreviews();
+        renderPreviews();
     });
 
-    function renderImagePreviews() {
-        if (!previewGrid || !fileName) return;
-
+    function renderPreviews() {
         previewGrid.innerHTML = "";
 
         if (selectedFiles.length === 0) {
-            fileName.textContent = "No photos selected";
+            fileName.textContent = "No new photos selected";
             return;
         }
 
         fileName.textContent =
             selectedFiles.length === 1
                 ? selectedFiles[0].name
-                : `${selectedFiles.length} photos selected`;
+                : `${selectedFiles.length} new photos selected`;
 
         selectedFiles.forEach((file, index) => {
             const reader = new FileReader();
@@ -64,11 +46,11 @@ document.addEventListener("DOMContentLoaded", () => {
                 card.className = "preview-card";
 
                 card.innerHTML = `
-                    <img src="${e.target.result}" alt="Selected product image">
+                    <img src="${e.target.result}" alt="New selected image">
 
                     <div class="preview-actions">
                         <button type="button" class="edit-img-btn" data-index="${index}">
-                            Edit
+                            Crop
                         </button>
 
                         <button type="button" class="remove-img-btn" data-index="${index}">
@@ -99,7 +81,7 @@ document.addEventListener("DOMContentLoaded", () => {
             selectedFiles.splice(index, 1);
 
             updateFileInput();
-            renderImagePreviews();
+            renderPreviews();
         }
     });
 
@@ -157,7 +139,7 @@ document.addEventListener("DOMContentLoaded", () => {
             selectedFiles[editingIndex] = editedFile;
 
             updateFileInput();
-            renderImagePreviews();
+            renderPreviews();
             closeCropModal();
 
         }, "image/jpeg", 0.9);
@@ -187,8 +169,6 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     function updateFileInput() {
-        if (!imageInput) return;
-
         const dataTransfer = new DataTransfer();
 
         selectedFiles.forEach(file => {
@@ -198,19 +178,11 @@ document.addEventListener("DOMContentLoaded", () => {
         imageInput.files = dataTransfer.files;
     }
 
-    /* ==========================================================
-       PRICE FORMAT
-    ========================================================== */
-
     priceInput?.addEventListener("blur", () => {
         if (priceInput.value && !isNaN(priceInput.value)) {
             priceInput.value = parseFloat(priceInput.value).toFixed(2);
         }
     });
-
-    /* ==========================================================
-       DESCRIPTION CHARACTER COUNTER
-    ========================================================== */
 
     if (description) {
         const counter = document.createElement("small");
@@ -228,10 +200,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
         description.addEventListener("input", updateCounter);
     }
-
-    /* ==========================================================
-       FORM VALIDATION
-    ========================================================== */
 
     form?.addEventListener("submit", (e) => {
         const title = document.getElementById("title")?.value.trim();
@@ -256,130 +224,6 @@ document.addEventListener("DOMContentLoaded", () => {
             return;
         }
 
-        if (selectedFiles.length === 0) {
-            e.preventDefault();
-            alert("Please upload at least one product photo.");
-            return;
-        }
-
         updateFileInput();
     });
-
-    /* ==========================================================
-       DRAG AND DROP IMAGE UPLOAD
-    ========================================================== */
-
-    uploadBox?.addEventListener("dragover", (e) => {
-        e.preventDefault();
-
-        uploadBox.style.borderColor = "#2563eb";
-        uploadBox.style.background = "#eff6ff";
-    });
-
-    uploadBox?.addEventListener("dragleave", () => {
-        resetUploadBoxStyle();
-    });
-
-    uploadBox?.addEventListener("drop", (e) => {
-        e.preventDefault();
-
-        resetUploadBoxStyle();
-
-        const droppedFiles = Array.from(e.dataTransfer.files)
-            .filter(file => file.type.startsWith("image/"));
-
-        selectedFiles = [...selectedFiles, ...droppedFiles];
-
-        updateFileInput();
-        renderImagePreviews();
-    });
-
-    function resetUploadBoxStyle() {
-        if (!uploadBox) return;
-
-        uploadBox.style.borderColor = "#cbd5e1";
-        uploadBox.style.background = "#f8fafc";
-    }
-
-    /* ==========================================================
-       GLOBAL SEARCH BAR
-    ========================================================== */
-
-    searchInput?.addEventListener("input", async () => {
-        const query = searchInput.value.trim();
-
-        if (!query) {
-            searchResults.style.display = "none";
-            searchResults.innerHTML = "";
-            return;
-        }
-
-        try {
-            const res = await fetch(
-                `/api/search/?q=${encodeURIComponent(query)}`
-            );
-
-            const data = await res.json();
-
-            searchResults.innerHTML = "";
-
-            if (!data.results || !data.results.length) {
-                searchResults.innerHTML =
-                    `<div class="search-item">No results found</div>`;
-
-                searchResults.style.display = "block";
-                return;
-            }
-
-            data.results.forEach(item => {
-                searchResults.innerHTML += `
-                    <a href="${item.url}" class="search-item">
-                        <strong>${item.name}</strong>
-
-                        <div class="search-type">
-                            ${item.type}
-                        </div>
-                    </a>
-                `;
-            });
-
-            searchResults.style.display = "block";
-        }
-
-        catch (err) {
-            console.error(err);
-        }
-    });
-
-    document.addEventListener("click", (e) => {
-        if (
-            searchResults &&
-            searchInput &&
-            !searchResults.contains(e.target) &&
-            !searchInput.contains(e.target)
-        ) {
-            searchResults.style.display = "none";
-        }
-    });
-
-    /* ==========================================================
-       MOBILE MENU
-    ========================================================== */
-
-    mobileMenuBtn?.addEventListener("click", (e) => {
-        e.stopPropagation();
-        mobileDropdown?.classList.toggle("show");
-    });
-
-    document.addEventListener("click", (e) => {
-        if (
-            mobileDropdown &&
-            mobileMenuBtn &&
-            !mobileDropdown.contains(e.target) &&
-            !mobileMenuBtn.contains(e.target)
-        ) {
-            mobileDropdown.classList.remove("show");
-        }
-    });
-
 });

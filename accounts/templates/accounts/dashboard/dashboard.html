@@ -45,13 +45,41 @@ Dashboard | SQUEEB
         <!-- Header Actions -->
         
 <div class="top-actions">
-    <button class="icon-btn" onclick="window.location.href='{% url 'notifications' %}'">
-        <i class="fa-solid fa-bell"></i>
-    </button>
-        <a {% if notification_count > 0 %}
-            <span>{{ notification_count }}</span>
+    <button class="icon-btn notification-open-btn" id="openNotifications">
+    <i class="fa-solid fa-bell"></i>
+
+    {% if notification_count > 0 %}
+        <span class="notification-count">{{ notification_count }}</span>
+    {% endif %}
+</button>
+
+<div class="notification-overlay" id="notificationOverlay"></div>
+
+<aside class="notification-panel" id="notificationPanel">
+    <div class="notification-panel-header">
+        <h2>Notifications</h2>
+        <button id="closeNotifications">
+            <i class="fa-solid fa-xmark"></i>
+        </button>
+    </div>
+
+    <div class="notification-panel-body">
+        {% if notifications %}
+            {% for notification in notifications %}
+                <div class="notification-item {% if not notification.is_read %}unread{% endif %}">
+                    <h4>{{ notification.title }}</h4>
+                    <p>{{ notification.message }}</p>
+                    <span>{{ notification.created_at|timesince }} ago</span>
+                </div>
+            {% endfor %}
+        {% else %}
+            <div class="empty-notification">
+                <i class="fa-regular fa-bell-slash"></i>
+                <p>No notifications yet</p>
+            </div>
         {% endif %}
-    </a>
+    </div>
+</aside>
 
             <a href="{% url 'logout' %}" class="logout-btn logout">
                 <i class="fa fa-power-off"></i>
@@ -138,16 +166,16 @@ Dashboard | SQUEEB
 
             <!-- Followers Stat -->
             <div class="stats-card">
-                <p>Followers</p>
+                <p>Squeeber</p>
                 <h3 id="followers">0</h3>
                 <span>Your current SQUEEB audience.</span>
             </div>
 
             <!-- Following Stat -->
             <div class="stats-card">
-                <p>Following</p>
+                <p>Connections</p>
                 <h3 id="following">0</h3>
-                <span>People and brands you follow.</span>
+                <span>People and brands you connect with.</span>
             </div>
 
         </section>

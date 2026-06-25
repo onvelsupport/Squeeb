@@ -12,21 +12,62 @@
 </head>
 <body>
 
-<header class="topbar">
+<!-- ====================== DASHBOARD HEADER ====================== -->
+    <header class="dashboard-topbar">
 
-    <a href="{% url 'dashboard' %}" class="logo">
-        <img src="{% static 'accounts/img/logo.png' %}" alt="SQUEEB">
-    </a>
-
-    <nav>
-        <a href="{% url 'dashboard' %}">Dashboard</a>
-        <a href="{% url 'marketplace' %}">Marketplace</a>
-        <a href="{% url 'seller_history' %}" class="active">
-            Sold Items
+        <!-- Logo -->
+        <a href="{% url 'dashboard' %}" class="brand">
+            <img src="{% static 'accounts/img/logo.png' %}" alt="SQUEEB Logo">
         </a>
-    </nav>
 
-</header>
+        <!-- Search Bar -->
+        <div class="dashboard-search">
+    <i class="fa fa-search"></i>
+
+    <input
+        type="text"
+        id="globalSearchInput"
+        placeholder="Search tasks, products, services and users">
+
+    <div class="search-results" id="searchResults"></div>
+</div>
+
+        <!-- Desktop Navigation -->
+        <nav class="dashboard-nav">
+            <a href="{% url 'dashboard' %}">Dashboard</a>
+            <a href="{% url 'sell' %}">Sell</a>
+            <a href="{% url 'marketplace' %}">Marketplace</a>
+            <a href="{% url 'seller_history' %}" class="active">Sold Items</a>
+        </nav>
+
+        <!-- Header Actions -->
+        <div class="top-actions">
+    <button class="icon-btn" onclick="window.location.href='{% url 'cart' %}'">
+        <i class="fa-solid fa-cart-shopping"></i>
+        <span>{{ request.session.cart|length|default:0 }}</span>
+    </button>
+
+            <a href="{% url 'logout' %}" class="logout-btn logout">
+                <i class="fa fa-power-off"></i>
+            </a>
+        </div>
+
+        <!-- Mobile Menu Button -->
+        <button class="mobile-menu-btn" id="mobileMenuBtn">
+            <i class="fa fa-bars"></i>
+        </button>
+
+        <!-- Mobile Dropdown -->
+        <div class="mobile-dropdown" id="mobileDropdown">
+            <a href="{% url 'dashboard' %}"><i class="fa fa-home"></i> Dashboard</a>
+            <a href="#" id="mobileEarnLink"><i class="fa fa-coins"></i> Earn</a>
+            <a href="#" id="mobileAdvertiseLink"><i class="fa fa-bullhorn"></i> Advertise</a>
+            <a href="{% url 'marketplace' %}"><i class="fa fa-store"></i> Market</a>
+            <a href="{% url 'more_page' %}"><i class="fa fa-ellipsis-h"></i> More</a>
+            <a href="{% url 'logout' %}" class="logout"><i class="fa fa-power-off"></i> Logout</a>
+        </div>
+
+    </header>
 
 
 <div class="history-page">

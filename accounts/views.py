@@ -12,7 +12,7 @@ import stripe
 from django.contrib.auth import authenticate, login as django_login, logout, get_user_model
 
 from accounts.models import Task
-from .models import Product, ProductImage, TaskCompletion, FundingPayment, WithdrawalRequest, Follow, RecentActivity, Notification
+from .models import Product, ProductImage, TaskCompletion, FundingPayment, WithdrawalRequest, Follow, RecentActivity, Notification, ProductMessage
 
 
 User = get_user_model()
@@ -305,43 +305,100 @@ def create_funding_checkout(request):
     if amount < Decimal("1.00"):
         return JsonResponse({"error": "Minimum funding amount is £1.00"}, status=400)
 
-    payment = FundingPayment.objects.create(
-        user=request.user,
-        amount=amount,
-        status="pending"
-    )
+    try:
+        payment = FundingPayment.objects.create(
+            user=request.user,
+            amount=amount,
+            status="pending"
+        )
 
-    site_url = settings.SITE_URL
+        site_url = getattr(settings, "SITE_URL", "https://squeeb.co.uk").rstrip("/")
+
+        session = stripe.checkout.Session.create(
+            payment_method_types=["card"],
+            mode="payment",
+            customer_email=request.user.email or None,
+            line_items=[
+                {
+                    "price_data": {
+                        "currency": "gbp",
+                        "product_data": {
+                            "name": "Squeeb Wallet Funding",
+                        },
+                        "unit_amount": int(amount * 100),
+                    },
+                    "quantity": 1,
+                }
+            ],
+            metadata={
+                "payment_id": str(payment.id),
+                "user_id": str(request.user.id),
+                "purpose": "wallet_funding",
+            },
+            success_url=f"{site_url}/dashboard/?funding=success",
+            cancel_url=f"{site_url}/dashboard/?funding=cancelled",
+        )
+
+        payment.stripe_session_id = session.id
+        payment.save(update_fields=["stripe_session_id"])
+
+        return JsonResponse({
+            "checkout_url": session.url
+        })
+
+    except Exception as e:
+        return JsonResponse({
+            "error": str(e)
+        }, status=500)
+
+@csrf_exempt
+@login_required
+def create_cart_checkout(request):
+    if request.method != "POST":
+        return JsonResponse({"error": "POST required"}, status=400)
+
+    cart = request.session.get("cart", {})
+
+    if not cart:
+        return JsonResponse({"error": "Your cart is empty."}, status=400)
+
+    product_ids = cart.keys()
+    products = Product.objects.filter(id__in=product_ids, is_sold=False)
+
+    line_items = []
+
+    for product in products:
+        quantity = cart.get(str(product.id), 1)
+
+        line_items.append({
+            "price_data": {
+                "currency": "gbp",
+                "product_data": {
+                    "name": product.title,
+                },
+                "unit_amount": int(product.price * 100),
+            },
+            "quantity": int(quantity),
+        })
+
+    site_url = settings.SITE_URL.rstrip("/")
 
     session = stripe.checkout.Session.create(
         payment_method_types=["card"],
         mode="payment",
         customer_email=request.user.email or None,
-        line_items=[
-            {
-                "price_data": {
-                    "currency": "gbp",
-                    "product_data": {
-                        "name": "Squeeb Wallet Funding",
-                    },
-                    "unit_amount": int(amount * 100),
-                },
-                "quantity": 1,
-            }
-        ],
+        line_items=line_items,
         metadata={
-            "payment_id": str(payment.id),
             "user_id": str(request.user.id),
-            "purpose": "wallet_funding",
+            "purpose": "marketplace_cart",
         },
-        success_url=f"{site_url}/dashboard/?funding=success",
-        cancel_url=f"{site_url}/dashboard/?funding=cancelled",
+        success_url=f"{site_url}/cart/?checkout=success",
+        cancel_url=f"{site_url}/cart/?checkout=cancelled",
     )
 
-    payment.stripe_session_id = session.id
-    payment.save(update_fields=["stripe_session_id"])
-
-    return JsonResponse({"checkout_url": session.url})
+    return JsonResponse({
+        "checkout_url": session.url
+    })
 
 
 @csrf_exempt
@@ -442,25 +499,66 @@ def remove_from_cart(request, product_id):
 
 @login_required
 def edit_product(request, product_id):
+    product = get_object_or_404(Product, id=product_id, seller=request.user)
+
     if request.method == "POST":
-        product_id = request.POST.get("product_id")
-        product = get_object_or_404(Product, id=product_id)
-
-        if product.seller != request.user:
-            return redirect("marketplace")
-
         product.title = request.POST.get("title")
         product.price = request.POST.get("price")
         product.category = request.POST.get("category")
         product.description = request.POST.get("description")
-        product.is_sold = True if request.POST.get("is_sold") else False
+        product.is_sold = request.POST.get("is_sold") == "on"
         product.save()
 
-        files = request.FILES.getlist("images")
-        for file in files:
-            ProductImage.objects.create(product=product, image=file)
+        images = request.FILES.getlist("images")
 
-    return redirect("marketplace")
+        for image in images:
+            ProductImage.objects.create(product=product, image=image)
+
+        return redirect("marketplace")
+
+    return render(request, "accounts/marketplace/edit_product.html", {
+        "product": product
+    })
+
+
+@login_required
+def product_detail(request, product_id):
+    product = get_object_or_404(Product, id=product_id)
+
+    related_products = Product.objects.filter(
+        category=product.category,
+        is_sold=False
+    ).exclude(id=product.id)[:4]
+
+    return render(
+        request,
+        "accounts/marketplace/product_detail.html",
+        {
+            "product": product,
+            "related_products": related_products,
+        }
+    )
+
+@login_required
+def send_product_message(request, product_id):
+    product = get_object_or_404(Product, id=product_id)
+
+    if request.user == product.seller:
+        return redirect("product_detail", product_id=product.id)
+
+    if request.method == "POST":
+        message = request.POST.get("message")
+
+        ProductMessage.objects.create(
+            product=product,
+            sender=request.user,
+            receiver=product.seller,
+            message=message
+        )
+
+        return redirect("product_detail", product_id=product.id)
+
+    return redirect("product_detail", product_id=product.id)
 
 
 @login_required

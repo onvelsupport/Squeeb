@@ -12,17 +12,61 @@
 
 <body>
 
-<header class="profile-topbar">
-    <a href="{% url 'dashboard' %}" class="brand">
-        <img src="{% static 'accounts/img/logo.png' %}" alt="SQUEEB">
-    </a>
+<!-- ====================== DASHBOARD HEADER ====================== -->
+    <header class="dashboard-topbar">
 
-    <nav>
-        <a href="{% url 'dashboard' %}">Dashboard</a>
-        <a href="{% url 'marketplace' %}">Marketplace</a>
-        <a href="{% url 'more_page' %}">More</a>
-    </nav>
-</header>
+        <!-- Logo -->
+        <a href="{% url 'dashboard' %}" class="brand">
+            <img src="{% static 'accounts/img/logo.png' %}" alt="SQUEEB Logo">
+        </a>
+
+        <!-- Search Bar -->
+        <div class="dashboard-search">
+    <i class="fa fa-search"></i>
+
+    <input
+        type="text"
+        id="globalSearchInput"
+        placeholder="Search tasks, products, services and users">
+
+    <div class="search-results" id="searchResults"></div>
+</div>
+
+        <!-- Desktop Navigation -->
+        <nav class="dashboard-nav">
+            <a href="{% url 'dashboard' %}">Dashboard</a>
+            <a href="{% url 'earnings' %}">Earn</a>
+            <a href="{% url 'marketplace' %}">Marketplace</a>
+            <a href="{% url 'more_page' %}">List Items</a>
+        </nav>
+
+            <!-- Header Actions -->
+        <div class="top-actions">
+    <button class="icon-btn" onclick="window.location.href='{% url 'more_page' %}'">
+        <i class="fa-solid fa-gear"></i>
+    </button>
+
+            <a href="{% url 'logout' %}" class="logout-btn logout">
+                <i class="fa fa-power-off"></i>
+            </a>
+        </div>
+
+        <!-- Mobile Menu Button -->
+        <button class="mobile-menu-btn" id="mobileMenuBtn">
+            <i class="fa fa-bars"></i>
+        </button>
+
+        <!-- Mobile Dropdown -->
+        <div class="mobile-dropdown" id="mobileDropdown">
+            <a href="{% url 'dashboard' %}"><i class="fa fa-home"></i> Dashboard</a>
+            <a href="{% url 'marketplace' %}"><i class="fa fa-store"></i> Marketplace</a>
+            <a href="{% url 'more_page' %}"><i class="fa fa-ellipsis-h"></i> Sold Items</a>
+            <a href="{% url 'more_page' %}"><i class="fa fa-ellipsis-h"></i> List Items</a>
+            <a href="{% url 'more_page' %}"><i class="fa fa-ellipsis-h"></i> Profile</a>
+            <a href="{% url 'logout' %}" class="logout"><i class="fa fa-power-off"></i> Logout</a>
+        </div>
+
+    </header>
 
 <main class="profile-page">
 
@@ -31,7 +75,7 @@
             <img src="{% static 'accounts/img/avatar.png' %}" class="avatar" alt="Profile">
 
             <div>
-                <p class="eyebrow">SQUEEB Profile</p>
+                <p class="eyebrow">SQUEEBER</p>
                 <h1>{{ profile_user.username }}</h1>
                 <span>@{{ profile_user.username }}</span>
 

@@ -8,20 +8,61 @@
 
     <link rel="stylesheet" href="{% static 'accounts/css/sell.css' %}">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <!-- Cropper CSS -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.2/cropper.min.css">
 </head>
 
 <body>
 
-<header class="sell-topbar">
+<header class="dashboard-topbar">
+
     <a href="{% url 'dashboard' %}" class="brand">
         <img src="{% static 'accounts/img/logo.png' %}" alt="SQUEEB Logo">
     </a>
 
-    <nav>
+    <div class="dashboard-search">
+        <i class="fa fa-search"></i>
+
+        <input
+            type="text"
+            id="globalSearchInput"
+            placeholder="Search tasks, products, services and users">
+
+        <div class="search-results" id="searchResults"></div>
+    </div>
+
+    <nav class="dashboard-nav">
         <a href="{% url 'dashboard' %}">Dashboard</a>
+        <a href="{% url 'sell' %}" class="active">Sell</a>
         <a href="{% url 'marketplace' %}">Marketplace</a>
         <a href="{% url 'seller_history' %}">Sold Items</a>
     </nav>
+
+    <div class="top-actions">
+        <button class="icon-btn" onclick="window.location.href='{% url 'cart' %}'">
+            <i class="fa-solid fa-cart-shopping"></i>
+            <span>{{ request.session.cart|length|default:0 }}</span>
+        </button>
+
+        <a href="{% url 'logout' %}" class="logout-btn logout">
+            <i class="fa fa-power-off"></i>
+        </a>
+    </div>
+
+    <button class="mobile-menu-btn" id="mobileMenuBtn">
+        <i class="fa fa-bars"></i>
+    </button>
+
+    <div class="mobile-dropdown" id="mobileDropdown">
+        <a href="{% url 'dashboard' %}"><i class="fa fa-home"></i> Dashboard</a>
+        <a href="#"><i class="fa fa-coins"></i> Earn</a>
+        <a href="#"><i class="fa fa-bullhorn"></i> Advertise</a>
+        <a href="{% url 'marketplace' %}"><i class="fa fa-store"></i> Market</a>
+        <a href="{% url 'more_page' %}"><i class="fa fa-ellipsis-h"></i> More</a>
+        <a href="{% url 'logout' %}" class="logout"><i class="fa fa-power-off"></i> Logout</a>
+    </div>
+
 </header>
 
 <main class="sell-page">
@@ -30,7 +71,7 @@
         <div>
             <p class="eyebrow">SQUEEB Market</p>
             <h1>List a product for sale</h1>
-            <p>Add your product details, upload photos, and publish it to the marketplace.</p>
+            <p>Add your product details, upload photos, edit them, and preview before publishing.</p>
         </div>
 
         <a href="{% url 'marketplace' %}" class="back-btn">
@@ -100,7 +141,7 @@
                     <label for="images" class="upload-box">
                         <i class="fa fa-cloud-upload-alt"></i>
                         <strong>Click to upload photos</strong>
-                        <span>PNG, JPG, JPEG accepted</span>
+                        <span>You can select more than one image</span>
                     </label>
 
                     <input
@@ -113,6 +154,8 @@
                         hidden>
 
                     <p id="fileName" class="file-name">No photos selected</p>
+
+                    <div id="imagePreviewGrid" class="image-preview-grid"></div>
                 </div>
 
                 <button type="submit" class="publish-btn">
@@ -150,6 +193,22 @@
 
 </main>
 
+<div class="crop-modal" id="cropModal">
+    <div class="crop-box">
+        <h3>Edit Image</h3>
+
+        <div class="crop-area">
+            <img id="cropImage" alt="Crop preview">
+        </div>
+
+        <div class="crop-actions">
+            <button type="button" id="cancelCropBtn">Cancel</button>
+            <button type="button" id="saveCropBtn">Save Edit</button>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.2/cropper.min.js"></script>
 <script src="{% static 'accounts/js/sell.js' %}"></script>
 
 </body>

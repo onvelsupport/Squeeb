@@ -1,0 +1,295 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ product.title }} | SQUEEB Market</title>
+
+    <link rel="stylesheet" href="{% static 'accounts/css/product_detail.css' %}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+
+<body>
+
+<header class="dashboard-topbar">
+
+    <!-- Logo -->
+    <a href="{% url 'dashboard' %}" class="brand">
+        <img src="{% static 'accounts/img/logo.png' %}" alt="SQUEEB Logo">
+    </a>
+
+    <!-- Search Bar -->
+    <div class="dashboard-search">
+        <i class="fa fa-search"></i>
+
+        <input
+            type="text"
+            id="globalSearchInput"
+            placeholder="Search tasks, products, services and users">
+
+        <div class="search-results" id="searchResults"></div>
+    </div>
+
+    <!-- Desktop Navigation -->
+    <nav class="dashboard-nav">
+        <a href="{% url 'dashboard' %}">Dashboard</a>
+        <a href="{% url 'sell' %}">Sell</a>
+        <a href="{% url 'marketplace' %}" class="active">Marketplace</a>
+        <a href="{% url 'seller_history' %}">Sold Items</a>
+    </nav>
+
+    <!-- Header Actions -->
+    <div class="top-actions">
+        <button class="icon-btn" onclick="window.location.href='{% url 'cart' %}'">
+            <i class="fa-solid fa-cart-shopping"></i>
+            <span>{{ request.session.cart|length|default:0 }}</span>
+        </button>
+
+        <a href="{% url 'logout' %}" class="logout-btn logout">
+            <i class="fa fa-power-off"></i>
+        </a>
+    </div>
+
+    <!-- Mobile Menu Button -->
+    <button class="mobile-menu-btn" id="mobileMenuBtn">
+        <i class="fa fa-bars"></i>
+    </button>
+
+    <!-- Mobile Dropdown -->
+    <div class="mobile-dropdown" id="mobileDropdown">
+        <a href="{% url 'dashboard' %}"><i class="fa fa-home"></i> Dashboard</a>
+        <a href="{% url 'sell' %}"><i class="fa fa-plus"></i> Sell</a>
+        <a href="{% url 'marketplace' %}"><i class="fa fa-store"></i> Marketplace</a>
+        <a href="{% url 'seller_history' %}"><i class="fa fa-box"></i> Sold Items</a>
+        <a href="{% url 'more_page' %}"><i class="fa fa-ellipsis-h"></i> More</a>
+        <a href="{% url 'logout' %}" class="logout"><i class="fa fa-power-off"></i> Logout</a>
+    </div>
+
+</header>
+
+<main class="detail-page">
+
+    <!-- Back Button -->
+    <a href="{% url 'marketplace' %}" class="back-link">
+        <i class="fa fa-arrow-left"></i>
+        Back to Marketplace
+    </a>
+
+    <section class="product-detail-layout">
+
+        <!-- Product Images -->
+        <div class="gallery-card">
+
+            <div class="main-image-wrap">
+                {% if product.images.first %}
+                    <img
+                        id="mainProductImage"
+                        src="{{ product.images.first.image.url }}"
+                        alt="{{ product.title }}">
+                {% elif product.image %}
+                    <img
+                        id="mainProductImage"
+                        src="{{ product.image.url }}"
+                        alt="{{ product.title }}">
+                {% else %}
+                    <img
+                        id="mainProductImage"
+                        src="{% static 'accounts/img/no-image.png' %}"
+                        alt="No image">
+                {% endif %}
+
+                {% if product.is_sold %}
+                    <span class="sold-badge">Sold</span>
+                {% endif %}
+            </div>
+
+            <div class="thumbnail-row">
+
+                {% for image in product.images.all %}
+                    <button type="button" class="thumbnail-btn active">
+                        <img src="{{ image.image.url }}" alt="{{ product.title }}">
+                    </button>
+                {% empty %}
+
+                    {% if product.image %}
+                        <button type="button" class="thumbnail-btn active">
+                            <img src="{{ product.image.url }}" alt="{{ product.title }}">
+                        </button>
+                    {% endif %}
+
+                {% endfor %}
+
+            </div>
+
+        </div>
+
+        <!-- Product Information -->
+        <div class="info-card">
+
+            <div class="category-pill">
+                {{ product.get_category_display|default:product.category }}
+            </div>
+
+            <h1>{{ product.title }}</h1>
+
+            <div class="price-box">
+                <span>Price</span>
+                <strong>£{{ product.price }}</strong>
+            </div>
+
+            <div class="seller-box">
+                <div class="seller-avatar">
+                    <i class="fa fa-user"></i>
+                </div>
+
+                <div>
+                    <p>Sold by</p>
+                    <strong>{{ product.seller.username }}</strong>
+                </div>
+            </div>
+
+            <div class="description-box">
+                <h3>Description</h3>
+
+                {% if product.description %}
+                    <p>{{ product.description }}</p>
+                {% else %}
+                    <p class="muted-text">No description added for this product.</p>
+                {% endif %}
+            </div>
+
+            <div class="detail-actions">
+
+                {% if product.is_sold %}
+
+                    <button class="action-btn disabled" disabled>
+                        Sold
+                    </button>
+
+                {% else %}
+
+                    {% if request.user == product.seller %}
+
+                        <a href="{% url 'edit_product' product.id %}" class="action-btn dark-btn">
+                            <i class="fa fa-pen"></i>
+                            Edit Product
+                        </a>
+
+                        <a href="{% url 'delete_product' product.id %}" class="delete-action delete-product">
+                            <i class="fa fa-trash"></i>
+                            Delete Product
+                        </a>
+
+                    {% else %}
+
+                        <a href="{% url 'add_to_cart' product.id %}" class="action-btn">
+                            <i class="fa fa-cart-plus"></i>
+                            Add to Cart
+                        </a>
+
+                    {% endif %}
+
+                {% endif %}
+
+                {% if request.user != product.seller %}
+    <button
+        type="button"
+        class="message-seller-btn"
+        id="openMessageModal">
+        <i class="fa fa-message"></i>
+        Message Seller
+    </button>
+{% endif %}
+
+            </div>
+
+        </div>
+
+    </section>
+
+    <!-- Seller Details -->
+    <section class="seller-detail-card">
+        <h2>Seller Information</h2>
+
+        <div class="seller-detail-row">
+            <div class="seller-avatar large">
+                <i class="fa fa-user"></i>
+            </div>
+
+            <div>
+                <h3>{{ product.seller.username }}</h3>
+                <p>SQUEEB marketplace seller</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Related Products -->
+    {% if related_products %}
+    <section class="related-section">
+        <div class="section-heading">
+            <h2>Related Products</h2>
+            <p>More products from the same category.</p>
+        </div>
+
+        <div class="related-grid">
+
+            {% for item in related_products %}
+            <article
+                class="related-card clickable-product"
+                data-url="{% url 'product_detail' item.id %}">
+
+                <div class="related-img-wrap">
+                    {% if item.images.first %}
+                        <img src="{{ item.images.first.image.url }}" alt="{{ item.title }}">
+                    {% elif item.image %}
+                        <img src="{{ item.image.url }}" alt="{{ item.title }}">
+                    {% else %}
+                        <img src="{% static 'accounts/img/no-image.png' %}" alt="No image">
+                    {% endif %}
+                </div>
+
+                <div class="related-body">
+                    <span>{{ item.get_category_display|default:item.category }}</span>
+                    <h3>{{ item.title }}</h3>
+                    <strong>£{{ item.price }}</strong>
+                </div>
+
+            </article>
+            {% endfor %}
+
+        </div>
+    </section>
+    {% endif %}
+
+</main>
+
+<div class="message-modal-bg" id="messageModal">
+    <div class="message-modal-box">
+        <button type="button" class="message-modal-close" id="closeMessageModal">
+            ✖
+        </button>
+
+        <h2>Message {{ product.seller.username }}</h2>
+        <p>Ask a question about {{ product.title }}.</p>
+
+        <form method="POST" action="{% url 'send_product_message' product.id %}">
+            {% csrf_token %}
+
+            <textarea
+                name="message"
+                placeholder="Write your message..."
+                required></textarea>
+
+            <button type="submit" class="action-btn">
+                <i class="fa fa-paper-plane"></i>
+                Send Message
+            </button>
+        </form>
+    </div>
+</div>
+
+<script src="{% static 'accounts/js/product_detail.js' %}"></script>
+
+</body>
+</html>

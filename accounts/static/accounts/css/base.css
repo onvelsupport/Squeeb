@@ -1,3 +1,9 @@
+html,
+body{
+    width:100%;
+    overflow-x:hidden;
+}
+
 * {
     margin: 0;
     padding: 0;
@@ -308,4 +314,29 @@ body {
 
 .footer-bottom p{
     color:#94a3b8;
+}
+
+@media (max-width:900px){
+
+    .footer-top{
+
+        grid-template-columns:1fr;
+
+        gap:35px;
+
+        padding:50px 25px;
+
+        text-align:left;
+    }
+
+    .footer-brand{
+
+        max-width:100%;
+    }
+
+    .footer-brand p{
+
+        max-width:100%;
+    }
+
 }
