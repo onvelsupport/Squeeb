@@ -1,0 +1,156 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sell Product | SQUEEB</title>
+
+    <link rel="stylesheet" href="{% static 'accounts/css/sell.css' %}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+
+<body>
+
+<header class="sell-topbar">
+    <a href="{% url 'dashboard' %}" class="brand">
+        <img src="{% static 'accounts/img/logo.png' %}" alt="SQUEEB Logo">
+    </a>
+
+    <nav>
+        <a href="{% url 'dashboard' %}">Dashboard</a>
+        <a href="{% url 'marketplace' %}">Marketplace</a>
+        <a href="{% url 'seller_history' %}">Sold Items</a>
+    </nav>
+</header>
+
+<main class="sell-page">
+
+    <section class="sell-hero">
+        <div>
+            <p class="eyebrow">SQUEEB Market</p>
+            <h1>List a product for sale</h1>
+            <p>Add your product details, upload photos, and publish it to the marketplace.</p>
+        </div>
+
+        <a href="{% url 'marketplace' %}" class="back-btn">
+            <i class="fa fa-arrow-left"></i>
+            Back to Market
+        </a>
+    </section>
+
+    <section class="sell-layout">
+
+        <div class="sell-card">
+            <h2>Product Details</h2>
+            <p class="form-sub">Fill in the information buyers will see.</p>
+
+            <form method="POST" enctype="multipart/form-data" class="sell-form">
+                {% csrf_token %}
+
+                <div class="form-group">
+                    <label for="title">Product Title</label>
+                    <input
+                        id="title"
+                        name="title"
+                        type="text"
+                        placeholder="e.g. iPhone 15 Pro Max"
+                        required>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="price">Price (£)</label>
+                        <input
+                            id="price"
+                            name="price"
+                            type="number"
+                            step="0.01"
+                            placeholder="0.00"
+                            required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="category">Category</label>
+                        <select id="category" name="category" required>
+                            <option value="">Select category</option>
+                            <option value="beauty">Health & Beauty</option>
+                            <option value="grocery">Grocery</option>
+                            <option value="phones">Phones & Tablets</option>
+                            <option value="fashion">Fashion</option>
+                            <option value="electronics">Electronics</option>
+                            <option value="books">Books</option>
+                            <option value="car_rent">Cars</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="description">Description</label>
+                    <textarea
+                        id="description"
+                        name="description"
+                        rows="6"
+                        placeholder="Describe the product condition, features, size, colour, delivery options..."></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label for="images">Product Photos</label>
+
+                    <label for="images" class="upload-box">
+                        <i class="fa fa-cloud-upload-alt"></i>
+                        <strong>Click to upload photos</strong>
+                        <span>PNG, JPG, JPEG accepted</span>
+                    </label>
+
+                    <input
+                        id="images"
+                        name="images"
+                        type="file"
+                        accept="image/*"
+                        multiple
+                        required
+                        hidden>
+
+                    <p id="fileName" class="file-name">No photos selected</p>
+                </div>
+
+                <button type="submit" class="publish-btn">
+                    <i class="fa fa-upload"></i>
+                    Publish Product
+                </button>
+            </form>
+        </div>
+
+        <aside class="sell-tips">
+            <h3>Selling Tips</h3>
+
+            <div class="tip">
+                <i class="fa fa-camera"></i>
+                <p>Use clear photos from different angles.</p>
+            </div>
+
+            <div class="tip">
+                <i class="fa fa-pen"></i>
+                <p>Write a simple and honest description.</p>
+            </div>
+
+            <div class="tip">
+                <i class="fa fa-tag"></i>
+                <p>Set a fair price to attract buyers faster.</p>
+            </div>
+
+            <div class="tip">
+                <i class="fa fa-shield"></i>
+                <p>Avoid fake, unsafe, or misleading listings.</p>
+            </div>
+        </aside>
+
+    </section>
+
+</main>
+
+<script src="{% static 'accounts/js/sell.js' %}"></script>
+
+</body>
+</html>

@@ -1,9 +1,7 @@
 document.addEventListener("DOMContentLoaded", () => {
-
   /* =====================================================
      1️⃣ GLOBAL HELPERS
   ===================================================== */
-
   const money = (n) => `£${parseFloat(n || 0).toFixed(2)}`;
 
   const membershipSection = document.getElementById("membershipSection");
@@ -14,22 +12,60 @@ document.addEventListener("DOMContentLoaded", () => {
   const cancelTaskBtn = document.getElementById("cancelTaskBtn");
   const submitProofBtn = document.getElementById("submitProofBtn");
 
-  let selectedTaskId = null;
+  const mobileMenuBtn = document.getElementById("mobileMenuBtn");
+  const mobileDropdown = document.getElementById("mobileDropdown");
+  const mobileEarnLink = document.getElementById("mobileEarnLink");
+  const mobileAdvertiseLink = document.getElementById("mobileAdvertiseLink");
 
+  const earnModal = document.getElementById("earnModal");
+  const earnClose = document.getElementById("earnClose");
+
+  const adModal = document.getElementById("adModal");
+  const adClose = document.getElementById("adClose");
+
+  let selectedTaskId = null;
 
   /* =====================================================
      2️⃣ CLOSE TASK MODAL BUTTON
   ===================================================== */
-
   cancelTaskBtn?.addEventListener("click", () => {
     taskModal.style.display = "none";
   });
 
+  /* =====================================================
+     3️⃣ MOBILE MENU
+  ===================================================== */
+  if (mobileMenuBtn && mobileDropdown) {
+    mobileMenuBtn.addEventListener("click", (e) => {
+      e.stopPropagation();
+      mobileDropdown.classList.toggle("show");
+    });
+
+    document.addEventListener("click", (e) => {
+      if (
+        !mobileDropdown.contains(e.target) &&
+        !mobileMenuBtn.contains(e.target)
+      ) {
+        mobileDropdown.classList.remove("show");
+      }
+    });
+  }
+
+  mobileEarnLink?.addEventListener("click", (e) => {
+    e.preventDefault();
+    earnModal.style.display = "flex";
+    mobileDropdown?.classList.remove("show");
+  });
+
+  mobileAdvertiseLink?.addEventListener("click", (e) => {
+    e.preventDefault();
+    adModal.style.display = "flex";
+    mobileDropdown?.classList.remove("show");
+  });
 
   /* =====================================================
-     3️⃣ LOAD USER + MEMBERSHIP CHECK
+     4️⃣ LOAD USER + MEMBERSHIP CHECK
   ===================================================== */
-
   async function loadUser() {
     try {
       const res = await fetch("/api/user-info/", { credentials: "include" });
@@ -53,17 +89,14 @@ document.addEventListener("DOMContentLoaded", () => {
         membershipSection.style.display = "block";
         taskSection.style.display = "none";
       }
-
     } catch (err) {
       console.error("User load error:", err);
     }
   }
 
-
   /* =====================================================
-     4️⃣ LOAD TASKS FROM DATABASE
+     5️⃣ LOAD TASKS FROM DATABASE
   ===================================================== */
-
   async function loadTasks() {
     try {
       const res = await fetch("/api/tasks/", { credentials: "include" });
@@ -83,116 +116,99 @@ document.addEventListener("DOMContentLoaded", () => {
         return;
       }
 
-      data.tasks.forEach(task => {
-  taskList.innerHTML += `
-  <div class="earn-task-card">
+      data.tasks.forEach((task) => {
+        taskList.innerHTML += `
+          <div class="earn-task-card">
+            <div class="earn-task-left">
+              <h3>${task.title}</h3>
+              <p>${task.instructions}</p>
+              <p><strong>${money(task.payout)}</strong> per ${task.task_type}</p>
+              <p>${task.available} tasks remaining</p>
+            </div>
 
-    <div class="earn-task-left">
-      <h3>${task.title}</h3>
-      <p>${task.instructions}</p>
-      <p><strong>£${task.payout}</strong> per ${task.task_type}</p>
-      <p>${task.available} tasks remaining</p>
-    </div>
-
-    <div class="earn-task-right">
-      <button class="select-task-btn" data-id="${task.id}">
-        Select Task
-      </button>
-    </div>
-
-  </div>
-`;
-});
-
+            <div class="earn-task-right">
+              <button class="select-task-btn" data-id="${task.id}">
+                Select Task
+              </button>
+            </div>
+          </div>
+        `;
+      });
     } catch (err) {
       console.error("Task load error:", err);
     }
   }
 
+  /* =====================================================
+     6️⃣ SELECT TASK → OPEN MODAL
+  ===================================================== */
+  document.addEventListener("click", async function (e) {
+    const button = e.target.closest(".select-task-btn");
+    if (!button) return;
+
+    selectedTaskId = button.dataset.id;
+
+    try {
+      const res = await fetch(`/api/task/${selectedTaskId}/`, {
+        credentials: "include"
+      });
+
+      if (!res.ok) {
+        console.error("Task fetch failed:", res.status);
+        return;
+      }
+
+      const task = await res.json();
+
+      document.getElementById("modalTaskTitle").textContent = task.title;
+      document.getElementById("modalPlatform").textContent = task.platform || "";
+      document.getElementById("modalType").textContent = task.task_type || "";
+
+      const instructionsBox = document.getElementById("modalTaskInstructions");
+      instructionsBox.innerHTML = "";
+
+      if (Array.isArray(task.instructions) && task.instructions.length > 0) {
+        instructionsBox.innerHTML = `
+          <ul style="padding-left:18px;">
+            ${task.instructions.map(step => `<li>${step}</li>`).join("")}
+          </ul>
+        `;
+      } else if (
+        typeof task.instructions === "string" &&
+        task.instructions.trim() !== ""
+      ) {
+        instructionsBox.innerHTML = `
+          <ul style="padding-left:18px;">
+            <li>${task.instructions}</li>
+          </ul>
+        `;
+      } else {
+        instructionsBox.innerHTML = `
+          <ul style="padding-left:18px;">
+            <li>No instructions provided.</li>
+          </ul>
+        `;
+      }
+
+      const linkEl = document.getElementById("modalTaskLink");
+      if (task.link) {
+        linkEl.href = task.link;
+        linkEl.style.display = "inline";
+      } else {
+        linkEl.style.display = "none";
+      }
+
+      document.getElementById("modalTaskReward").textContent = `Earn ${money(task.payout)}`;
+      taskModal.style.display = "flex";
+    } catch (err) {
+      console.error("Modal load error:", err);
+    }
+  });
 
   /* =====================================================
-     5️⃣ SELECT TASK → OPEN MODAL
-     (Event delegation for dynamic buttons)
+     7️⃣ SUBMIT PROOF
   ===================================================== */
-
-document.addEventListener("click", async function (e) {
-
-  const button = e.target.closest(".select-task-btn");
-
-  if (!button) return;
-
-  selectedTaskId = button.dataset.id;
-
-  try {
-    const res = await fetch(`/api/task/${selectedTaskId}/`, {
-      credentials: "include"
-    });
-
-    if (!res.ok) {
-      console.error("Task fetch failed:", res.status);
-      return;
-    }
-
-    const task = await res.json();
-
-    document.getElementById("modalTaskTitle").textContent = task.title;
-    document.getElementById("modalPlatform").textContent = task.platform || "";
-    document.getElementById("modalType").textContent = task.task_type || "";
-
-    // ===== Instructions (safe version)
-const instructionsBox = document.getElementById("modalTaskInstructions");
-instructionsBox.innerHTML = "";
-
-if (Array.isArray(task.instructions) && task.instructions.length > 0) {
-
-  instructionsBox.innerHTML = `
-    <ul style="padding-left:18px;">
-      ${task.instructions.map(step => `<li>${step}</li>`).join("")}
-    </ul>
-  `;
-
-} else if (typeof task.instructions === "string" && task.instructions.trim() !== "") {
-
-  instructionsBox.innerHTML = `
-    <ul style="padding-left:18px;">
-      <li>${task.instructions}</li>
-    </ul>
-  `;
-
-} else {
-
-  instructionsBox.innerHTML = `
-    <ul style="padding-left:18px;">
-      <li>No instructions provided.</li>
-    </ul>
-  `;
-}
-
-    // Link
-    const linkEl = document.getElementById("modalTaskLink");
-    if (task.link) {
-      linkEl.href = task.link;
-      linkEl.style.display = "inline";
-    } else {
-      linkEl.style.display = "none";
-    }
-
-    document.getElementById("modalTaskReward").textContent =
-      `Earn £${task.payout}`;
-
-    taskModal.style.display = "flex";
-
-  } catch (err) {
-    console.error("Modal load error:", err);
-  }
-});
-
-  /* =====================================================
-     6️⃣ SUBMIT PROOF (COMPLETE TASK)
-  ===================================================== */
-
   submitProofBtn?.addEventListener("click", async () => {
-
     const fileInput = document.getElementById("proofInput");
     const file = fileInput.files[0];
 
@@ -222,13 +238,10 @@ if (Array.isArray(task.instructions) && task.instructions.length > 0) {
     loadTasks();
   });
 
-
   /* =====================================================
-     7️⃣ MEMBERSHIP PAYMENT
+     8️⃣ MEMBERSHIP PAYMENT
   ===================================================== */
-
   payMembershipBtn?.addEventListener("click", async () => {
-
     payMembershipBtn.disabled = true;
 
     try {
@@ -247,12 +260,9 @@ if (Array.isArray(task.instructions) && task.instructions.length > 0) {
       }
 
       alert("Membership Activated!");
-
       membershipSection.style.display = "none";
       taskSection.style.display = "block";
-
       loadTasks();
-
     } catch (err) {
       alert("Network error.");
     }
@@ -260,87 +270,76 @@ if (Array.isArray(task.instructions) && task.instructions.length > 0) {
     payMembershipBtn.disabled = false;
   });
 
+  /* =====================================================
+     9️⃣ LOGOUT
+  ===================================================== */
+  async function logout(e) {
+    e?.preventDefault();
+
+    try {
+      await fetch("/api/logout/", {
+        method: "POST",
+        credentials: "include",
+        headers: { "Content-Type": "application/json" }
+      });
+    } catch (err) {
+      console.error("Logout error:", err);
+    }
+
+    window.location.href = "/login/";
+  }
+
+  document.querySelectorAll(".logout").forEach((btn) => {
+    btn.addEventListener("click", logout);
+  });
 
   /* =====================================================
-     8️⃣ INITIALIZE PAGE
+     🔟 EARN MODAL
   ===================================================== */
-
-  loadUser();
-
-});
-
-
-
-/* =====================================================
-   9️⃣ LOGOUT
-===================================================== */
-
-async function logout() {
-  try {
-    await fetch("/api/logout/", {
-      method: "POST",
-      credentials: "include",
-      headers: { "Content-Type": "application/json" }
+  document.querySelectorAll(".fa-coins").forEach((icon) => {
+    icon.parentElement.addEventListener("click", (e) => {
+      e.preventDefault();
+      earnModal.style.display = "flex";
     });
-  } catch (err) {
-    console.error("Logout error:", err);
-  }
-
-  window.location.href = "/login/";
-}
-
-document.querySelectorAll(".logout").forEach(btn => {
-  btn.addEventListener("click", logout);
-});
-
-
-
-/* =====================================================
-   🔟 EARN MODAL
-===================================================== */
-
-const earnModal = document.getElementById("earnModal");
-const earnClose = document.getElementById("earnClose");
-
-document.querySelectorAll(".fa-coins").forEach(icon => {
-  icon.parentElement.addEventListener("click", (e) => {
-    e.preventDefault();
-    earnModal.style.display = "flex";
   });
-});
 
-earnClose?.addEventListener("click", () => {
-  earnModal.style.display = "none";
-});
-
-window.addEventListener("click", (e) => {
-  if (e.target === earnModal) {
+  earnClose?.addEventListener("click", () => {
     earnModal.style.display = "none";
-  }
-});
-
-
-
-/* =====================================================
-   1️⃣1️⃣ ADVERTISE MODAL
-===================================================== */
-
-const adModal = document.getElementById("adModal");
-const adClose = document.getElementById("adClose");
-
-document.querySelectorAll(".fa-bullhorn").forEach(icon => {
-  icon.parentElement.addEventListener("click", (e) => {
-    e.preventDefault();
-    adModal.style.display = "flex";
   });
-});
 
-adClose?.addEventListener("click", () => {
-  adModal.style.display = "none";
-});
+  /* =====================================================
+     1️⃣1️⃣ ADVERTISE MODAL
+  ===================================================== */
+  document.querySelectorAll(".fa-bullhorn").forEach((icon) => {
+    icon.parentElement.addEventListener("click", (e) => {
+      e.preventDefault();
+      adModal.style.display = "flex";
+    });
+  });
 
-window.addEventListener("click", (e) => {
-  if (e.target === adModal) {
+  adClose?.addEventListener("click", () => {
     adModal.style.display = "none";
-  }
+  });
+
+  /* =====================================================
+     1️⃣2️⃣ WINDOW CLICK CLOSE
+  ===================================================== */
+  window.addEventListener("click", (e) => {
+    if (e.target === earnModal) {
+      earnModal.style.display = "none";
+    }
+
+    if (e.target === adModal) {
+      adModal.style.display = "none";
+    }
+
+    if (e.target === taskModal) {
+      taskModal.style.display = "none";
+    }
+  });
+
+  /* =====================================================
+     1️⃣3️⃣ INITIALIZE PAGE
+  ===================================================== */
+  loadUser();
 });

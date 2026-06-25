@@ -1,46 +1,168 @@
 from django.http import JsonResponse, HttpResponse
 from django.views.decorators.csrf import csrf_exempt
-from django.contrib.auth import authenticate, login as django_login
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import render, get_object_or_404, redirect
-from django.contrib.auth import logout
+from django.contrib.auth import logout, get_user_model
 from django.conf import settings
 from django.utils import timezone
 from django.db import transaction
 from decimal import Decimal
 import json
 import stripe
+from django.contrib.auth import authenticate, login as django_login, logout, get_user_model
 
 from accounts.models import Task
-from .models import Product, ProductImage, TaskCompletion, FundingPayment, WithdrawalRequest
+from .models import Product, ProductImage, TaskCompletion, FundingPayment, WithdrawalRequest, Follow, RecentActivity, Notification
+
+
+User = get_user_model()
+
+def recent_activities_api(request):
+    activities = RecentActivity.objects.all()[:10]
+
+    data = []
+
+    for activity in activities:
+        data.append({
+            "username": activity.username,
+            "platform": activity.platform,
+            "message": activity.message,
+            "amount": str(activity.amount),
+        })
+
+    return JsonResponse({
+        "activities": data
+    })
+
+@login_required
+def public_user_profile(request, username):
+    profile_user = get_object_or_404(User, username=username)
+
+    products = Product.objects.filter(
+        seller=profile_user,
+        is_sold=False
+    ).order_by("-id")
+
+    is_following = Follow.objects.filter(
+        follower=request.user,
+        following=profile_user
+    ).exists()
+
+    followers_count = Follow.objects.filter(following=profile_user).count()
+    following_count = Follow.objects.filter(follower=profile_user).count()
+
+    return render(request, "accounts/profile/public_profile.html", {
+        "profile_user": profile_user,
+        "products": products,
+        "is_following": is_following,
+        "followers_count": followers_count,
+        "following_count": following_count,
+    })
+
+
+def notifications(request):
+    return render(request, "accounts/notifications/notifications.html")
+
+
+@csrf_exempt
+@login_required
+def toggle_follow(request, username):
+    if request.method != "POST":
+        return JsonResponse({"error": "POST required"}, status=400)
+
+    profile_user = get_object_or_404(User, username=username)
+
+    if profile_user == request.user:
+        return JsonResponse({"error": "You cannot follow yourself."}, status=400)
+
+    follow, created = Follow.objects.get_or_create(
+        follower=request.user,
+        following=profile_user
+    )
+
+    if not created:
+        follow.delete()
+        is_following = False
+    else:
+        is_following = True
+
+    return JsonResponse({
+        "is_following": is_following,
+        "followers_count": Follow.objects.filter(following=profile_user).count(),
+        "following_count": Follow.objects.filter(follower=profile_user).count(),
+    })
+
 
 
 stripe.api_key = settings.STRIPE_SECRET_KEY
 
 
+
+def global_search(request):
+
+    q = request.GET.get("q", "")
+
+    results = []
+
+    # Users
+    users = User.objects.filter(username__icontains=q)[:5]
+
+    for user in users:
+        results.append({
+            "name": user.username,
+            "type": "User",
+            "url": f"/user/{user.username}/"
+        })
+
+    # Products
+    products = Product.objects.filter(title__icontains=q)[:5]
+
+    for p in products:
+        results.append({
+            "name": p.title,
+            "type": "Product",
+            "url": "/market/"
+        })
+
+    # Tasks
+    tasks = Task.objects.filter(title__icontains=q)[:5]
+
+    for task in tasks:
+        results.append({
+            "name": task.title,
+            "type": "Task",
+            "url": "/earnings/"
+        })
+
+    return JsonResponse({
+        "results": results
+    })
+
 # ==========================
 # PUBLIC PAGES
 # ==========================
 def homepage(request):
-    return render(request, "accounts/index.html")
+    return render(request, "accounts/home/home.html")
 
 
 def login_page(request):
-    return render(request, "accounts/login.html")
+    return render(request, "accounts/auth/login.html")
 
 
 def signup_page(request):
-    return render(request, "accounts/signup.html")
+    return render(request, "accounts/auth/signup.html")
 
 
 def about(request):
-    return render(request, "accounts/about.html")
+    return render(request, "accounts/home/about.html")
 
+def support_page(request):
+    return render(request, "accounts/support.html")
 
 def forgot_password_page(request):
-    return render(request, "accounts/forgot_password.html")
+    return render(request, "accounts/auth/forgot_password.html")
 
-
+@login_required
 def marketplace_page(request):
     category = request.GET.get("category")
 
@@ -49,7 +171,7 @@ def marketplace_page(request):
     else:
         products = Product.objects.filter(is_sold=False).order_by("-id")
 
-    return render(request, "accounts/marketplace.html", {
+    return render(request, "accounts/marketplace/marketplace.html", {
         "products": products,
         "active_category": category
     })
@@ -67,8 +189,16 @@ def forgot_password_api(request):
 # ==========================
 @login_required
 def dashboard(request):
-    return render(request, "accounts/dashboard.html")
+    notification_count = Notification.objects.filter(
+        user=request.user,
+        is_read=False
+    ).count()
 
+    context = {
+        "notification_count": notification_count,
+    }
+
+    return render(request, "accounts/dashboard/dashboard.html", context)
 
 # ==========================
 # AUTH APIs
@@ -98,27 +228,64 @@ def signup(request):
 @csrf_exempt
 def login_user(request):
     if request.method != "POST":
-        return JsonResponse({"error": "POST method required"}, status=400)
+        return JsonResponse({
+            "success": False,
+            "message": "POST method required"
+        }, status=400)
 
-    data = json.loads(request.body.decode("utf-8"))
+    try:
+        data = json.loads(request.body.decode("utf-8") or "{}")
+    except json.JSONDecodeError:
+        return JsonResponse({
+            "success": False,
+            "message": "Invalid request data"
+        }, status=400)
 
-    username = data.get("username")
-    password = data.get("password")
+    username = data.get("username", "").strip()
+    password = data.get("password", "").strip()
+
+    if not username or not password:
+        return JsonResponse({
+            "success": False,
+            "message": "Username and password are required"
+        }, status=400)
 
     user = authenticate(request, username=username, password=password)
 
     if user is None:
-        return JsonResponse({"error": "Invalid credentials"}, status=401)
+        return JsonResponse({
+            "success": False,
+            "message": "Invalid username or password"
+        }, status=401)
+
+    if not user.is_active:
+        return JsonResponse({
+            "success": False,
+            "message": "This account is inactive"
+        }, status=403)
 
     django_login(request, user)
-    return JsonResponse({"message": "Login successful"})
+    request.session.save()  # 👈 force session to persist
+
+    return JsonResponse({
+        "success": True,
+        "message": "Login successful",
+        "redirect_url": "/dashboard/"
+    })
 
 
 @csrf_exempt
 def logout_user(request):
     logout(request)
-    return JsonResponse({"message": "Logged out successfully"})
 
+    if request.headers.get("x-requested-with") == "XMLHttpRequest":
+        return JsonResponse({
+            "success": True,
+            "message": "Logged out successfully",
+            "redirect_url": "/login/"
+        })
+
+    return redirect("login")
 
 # ==========================
 # REAL STRIPE WALLET FUNDING
@@ -235,7 +402,28 @@ def add_to_cart(request, product_id):
     cart[product_id] = cart.get(product_id, 0) + 1
 
     request.session["cart"] = cart
-    return redirect("marketplace")
+    request.session.modified = True
+
+    return redirect("cart")
+
+
+@login_required
+def cart_page(request):
+    cart = request.session.get("cart", {})
+
+    product_ids = cart.keys()
+    cart_products = Product.objects.filter(id__in=product_ids)
+
+    total_price = sum(
+        product.price * cart.get(str(product.id), 0)
+        for product in cart_products
+    )
+
+    return render(request, "accounts/marketplace/cart.html", {
+        "cart_products": cart_products,
+        "cart": cart,
+        "total_price": total_price,
+    })
 
 
 @login_required
@@ -247,19 +435,9 @@ def remove_from_cart(request, product_id):
         del cart[product_id]
 
     request.session["cart"] = cart
-    return redirect("cart_page")
+    request.session.modified = True
 
-
-@login_required
-def cart_page(request):
-    cart = request.session.get("cart", {})
-    products = Product.objects.filter(id__in=cart.keys())
-    total = sum(p.price * cart.get(str(p.id), 1) for p in products)
-
-    return render(request, "accounts/cart.html", {
-        "products": products,
-        "total": total
-    })
+    return redirect("cart")
 
 
 @login_required
@@ -289,7 +467,7 @@ def edit_product(request, product_id):
 def seller_history(request):
     sold_products = Product.objects.filter(seller=request.user, is_sold=True).order_by("-id")
 
-    return render(request, "accounts/seller_history.html", {
+    return render(request, "accounts/marketplace/seller_history.html", {
         "products": sold_products
     })
 
@@ -310,22 +488,27 @@ def mark_as_sold(request, product_id):
 # ==========================
 # USER INFO
 # ==========================
+from .models import Follow
+
 @login_required
 def user_info(request):
-    user = request.user
+
+    followers_count = Follow.objects.filter(
+        following=request.user
+    ).count()
+
+    following_count = Follow.objects.filter(
+        follower=request.user
+    ).count()
 
     return JsonResponse({
-        "username": user.username,
-        "followers": getattr(user, "followers", 0),
-        "following": getattr(user, "following", 0),
-        "balance": str(user.balance),
-        "earnings": str(user.earnings),
-        "tasks_completed": user.tasks_completed,
-        "referrals": user.referrals,
-        "is_member": user.is_member,
-        "referral_link": f"{settings.SITE_URL}/signup/?ref={user.username}"
+        "username": request.user.username,
+        "balance": request.user.balance,
+        "earnings": request.user.earnings,
+        "followers": followers_count,
+        "following": following_count,
+        "is_member": request.user.is_member,
     })
-
 
 # ==========================
 # WITHDRAWAL
@@ -377,6 +560,10 @@ def request_withdrawal(request):
     })
 
 
+@login_required
+def withdrawals(request):
+    return render(request, "accounts/dashboard/withdrawals.html")
+
 # ==========================
 # SELL PRODUCT
 # ==========================
@@ -399,7 +586,7 @@ def sell_product(request):
 
         return redirect("marketplace")
 
-    return render(request, "accounts/sell.html")
+    return render(request, "accounts/marketplace/sell.html")
 
 
 # ==========================
@@ -536,38 +723,72 @@ def create_task(request):
 @csrf_exempt
 @login_required
 def complete_task(request, task_id):
-    if not request.user.is_member:
-        return JsonResponse({"error": "Membership required."}, status=403)
-
     if request.method != "POST":
-        return JsonResponse({"error": "POST required"}, status=400)
+        return JsonResponse({
+            "error": "POST required"
+        }, status=400)
+
+    if not request.user.is_member:
+        return JsonResponse({
+            "error": "Membership required."
+        }, status=403)
 
     task = get_object_or_404(Task, id=task_id)
 
     if task.creator == request.user:
-        return JsonResponse({"error": "You cannot complete your own task"}, status=400)
+        return JsonResponse({
+            "error": "You cannot complete your own task"
+        }, status=400)
 
     if TaskCompletion.objects.filter(user=request.user, task=task).exists():
-        return JsonResponse({"error": "You already completed this task"}, status=400)
+        return JsonResponse({
+            "error": "You already completed this task"
+        }, status=400)
 
     if task.available <= 0:
-        return JsonResponse({"error": "No slots remaining"}, status=400)
+        return JsonResponse({
+            "error": "No slots remaining"
+        }, status=400)
+
+    proof = request.FILES.get("proof")
+
+    if not proof:
+        return JsonResponse({
+            "error": "Screenshot proof is required."
+        }, status=400)
 
     task.available -= 1
     task.save(update_fields=["available"])
 
-    TaskCompletion.objects.create(user=request.user, task=task)
+    TaskCompletion.objects.create(
+        user=request.user,
+        task=task,
+        proof=proof
+    )
 
     request.user.balance += task.worker_reward
     request.user.earnings += task.worker_reward
     request.user.tasks_completed += 1
-    request.user.save(update_fields=["balance", "tasks_completed", "earnings"])
+
+    request.user.save(update_fields=[
+        "balance",
+        "earnings",
+        "tasks_completed"
+    ])
+
+    RecentActivity.objects.create(
+        username=request.user.username,
+        platform=task.platform,
+        message=f"@{request.user.username} just earned £{task.worker_reward}",
+        amount=task.worker_reward
+    )
 
     return JsonResponse({
         "message": "Task completed!",
-        "new_balance": str(request.user.balance)
+        "new_balance": str(request.user.balance),
+        "new_earnings": str(request.user.earnings),
+        "tasks_completed": request.user.tasks_completed
     })
-
 
 # ==========================
 # MEMBERSHIP PAYMENT
@@ -600,8 +821,8 @@ def pay_membership(request):
 
 @login_required
 def more_page(request):
-    return render(request, "accounts/more.html")
+    return render(request, "accounts/dashboard/more.html")
 
 @login_required
 def earnings(request):
-    return render(request, "accounts/earnings.html")
+    return render(request, "accounts/dashboard/earnings.html")

@@ -1,6 +1,26 @@
 from django.contrib.auth.models import AbstractUser
 from django.db import models
+from django.conf import settings
 
+class Follow(models.Model):
+    follower = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name="following_set"
+    )
+    following = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name="followers_set"
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        unique_together = ("follower", "following")
+
+    def __str__(self):
+        return f"{self.follower.username} follows {self.following.username}"
+    
 
 class User(AbstractUser):
     balance = models.DecimalField(max_digits=10, decimal_places=2, default=0)
@@ -80,6 +100,22 @@ class Task(models.Model):
         return instructions_map.get(self.task_type, [self.instructions])
 
 
+
+class RecentActivity(models.Model):
+    username = models.CharField(max_length=150)
+    platform = models.CharField(max_length=50)
+    message = models.CharField(max_length=255)
+    amount = models.DecimalField(max_digits=8, decimal_places=2, default=0)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ["-created_at"]
+
+    def __str__(self):
+        return self.message
+    
+
+
 class TaskCompletion(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     task = models.ForeignKey(Task, on_delete=models.CASCADE)
@@ -150,3 +186,22 @@ class Product(models.Model):
 class ProductImage(models.Model):
     product = models.ForeignKey(Product, on_delete=models.CASCADE, related_name="images")
     image = models.ImageField(upload_to="products/")
+
+
+
+class Notification(models.Model):
+    user = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        related_name="notifications"
+    )
+    title = models.CharField(max_length=150)
+    message = models.TextField()
+    is_read = models.BooleanField(default=False)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ["-created_at"]
+
+    def __str__(self):
+        return f"{self.user.username} - {self.title}"

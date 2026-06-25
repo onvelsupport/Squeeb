@@ -1,0 +1,232 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SQUEEB Market</title>
+
+    <link rel="stylesheet" href="{% static 'accounts/css/marketplace.css' %}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+
+<body>
+
+<header class="market-topbar">
+    <a href="{% url 'dashboard' %}" class="brand">
+        <img src="{% static 'accounts/img/logo.png' %}" alt="SQUEEB Logo">
+    </a>
+
+    <div class="market-search">
+        <i class="fa fa-search"></i>
+        <input type="text" placeholder="Search products, sellers, services">
+    </div>
+
+    <nav class="market-nav">
+        <a href="{% url 'dashboard' %}">Dashboard</a>
+        <a href="{% url 'marketplace' %}" class="active">Market</a>
+        <a href="{% url 'seller_history' %}">Sold Items</a>
+        <a href="{% url 'more_page' %}">More</a>
+    </nav>
+
+    <div class="top-actions">
+        <a href="{% url 'cart' %}" class="cart-btn">
+            <i class="fa fa-shopping-cart"></i>
+            <span>{{ request.session.cart|length|default:0 }}</span>
+        </a>
+
+        <a href="{% url 'logout' %}" class="logout-btn">
+            <i class="fa fa-power-off"></i>
+        </a>
+    </div>
+
+    <button class="mobile-menu-btn" id="mobileMenuBtn">
+        <i class="fa fa-bars"></i>
+    </button>
+
+    <div class="mobile-dropdown" id="mobileDropdown">
+        <a href="{% url 'dashboard' %}"><i class="fa fa-home"></i> Dashboard</a>
+        <a href="{% url 'marketplace' %}"><i class="fa fa-store"></i> Market</a>
+        <a href="{% url 'cart' %}"><i class="fa fa-shopping-cart"></i> Cart</a>
+        <a href="{% url 'seller_history' %}"><i class="fa fa-box"></i> Sold Items</a>
+        <a href="{% url 'more_page' %}"><i class="fa fa-ellipsis-h"></i> More</a>
+        <a href="{% url 'logout' %}"><i class="fa fa-power-off"></i> Logout</a>
+    </div>
+</header>
+
+<main class="market-page">
+
+    <section class="market-hero">
+        <div>
+            <p class="eyebrow">SQUEEB Market</p>
+            <h1>Buy, sell, and resell products from real SQUEEB users.</h1>
+            <p>
+                Browse products, list your own items, and manage your marketplace activity from one clean dashboard.
+            </p>
+        </div>
+
+        <a href="{% url 'sell' %}" class="primary-btn">
+    <i class="fa fa-plus"></i>
+    Add Product
+</a>
+    </section>
+
+    <section class="category-strip">
+        <a href="?category=all" class="category-pill">All Products</a>
+        <a href="?category=beauty" class="category-pill">Health & Beauty</a>
+        <a href="?category=grocery" class="category-pill">Grocery</a>
+        <a href="?category=phones" class="category-pill">Phones & Tablets</a>
+        <a href="?category=fashion" class="category-pill">Fashion</a>
+        <a href="?category=electronics" class="category-pill">Electronics</a>
+        <a href="?category=books" class="category-pill">Books</a>
+        <a href="?category=car_rent" class="category-pill">Cars</a>
+    </section>
+
+    <section class="market-toolbar">
+        <div>
+            <h2>Marketplace</h2>
+            <p>Browse available products and services.</p>
+        </div>
+
+        <a href="{% url 'seller_history' %}" class="secondary-link">
+            My Sold Items
+        </a>
+    </section>
+
+    <section class="product-grid">
+
+        {% for p in products %}
+        <article class="product-card">
+
+            <div class="product-image-wrap">
+                {% if p.images.first %}
+                    <img src="{{ p.images.first.image.url }}" alt="{{ p.title }}">
+                {% elif p.image %}
+                    <img src="{{ p.image.url }}" alt="{{ p.title }}">
+                {% else %}
+                    <img src="{% static 'accounts/img/no-image.png' %}" alt="No image">
+                {% endif %}
+
+                {% if p.is_sold %}
+                    <span class="sold-badge">Sold</span>
+                {% endif %}
+
+                <span class="photo-count">
+                    {% if p.images.count %}
+                        {{ p.images.count }} photos
+                    {% else %}
+                        1 photo
+                    {% endif %}
+                </span>
+            </div>
+
+            <div class="product-body">
+                <div class="product-meta">
+                    <span>{{ p.get_category_display|default:p.category }}</span>
+                </div>
+
+                <h3>{{ p.title }}</h3>
+
+                <p class="product-description">
+                    {{ p.description }}
+                </p>
+
+                <div class="seller">
+                    <i class="fa fa-user"></i>
+                    Sold by {{ p.seller.username }}
+                </div>
+
+                <div class="product-bottom">
+                    <div>
+                        <span class="price-label">Price</span>
+                        <strong class="price">£{{ p.price }}</strong>
+                    </div>
+
+                    <div class="card-actions">
+                        {% if p.is_sold %}
+                            <button class="card-btn disabled" disabled>Sold</button>
+                        {% else %}
+                            {% if request.user == p.seller %}
+                                <button class="card-btn edit-btn"
+                                        data-id="{{ p.id }}"
+                                        data-title="{{ p.title }}"
+                                        data-price="{{ p.price }}"
+                                        data-category="{{ p.category }}"
+                                        data-description="{{ p.description }}"
+                                        data-sold="{{ p.is_sold|yesno:'1,0' }}">
+                                    Edit
+                                </button>
+                            {% else %}
+                                <a href="{% url 'add_to_cart' p.id %}" class="card-btn">
+                                    Add to Cart
+                                </a>
+                            {% endif %}
+                        {% endif %}
+
+                        {% if request.user == p.seller and not p.is_sold %}
+                            <a href="{% url 'delete_product' p.id %}" class="delete-btn delete-product">
+                                Delete
+                            </a>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+
+        </article>
+        {% empty %}
+        <button
+    class="primary-btn"
+    onclick="window.location.href='{% url 'sell' %}'">
+    Add Product
+</button>
+        {% endfor %}
+
+    </section>
+
+</main>
+
+
+<div class="modal-bg" id="editModal">
+    <div class="modal-box">
+        <button class="modal-close" id="closeEditModal">✖</button>
+
+        <h2>Edit Product</h2>
+        <p class="modal-sub">Update your product details.</p>
+
+        <form method="POST" id="editForm" enctype="multipart/form-data">
+            {% csrf_token %}
+
+            <input type="hidden" name="product_id" id="editId">
+
+            <input name="title" id="editTitle" placeholder="Product title" required>
+
+            <input name="price" id="editPrice" type="number" step="0.01" placeholder="Price" required>
+
+            <select name="category" id="editCategory">
+                <option value="beauty">Health & Beauty</option>
+                <option value="grocery">Grocery</option>
+                <option value="phones">Phones & Tablets</option>
+                <option value="fashion">Fashion</option>
+                <option value="electronics">Electronics</option>
+                <option value="books">Books</option>
+                <option value="car_rent">Cars</option>
+            </select>
+
+            <textarea name="description" id="editDescription" placeholder="Description"></textarea>
+
+            <input type="file" name="images" multiple>
+
+            <label class="checkbox-row">
+                <input type="checkbox" name="is_sold" id="editSold">
+                Mark as sold
+            </label>
+
+            <button type="submit" class="primary-btn full-btn">Save Changes</button>
+        </form>
+    </div>
+</div>
+
+<script src="{% static 'accounts/js/marketplace.js' %}"></script>
+
+</body>
+</html>

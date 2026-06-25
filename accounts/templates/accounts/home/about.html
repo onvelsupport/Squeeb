@@ -1,0 +1,131 @@
+{% extends 'accounts/base.html' %}
+{% load static %}
+
+{% block title %}
+About | Squeeb
+{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'accounts/css/about.css' %}">
+{% endblock %}
+
+{% block content %}
+
+<section class="about-hero">
+    <div class="about-container about-hero-grid">
+
+        <div class="about-copy">
+            <span class="eyebrow">ABOUT SQUEEB</span>
+
+            <h1>One platform to buy, sell, advertise and earn.</h1>
+
+            <p>
+                Squeeb helps people earn from simple social tasks while giving sellers
+                and advertisers a smarter way to reach real users.
+            </p>
+
+            <div class="about-actions">
+                <a href="{% url 'signup_page' %}" class="primary-btn">
+                    Create Free Account
+                </a>
+
+                <a href="{% url 'marketplace' %}" class="secondary-btn">
+                    Visit Marketplace
+                </a>
+            </div>
+        </div>
+
+        <div class="about-visual">
+            <div class="visual-card main-card">
+                <i class="fa-solid fa-store"></i>
+                <h3>Marketplace</h3>
+                <p>Buy and sell products easily.</p>
+            </div>
+
+            <div class="visual-card small-card top-card">
+                <i class="fa-solid fa-coins"></i>
+                <span>Earn from tasks</span>
+            </div>
+
+            <div class="visual-card small-card bottom-card">
+                <i class="fa-solid fa-bullhorn"></i>
+                <span>Advertise daily</span>
+            </div>
+        </div>
+
+    </div>
+</section>
+
+<section class="about-intro">
+    <div class="about-container intro-grid">
+
+        <div>
+            <span class="eyebrow">WHO WE ARE</span>
+            <h2>Built for earners, sellers and advertisers.</h2>
+        </div>
+
+        <p>
+            Squeeb combines marketplace features with social task earning.
+            Users can discover products, sell items, complete simple online tasks,
+            and help businesses promote adverts through social media engagement.
+        </p>
+
+    </div>
+</section>
+
+<section class="about-values">
+    <div class="about-container">
+
+        <div class="section-heading">
+            <span class="eyebrow">WHAT WE OFFER</span>
+            <h2>Everything starts from one account.</h2>
+        </div>
+
+        <div class="values-grid">
+
+            <div class="value-card">
+                <i class="fa-solid fa-cart-shopping"></i>
+                <h3>Buy & Sell</h3>
+                <p>Use the marketplace to list products, browse items and connect with buyers.</p>
+            </div>
+
+            <div class="value-card">
+                <i class="fa-solid fa-hand-holding-dollar"></i>
+                <h3>Earn Rewards</h3>
+                <p>Complete simple social tasks and grow your earnings from daily activity.</p>
+            </div>
+
+            <div class="value-card">
+                <i class="fa-solid fa-bullhorn"></i>
+                <h3>Promote Adverts</h3>
+                <p>Help businesses reach more people through social media promotion.</p>
+            </div>
+
+            <div class="value-card">
+                <i class="fa-solid fa-shield-halved"></i>
+                <h3>Secure Platform</h3>
+                <p>Manage your account, products and earnings from a structured dashboard.</p>
+            </div>
+
+        </div>
+
+    </div>
+</section>
+
+<section class="about-mission">
+    <div class="about-container mission-card">
+
+        <div>
+            <span class="eyebrow">OUR MISSION</span>
+            <h2>To make online earning and selling more accessible.</h2>
+        </div>
+
+        <p>
+            Squeeb is designed to give everyday users a practical way to earn online,
+            while helping sellers and advertisers reach active audiences.
+        </p>
+
+    </div>
+</section>
+
+{% endblock %}

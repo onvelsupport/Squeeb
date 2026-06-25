@@ -1,0 +1,110 @@
+{% extends 'accounts/base.html' %}
+{% load static %}
+
+{% block title %}Withdrawals | SQUEEB{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'accounts/css/withdrawals.css' %}">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+{% endblock %}
+
+{% block content %}
+
+<div class="withdraw-page">
+
+    <header class="withdraw-topbar">
+        <a href="{% url 'dashboard' %}" class="brand">
+            <img src="{% static 'accounts/img/logo.png' %}" alt="SQUEEB Logo">
+        </a>
+
+        <nav class="withdraw-nav">
+            <a href="{% url 'dashboard' %}">Dashboard</a>
+            <a href="{% url 'earnings' %}">Earnings</a>
+            <a href="{% url 'withdrawals' %}" class="active">Withdrawals</a>
+            <a href="{% url 'more_page' %}">More</a>
+        </nav>
+
+        <a href="{% url 'logout' %}" class="logout-btn">
+            <i class="fa fa-power-off"></i>
+        </a>
+    </header>
+
+    <main class="withdraw-main">
+
+        <section class="withdraw-hero">
+            <div>
+                <p class="eyebrow">Withdraw Funds</p>
+                <h1>Hello, <span id="usernameDisplay">User</span></h1>
+                <p>Request a withdrawal from your SQUEEB wallet to your UK bank account.</p>
+            </div>
+
+            <div class="balance-card">
+                <p>Available Balance</p>
+                <h2 id="balanceAmount">£0.00</h2>
+            </div>
+        </section>
+
+        <section class="withdraw-grid">
+
+            <form class="withdraw-card" id="withdrawForm">
+                <h2>Request Withdrawal</h2>
+                <p class="form-sub">Enter your bank details carefully.</p>
+
+                <label>Amount</label>
+                <input type="number" id="amount" placeholder="e.g. 20" min="1" step="0.01" required>
+
+                <label>Account Name</label>
+                <input type="text" id="accountName" placeholder="Your full name" required>
+
+                <label>Sort Code</label>
+                <input type="text" id="sortCode" placeholder="12-34-56" maxlength="8" required>
+
+                <label>Account Number</label>
+                <input type="text" id="accountNumber" placeholder="12345678" maxlength="8" required>
+
+                <button type="submit" id="withdrawBtn">
+                    Submit Withdrawal
+                </button>
+
+                <p id="withdrawMsg"></p>
+            </form>
+
+            <aside class="info-card">
+                <h3>Withdrawal Information</h3>
+
+                <div class="info-item">
+                    <i class="fa fa-clock"></i>
+                    <div>
+                        <strong>Processing Time</strong>
+                        <p>Withdrawals are reviewed before payment.</p>
+                    </div>
+                </div>
+
+                <div class="info-item">
+                    <i class="fa fa-building-columns"></i>
+                    <div>
+                        <strong>UK Bank Only</strong>
+                        <p>Use a valid sort code and account number.</p>
+                    </div>
+                </div>
+
+                <div class="info-item">
+                    <i class="fa fa-shield-halved"></i>
+                    <div>
+                        <strong>Security Check</strong>
+                        <p>Incorrect details may delay your withdrawal.</p>
+                    </div>
+                </div>
+            </aside>
+
+        </section>
+
+    </main>
+
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'accounts/js/withdrawals.js' %}"></script>
+{% endblock %}

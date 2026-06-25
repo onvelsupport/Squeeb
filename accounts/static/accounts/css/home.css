@@ -1,0 +1,431 @@
+.home-container {
+    width: 100%;
+    max-width: 1180px;
+    margin: 0 auto;
+    padding: 0 24px;
+}
+
+.home-hero {
+    padding: 90px 0 80px;
+    background:
+        radial-gradient(circle at top left, rgba(63, 95, 168, 0.16), transparent 34%),
+        linear-gradient(135deg, #ffffff 0%, #f8fafc 50%, #eef4ff 100%);
+}
+
+.hero-grid {
+    display: grid;
+    grid-template-columns: 1.05fr 0.95fr;
+    gap: 70px;
+    align-items: center;
+}
+
+.hero-badge,
+.section-heading span,
+.showcase-copy span,
+.download-card span {
+    display: inline-block;
+    color: #3f5fa8;
+    font-size: 12px;
+    font-weight: 900;
+    letter-spacing: 2px;
+    margin-bottom: 16px;
+}
+
+.hero-content h1 {
+    font-size: clamp(46px, 6vw, 78px);
+    line-height: 0.96;
+    letter-spacing: -2.8px;
+    color: #0f172a;
+    margin-bottom: 26px;
+}
+
+.hero-content p {
+    max-width: 620px;
+    color: #64748b;
+    font-size: 18px;
+    line-height: 1.75;
+}
+
+.hero-actions {
+    display: flex;
+    gap: 14px;
+    flex-wrap: wrap;
+    margin-top: 34px;
+}
+
+.btn-dark,
+.btn-light {
+    min-height: 56px;
+    padding: 0 26px;
+    border-radius: 999px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    text-decoration: none;
+    font-size: 15px;
+    font-weight: 900;
+    transition: 0.2s ease;
+}
+
+.btn-dark {
+    background: #0f172a;
+    color: #ffffff;
+}
+
+.btn-dark:hover {
+    background: #3f5fa8;
+    color: #ffffff;
+}
+
+.btn-light {
+    background: #ffffff;
+    color: #0f172a;
+    border: 1px solid #e2e8f0;
+}
+
+.btn-light:hover {
+    border-color: #3f5fa8;
+    color: #3f5fa8;
+}
+
+.trust-row {
+    margin-top: 44px;
+    display: flex;
+    gap: 34px;
+    flex-wrap: wrap;
+}
+
+.trust-row div {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.trust-row strong {
+    font-size: 28px;
+    color: #0f172a;
+}
+
+.trust-row span {
+    color: #64748b;
+    font-size: 14px;
+    font-weight: 700;
+}
+
+.hero-panel {
+    position: relative;
+    min-height: 520px;
+    border-radius: 42px;
+    background: #0f172a;
+    overflow: hidden;
+    box-shadow: 0 35px 90px rgba(15, 23, 42, 0.22);
+}
+
+.hero-panel::before {
+    content: "";
+    position: absolute;
+    inset: -90px;
+    background:
+        radial-gradient(circle at top right, rgba(59, 130, 246, 0.5), transparent 34%),
+        radial-gradient(circle at bottom left, rgba(245, 158, 11, 0.36), transparent 30%);
+}
+
+.phone-card {
+    position: absolute;
+    width: 250px;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    border-radius: 32px;
+    overflow: hidden;
+    z-index: 2;
+    box-shadow: 0 24px 60px rgba(0, 0, 0, 0.35);
+}
+
+.phone-card img {
+    width: 100%;
+    display: block;
+}
+
+.earning-card,
+.task-card {
+    position: absolute;
+    z-index: 3;
+    background: rgba(255, 255, 255, 0.96);
+    border: 1px solid rgba(255, 255, 255, 0.5);
+    box-shadow: 0 18px 50px rgba(0, 0, 0, 0.18);
+}
+
+.earning-card {
+    top: 50px;
+    left: 38px;
+    padding: 22px;
+    border-radius: 26px;
+    width: 220px;
+}
+
+.earning-card span {
+    color: #64748b;
+    font-size: 13px;
+    font-weight: 800;
+}
+
+.earning-card h3 {
+    font-size: 34px;
+    color: #0f172a;
+    margin: 8px 0;
+}
+
+.earning-card p {
+    color: #64748b;
+    font-size: 13px;
+    line-height: 1.5;
+}
+
+.task-card {
+    right: 38px;
+    bottom: 54px;
+    padding: 16px 20px;
+    border-radius: 999px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-weight: 900;
+    color: #0f172a;
+}
+
+.task-card i {
+    width: 32px;
+    height: 32px;
+    display: grid;
+    place-items: center;
+    border-radius: 50%;
+    background: #dcfce7;
+    color: #16a34a;
+}
+
+.quick-links {
+    padding: 70px 0;
+    background: #ffffff;
+}
+
+.quick-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 22px;
+}
+
+.quick-card {
+    background: #ffffff;
+    border: 1px solid #e5e7eb;
+    border-radius: 30px;
+    padding: 34px;
+    text-decoration: none;
+    box-shadow: 0 14px 38px rgba(15, 23, 42, 0.05);
+    transition: 0.2s ease;
+}
+
+.quick-card:hover {
+    transform: translateY(-5px);
+    border-color: #3f5fa8;
+}
+
+.quick-card i {
+    width: 56px;
+    height: 56px;
+    display: grid;
+    place-items: center;
+    border-radius: 18px;
+    background: #eff6ff;
+    color: #3f5fa8;
+    font-size: 23px;
+    margin-bottom: 22px;
+}
+
+.quick-card h3 {
+    color: #0f172a;
+    font-size: 22px;
+    margin-bottom: 10px;
+}
+
+.quick-card p {
+    color: #64748b;
+    line-height: 1.7;
+}
+
+.how-it-works {
+    padding: 90px 0;
+    background: #f8fafc;
+}
+
+.section-heading {
+    max-width: 680px;
+    margin-bottom: 42px;
+}
+
+.section-heading h2,
+.showcase-copy h2,
+.download-card h2 {
+    font-size: clamp(34px, 4vw, 54px);
+    line-height: 1.05;
+    letter-spacing: -1.4px;
+    color: #0f172a;
+}
+
+.steps-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 22px;
+}
+
+.step-card {
+    background: #ffffff;
+    border-radius: 30px;
+    padding: 34px;
+    border: 1px solid #e5e7eb;
+}
+
+.step-card strong {
+    color: #3f5fa8;
+    font-size: 15px;
+    font-weight: 900;
+}
+
+.step-card h3 {
+    margin: 18px 0 12px;
+    font-size: 23px;
+    color: #0f172a;
+}
+
+.step-card p {
+    color: #64748b;
+    line-height: 1.7;
+}
+
+.home-showcase {
+    padding: 90px 0;
+    background: #ffffff;
+}
+
+.showcase-grid {
+    display: grid;
+    grid-template-columns: 0.95fr 1.05fr;
+    gap: 64px;
+    align-items: center;
+}
+
+.showcase-image {
+    border-radius: 38px;
+    overflow: hidden;
+    box-shadow: 0 25px 70px rgba(15, 23, 42, 0.12);
+}
+
+.showcase-image img {
+    width: 100%;
+    min-height: 440px;
+    object-fit: cover;
+}
+
+.showcase-copy p {
+    margin: 22px 0 34px;
+    color: #64748b;
+    font-size: 18px;
+    line-height: 1.75;
+}
+
+.download-section {
+    padding: 40px 0 100px;
+    background: #ffffff;
+}
+
+.download-card {
+    background: #0f172a;
+    border-radius: 38px;
+    padding: 54px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 34px;
+    color: #ffffff;
+}
+
+.download-card h2 {
+    color: #ffffff;
+    max-width: 580px;
+}
+
+.download-card p {
+    margin-top: 14px;
+    color: #cbd5e1;
+    font-size: 17px;
+}
+
+.app-links {
+    display: flex;
+    gap: 14px;
+    flex-wrap: wrap;
+}
+
+.app-links img {
+    height: 48px;
+}
+
+@media (max-width: 950px) {
+    .hero-grid,
+    .showcase-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .quick-grid,
+    .steps-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .hero-panel {
+        min-height: 440px;
+    }
+
+    .download-card {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+}
+
+@media (max-width: 560px) {
+    .home-hero {
+        padding: 60px 0;
+    }
+
+    .hero-content h1 {
+        font-size: 42px;
+    }
+
+    .hero-panel {
+        min-height: 390px;
+        border-radius: 30px;
+    }
+
+    .phone-card {
+        width: 200px;
+    }
+
+    .earning-card {
+        left: 18px;
+        top: 28px;
+        width: 185px;
+    }
+
+    .task-card {
+        right: 18px;
+        bottom: 28px;
+    }
+
+    .showcase-image img {
+        min-height: 300px;
+    }
+
+    .download-card {
+        padding: 34px 24px;
+        border-radius: 28px;
+    }
+}

@@ -1,0 +1,1033 @@
+/* ==========================================================
+   GLOBAL RESET
+========================================================== */
+
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+}
+
+body{
+    background:#f4f7fc;
+    font-family:Arial, Helvetica, sans-serif;
+    color:#111827;
+}
+
+a{
+    text-decoration:none;
+}
+
+.dashboard-page{
+    min-height:100vh;
+}
+
+
+/* ==========================================================
+   DASHBOARD TOPBAR
+========================================================== */
+
+.dashboard-topbar{
+    background:#fff;
+    padding:18px 40px;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:20px;
+    border-bottom:1px solid #e5e7eb;
+    position:sticky;
+    top:0;
+    z-index:100;
+}
+
+.brand img{
+    width:150px;
+}
+
+.dashboard-search{
+    position: relative;
+    flex:1;
+    max-width:450px;
+    background:#f3f4f6;
+    padding:14px 18px;
+    border-radius:14px;
+    display:flex;
+    align-items:center;
+    gap:10px;
+}
+
+.dashboard-search input{
+    border:none;
+    background:none;
+    width:100%;
+    outline:none;
+    font-size:15px;
+}
+
+
+/* Search results dropdown */
+
+.search-results{
+    position:absolute;
+    top:calc(100% + 10px);
+    left:0;
+    right:0;
+
+    background:#fff;
+
+    border-radius:18px;
+
+    box-shadow:
+        0 10px 25px rgba(0,0,0,.08);
+
+    overflow:hidden;
+
+    display:none;
+
+    z-index:1000;
+
+    max-height:350px;
+
+    overflow-y:auto;
+}
+
+
+.search-item{
+    display:block;
+
+    padding:15px 20px;
+
+    text-decoration:none;
+
+    color:#111827;
+
+    border-bottom:1px solid #f1f5f9;
+
+    transition:.2s;
+}
+
+.search-item:hover{
+    background:#eff6ff;
+}
+
+
+.search-item strong{
+    display:block;
+    margin-bottom:4px;
+}
+
+
+.search-type{
+    font-size:12px;
+    color:#64748b;
+}
+
+.dashboard-nav{
+    display:flex;
+    align-items:center;
+    gap:25px;
+}
+
+.dashboard-nav a{
+    text-decoration:none;
+    font-size:14px;
+    font-weight:600;
+    color:#475569;
+    transition:.3s;
+}
+
+.dashboard-nav a:hover{
+    color:#2563eb;
+}
+
+.dashboard-nav a.active{
+    color:#2563eb;
+    font-weight:700;
+}
+
+.top-actions{
+    display:flex;
+    gap:8px;
+    align-items:center;
+}
+
+.icon-btn{
+    width:45px;
+    height:45px;
+    border:none;
+    background:#eff6ff;
+    border-radius:50%;
+    position:relative;
+    cursor:pointer;
+}
+
+.icon-btn span{
+    position:absolute;
+    top:-5px;
+    right:-5px;
+    background:red;
+    color:white;
+    width:20px;
+    height:20px;
+    border-radius:50%;
+    font-size:11px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+}
+
+.logout-btn{
+    width:45px;
+    height:45px;
+    background:#fee2e2;
+    color:red;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    border-radius:50%;
+}
+
+.mobile-menu-btn{
+    display:none;
+}
+
+.mobile-dropdown{
+    display:none;
+}
+
+/* ==========================================================
+   MAIN DASHBOARD LAYOUT
+========================================================== */
+
+.dashboard-main{
+    width:92%;
+    max-width:1400px;
+    margin:auto;
+    padding:40px 0;
+}
+
+
+/* ==========================================================
+   HERO SECTION
+========================================================== */
+
+.hero-section{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    margin-bottom:35px;
+}
+
+.eyebrow{
+    color:#2563eb;
+    font-weight:700;
+    margin-bottom:10px;
+}
+
+.hero-section h1{
+    font-size:42px;
+    margin-bottom:15px;
+}
+
+.hero-text{
+    color:#64748b;
+    max-width:650px;
+    line-height:1.7;
+}
+
+.profile-pill{
+    background:#fff;
+    padding:18px;
+    border-radius:20px;
+    display:flex;
+    gap:15px;
+    align-items:center;
+    box-shadow:0 10px 25px rgba(0,0,0,.05);
+}
+
+.profile-pill img{
+    width:60px;
+    border-radius:50%;
+}
+
+.profile-pill span{
+    display:block;
+    color:#64748b;
+    margin-top:5px;
+}
+
+
+/* ==========================================================
+   WALLET AND STATS GRID
+========================================================== */
+
+.dashboard-grid{
+    display:grid;
+    grid-template-columns:2fr 1fr 1fr 1fr;
+    gap:25px;
+    margin-bottom:40px;
+}
+
+.wallet-card{
+    background:linear-gradient(135deg,#2563eb,#7c3aed);
+    color:white;
+    padding:30px;
+    border-radius:25px;
+}
+
+.wallet-top{
+    display:flex;
+    justify-content:space-between;
+}
+
+.wallet-top h2{
+    font-size:40px;
+    margin-top:10px;
+}
+
+.wallet-icon{
+    font-size:32px;
+}
+
+.wallet-actions{
+    display:flex;
+    gap:15px;
+    margin-top:25px;
+}
+
+.wallet-actions button{
+    border:none;
+    padding:14px 22px;
+    border-radius:14px;
+    font-weight:bold;
+    cursor:pointer;
+}
+
+.secondary{
+    background:rgba(255,255,255,.2);
+    color:white;
+}
+
+.stats-card{
+    background:white;
+    padding:25px;
+    border-radius:25px;
+    box-shadow:0 10px 25px rgba(0,0,0,.05);
+}
+
+.stats-card p{
+    color:#64748b;
+}
+
+.stats-card h3{
+    margin:15px 0;
+    font-size:32px;
+}
+
+
+/* ==========================================================
+   QUICK ACTIONS
+========================================================== 
+
+.quick-actions{
+    margin-bottom:50px;
+}
+
+.section-heading{
+    margin-bottom:25px;
+}
+
+.section-heading h2{
+    margin-bottom:8px;
+}
+
+.section-heading p{
+    color:#64748b;
+}
+
+.quick-grid{
+    display:grid;
+    grid-template-columns:repeat(4,1fr);
+    gap:25px;
+}
+
+.quick-card{
+    background:white;
+    border-radius:25px;
+    padding:30px;
+    box-shadow:0 10px 25px rgba(0,0,0,.05);
+    transition:.3s;
+}
+
+.quick-card:hover{
+    transform:translateY(-5px);
+}
+
+.quick-card i{
+    font-size:35px;
+    color:#2563eb;
+    margin-bottom:20px;
+}
+
+.quick-card h3{
+    margin-bottom:10px;
+    color:#111827;
+}
+
+.quick-card p{
+    color:#64748b;
+}
+*/
+
+/* ==========================================================
+   MEMBERSHIP BANNER
+========================================================== */
+
+.membership-banner{
+    background:linear-gradient(135deg,#0f172a,#1e293b);
+    color:white;
+    padding:40px;
+    border-radius:25px;
+    margin-bottom:50px;
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+}
+
+.membership-banner h2{
+    margin:15px 0;
+}
+
+.membership-banner span{
+    color:#cbd5e1;
+}
+
+.pay-btn{
+    background:#2563eb;
+    border:none;
+    color:white;
+    padding:18px 30px;
+    border-radius:16px;
+    cursor:pointer;
+    font-weight:bold;
+}
+
+
+/* ==========================================================
+   TASK CARDS
+========================================================== */
+
+.task-list{
+    display:flex;
+    flex-direction:column;
+    gap:25px;
+}
+
+.task-card{
+    background:white;
+    padding:25px;
+    border-radius:25px;
+    display:flex;
+    gap:25px;
+    align-items:center;
+    box-shadow:0 10px 25px rgba(0,0,0,.05);
+}
+
+.task-icon img{
+    width:70px;
+}
+
+.task-info{
+    flex:1;
+}
+
+.task-label{
+    color:#2563eb;
+    font-weight:bold;
+}
+
+.task-info h3{
+    margin:12px 0;
+}
+
+.task-info p{
+    color:#64748b;
+    line-height:1.7;
+}
+
+.platforms{
+    display:flex;
+    gap:10px;
+    margin-top:15px;
+}
+
+.platforms img{
+    width:25px;
+}
+
+.task-action{
+    text-align:right;
+}
+
+.task-action strong{
+    font-size:28px;
+    display:block;
+}
+
+.task-action span{
+    color:#64748b;
+}
+
+.select-btn{
+    margin-top:20px;
+    border:none;
+    background:#2563eb;
+    color:white;
+    padding:14px 25px;
+    border-radius:14px;
+    cursor:pointer;
+    font-weight:bold;
+}
+
+
+/* ==========================================================
+   BASIC MODAL STYLES
+========================================================== */
+
+.modal-bg{
+    display:none;
+    position:fixed;
+    inset:0;
+    background:rgba(15,23,42,.65);
+    z-index:9999;
+    align-items:center;
+    justify-content:center;
+    padding:20px;
+}
+
+.modal-input,
+.form-group input,
+.form-group select {
+    width: 100%;
+    padding: 15px;
+    border-radius: 14px;
+    border: 1px solid #d1d5db;
+    outline: none;
+    margin-bottom: 15px;
+}
+
+.modal-msg {
+    margin-top: 15px;
+    color: #2563eb;
+    font-weight: 600;
+}
+
+.modal-card{
+    background:white;
+    width:100%;
+    max-width:420px;
+    border-radius:28px;
+    padding:35px;
+    position:relative;
+    box-shadow:0 30px 80px rgba(15,23,42,.25);
+}
+
+.modal-close{
+    position:absolute;
+    top:16px;
+    right:16px;
+    width:36px;
+    height:36px;
+    border:none;
+    border-radius:50%;
+    background:#f1f5f9;
+    color:#111827;
+    font-size:18px;
+    cursor:pointer;
+    font-weight:800;
+}
+
+.modal-title{
+    font-size:30px;
+    margin-bottom:10px;
+    color:#111827;
+}
+
+.modal-sub{
+    color:#64748b;
+    margin-bottom:22px;
+}
+
+.modal-action{
+    width:100%;
+    border:none;
+    background:#2563eb;
+    color:white;
+    padding:15px;
+    border-radius:14px;
+    font-weight:bold;
+    cursor:pointer;
+}
+
+/* ================= TASK CREATE MODAL FIX ================= */
+
+#taskActionModal{
+    display:none;
+    position:fixed;
+    inset:0;
+    background:rgba(15,23,42,.65);
+    backdrop-filter:blur(5px);
+    align-items:center;
+    justify-content:center;
+    z-index:5000;
+    padding:20px;
+}
+
+.task-action-container{
+    background:#fff;
+    width:100%;
+    max-width:650px;
+    border-radius:28px;
+    padding:32px;
+    position:relative;
+    box-shadow:0 30px 80px rgba(15,23,42,.28);
+}
+
+.task-action-header{
+    display:flex;
+    align-items:center;
+    gap:18px;
+    margin-bottom:20px;
+}
+
+.task-icon-wrap img{
+    width:70px;
+    height:70px;
+    object-fit:contain;
+    border-radius:18px;
+}
+
+.task-action-header h2{
+    font-size:24px;
+    margin-bottom:8px;
+}
+
+.task-price{
+    color:#64748b;
+}
+
+.task-action-container hr{
+    border:none;
+    height:1px;
+    background:#e5e7eb;
+    margin:22px 0;
+}
+
+.form-group{
+    margin-bottom:18px;
+}
+
+.form-group label{
+    display:block;
+    font-weight:700;
+    margin-bottom:8px;
+}
+
+.form-group input,
+.form-group select{
+    width:100%;
+    padding:15px 16px;
+    border:1px solid #d1d5db;
+    border-radius:16px;
+    outline:none;
+    font-size:15px;
+}
+
+.task-total-bar{
+    margin-top:24px;
+    background:#f8fafc;
+    border-radius:22px;
+    padding:20px;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:20px;
+}
+
+.task-total-bar span{
+    color:#64748b;
+}
+
+.task-total-bar h3{
+    font-size:30px;
+    color:#2563eb;
+}
+
+.submit-task-btn{
+    border:none;
+    background:#2563eb;
+    color:white;
+    padding:15px 24px;
+    border-radius:16px;
+    font-weight:700;
+    cursor:pointer;
+}
+
+@media(max-width:650px){
+    .task-action-container{
+        padding:24px;
+    }
+
+    .task-action-header,
+    .task-total-bar{
+        flex-direction:column;
+        align-items:flex-start;
+    }
+
+    .submit-task-btn{
+        width:100%;
+    }
+}
+
+
+/* ==========================================================
+   CHOICE MODALS
+========================================================== */
+
+.choice-modal-bg{
+    display:none;
+    position:fixed;
+    inset:0;
+    background:rgba(15,23,42,.65);
+    backdrop-filter:blur(6px);
+    align-items:center;
+    justify-content:center;
+    z-index:3000;
+    padding:20px;
+}
+
+.choice-modal-bg.show {
+    display: flex !important;
+}
+
+.choice-modal{
+    background:#fff;
+    width:100%;
+    max-width:760px;
+    border-radius:30px;
+    padding:35px;
+    position:relative;
+    box-shadow:0 30px 80px rgba(15,23,42,.25);
+}
+
+.choice-close{
+    position:absolute;
+    top:18px;
+    right:18px;
+    width:38px;
+    height:38px;
+    border:none;
+    border-radius:50%;
+    background:#f1f5f9;
+    cursor:pointer;
+    font-weight:800;
+}
+
+.choice-header{
+    text-align:center;
+    margin-bottom:30px;
+}
+
+.choice-badge{
+    display:inline-block;
+    background:#eff6ff;
+    color:#2563eb;
+    padding:8px 14px;
+    border-radius:999px;
+    font-size:12px;
+    font-weight:800;
+    text-transform:uppercase;
+    margin-bottom:14px;
+}
+
+.choice-header h2{
+    font-size:30px;
+    margin-bottom:10px;
+}
+
+.choice-header p{
+    color:#64748b;
+}
+
+.choice-grid{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:20px;
+}
+
+.choice-card{
+    background:#f8fafc;
+    border:1px solid #e2e8f0;
+    border-radius:24px;
+    padding:24px;
+    display:flex;
+    flex-direction:column;
+    gap:18px;
+    color:#111827;
+    transition:.25s;
+}
+
+.choice-card:hover{
+    background:#fff;
+    transform:translateY(-4px);
+    box-shadow:0 15px 35px rgba(15,23,42,.1);
+}
+
+.choice-icon{
+    width:58px;
+    height:58px;
+    border-radius:18px;
+    background:#2563eb;
+    color:white;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-size:22px;
+}
+
+.choice-icon.purple{
+    background:#7c3aed;
+}
+
+.choice-icon.pink{
+    background:#ec4899;
+}
+
+.choice-card h3{
+    margin-bottom:8px;
+}
+
+.choice-card p{
+    color:#64748b;
+    line-height:1.6;
+    font-size:14px;
+}
+
+.choice-arrow{
+    margin-top:auto;
+    color:#2563eb;
+    font-weight:bold;
+}
+
+
+/* ==========================================================
+   SOCIAL AND PRODUCT ICONS
+========================================================== */
+
+.social-icons{
+    display:flex;
+    align-items:center;
+    gap:10px;
+    margin-top:18px;
+    flex-wrap:wrap;
+}
+
+.social-icons img{
+    width:34px;
+    height:34px;
+    border-radius:50%;
+    background:#fff;
+    padding:4px;
+    box-shadow:0 2px 10px rgba(0,0,0,.08);
+    transition:.25s;
+}
+
+.social-icons img:hover{
+    transform:translateY(-3px);
+}
+
+.product-icons{
+    display:flex;
+    gap:10px;
+    flex-wrap:wrap;
+    margin-top:18px;
+}
+
+.product-icons img{
+    width:42px;
+    height:42px;
+    border-radius:14px;
+    object-fit:cover;
+    background:#fff;
+    padding:4px;
+    box-shadow:0 4px 12px rgba(0,0,0,.08);
+    transition:.25s;
+}
+
+.product-icons img:hover{
+    transform:translateY(-4px);
+}
+
+
+/* ==========================================================
+   DUPLICATE ICON RULES KEPT FROM ORIGINAL CODE
+========================================================== */
+
+.social-icons,
+.product-icons{
+    display:flex;
+    gap:10px;
+    flex-wrap:wrap;
+    margin-top:18px;
+}
+
+.social-icons img,
+.product-icons img{
+    width:38px;
+    height:38px;
+    border-radius:12px;
+    object-fit:cover;
+    background:#fff;
+    padding:4px;
+    box-shadow:0 3px 10px rgba(0,0,0,.08);
+    transition:.3s;
+}
+
+.social-icons img:hover,
+.product-icons img:hover{
+    transform:translateY(-4px);
+}
+
+
+/* ==========================================================
+   RESPONSIVE: TABLET
+========================================================== */
+
+@media(max-width:1200px){
+
+    .dashboard-grid{
+        grid-template-columns:1fr;
+    }
+
+    .quick-grid{
+        grid-template-columns:repeat(2,1fr);
+    }
+
+}
+
+
+/* ==========================================================
+   RESPONSIVE: MOBILE
+========================================================== */
+
+@media(max-width:900px){
+
+    .dashboard-nav{
+        display:none;
+    }
+
+    .dashboard-search{
+        display:none;
+    }
+
+    .mobile-menu-btn{
+        display:block;
+        background:none;
+        border:none;
+        font-size:25px;
+    }
+
+    .hero-section{
+        flex-direction:column;
+        align-items:flex-start;
+        gap:20px;
+    }
+
+    .membership-banner{
+        flex-direction:column;
+        gap:20px;
+        align-items:flex-start;
+    }
+
+    .task-card{
+        flex-direction:column;
+        align-items:flex-start;
+    }
+
+    .task-action{
+        width:100%;
+        text-align:left;
+    }
+
+}
+
+
+/* ==========================================================
+   RESPONSIVE: SMALL MOBILE
+========================================================== */
+
+@media(max-width:600px){
+
+    .quick-grid{
+        grid-template-columns:1fr;
+    }
+
+    .dashboard-topbar{
+        padding:20px;
+    }
+
+    .hero-section h1{
+        font-size:32px;
+    }
+
+    .wallet-top h2{
+        font-size:30px;
+    }
+
+}
+
+
+/* ==========================================================
+   RESPONSIVE: CHOICE MODAL
+========================================================== */
+
+@media(max-width:700px){
+
+    .choice-grid{
+        grid-template-columns:1fr;
+    }
+
+    .choice-modal{
+        padding:28px;
+    }
+
+    .choice-header h2{
+        font-size:24px;
+    }
+
+}
+
+
+/* ==========================================================
+   RESPONSIVE: AD / TASK MODALS
+========================================================== */
+
+@media(max-width: 700px) {
+
+    .ad-options {
+        grid-template-columns: 1fr;
+    }
+
+    .ad-modal,
+    .modal-card,
+    .task-action-container {
+        padding: 25px;
+    }
+
+    .task-action-header,
+    .task-total-bar {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+}

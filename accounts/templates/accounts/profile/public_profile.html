@@ -1,0 +1,121 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ profile_user.username }} | SQUEEB</title>
+
+    <link rel="stylesheet" href="{% static 'accounts/css/public_profile.css' %}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+
+<body>
+
+<header class="profile-topbar">
+    <a href="{% url 'dashboard' %}" class="brand">
+        <img src="{% static 'accounts/img/logo.png' %}" alt="SQUEEB">
+    </a>
+
+    <nav>
+        <a href="{% url 'dashboard' %}">Dashboard</a>
+        <a href="{% url 'marketplace' %}">Marketplace</a>
+        <a href="{% url 'more_page' %}">More</a>
+    </nav>
+</header>
+
+<main class="profile-page">
+
+    <section class="profile-hero">
+        <div class="profile-info">
+            <img src="{% static 'accounts/img/avatar.png' %}" class="avatar" alt="Profile">
+
+            <div>
+                <p class="eyebrow">SQUEEB Profile</p>
+                <h1>{{ profile_user.username }}</h1>
+                <span>@{{ profile_user.username }}</span>
+
+                <div class="follow-stats">
+                    <div>
+                        <strong id="followersCount">{{ followers_count }}</strong>
+                        <small>Followers</small>
+                    </div>
+
+                    <div>
+                        <strong id="followingCount">{{ following_count }}</strong>
+                        <small>Following</small>
+                    </div>
+
+                    <div>
+                        <strong>{{ products|length }}</strong>
+                        <small>Products</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        {% if request.user != profile_user %}
+
+        {% csrf_token %}
+        <button id="followBtn"
+                data-username="{{ profile_user.username }}"
+                class="follow-btn">
+            {% if is_following %}
+                Following
+            {% else %}
+                Follow
+            {% endif %}
+        </button>
+        {% endif %}
+    </section>
+
+    <section class="profile-content">
+        <div class="section-heading">
+            <div>
+                <h2>Products for Sale</h2>
+                <p>Browse active products listed by {{ profile_user.username }}.</p>
+            </div>
+
+            <a href="{% url 'marketplace' %}" class="market-btn">
+                Visit Marketplace
+            </a>
+        </div>
+
+        <div class="product-grid">
+            {% for p in products %}
+            <article class="product-card">
+                <div class="product-image">
+                    {% if p.images.first %}
+                        <img src="{{ p.images.first.image.url }}" alt="{{ p.title }}">
+                    {% elif p.image %}
+                        <img src="{{ p.image.url }}" alt="{{ p.title }}">
+                    {% else %}
+                        <img src="{% static 'accounts/img/no-image.png' %}" alt="No image">
+                    {% endif %}
+                </div>
+
+                <div class="product-body">
+                    <h3>{{ p.title }}</h3>
+                    <p class="price">£{{ p.price }}</p>
+                    <p class="desc">{{ p.description|truncatechars:90 }}</p>
+
+                    <a href="{% url 'add_to_cart' p.id %}" class="cart-btn">
+                        Add to Cart
+                    </a>
+                </div>
+            </article>
+            {% empty %}
+            <div class="empty-state">
+                <i class="fa fa-box-open"></i>
+                <h3>No products yet</h3>
+                <p>This user does not have any active products for sale.</p>
+            </div>
+            {% endfor %}
+        </div>
+    </section>
+
+</main>
+
+<script src="{% static 'accounts/js/public_profile.js' %}"></script>
+</body>
+</html>

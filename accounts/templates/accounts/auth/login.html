@@ -1,0 +1,101 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0">
+
+    <title>Squeeb | Login</title>
+
+    <link rel="stylesheet"
+          href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+
+    <link rel="stylesheet"
+          href="{% static 'accounts/css/login.css' %}">
+</head>
+
+<body>
+
+<div class="login-page">
+
+    <div class="login-card">
+
+        <a href="{% url 'home' %}" class="logo">
+            <img src="{% static 'accounts/img/logo.png' %}" alt="Squeeb logo">
+        </a>
+
+        <div class="heading">
+            <h1>Welcome back</h1>
+            <p>Sign in to continue to your account.</p>
+        </div>
+
+        <p id="loginMessage" class="login-message"></p>
+
+        <form id="loginForm" method="post" autocomplete="off">
+
+            {% csrf_token %}
+
+            <div class="form-group">
+                <label for="username">Username</label>
+
+                <div class="input-box">
+                    <input
+                        type="text"
+                        id="username"
+                        name="username"
+                        placeholder="Enter your username"
+                        required>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="password">Password</label>
+
+                <div class="input-box password-box">
+                    <input
+                        type="password"
+                        id="password"
+                        name="password"
+                        placeholder="Enter your password"
+                        required>
+
+                    <button
+                        type="button"
+                        class="password-toggle"
+                        id="pwToggle"
+                        aria-label="Show password">
+                        <i class="fa fa-eye-slash"></i>
+                    </button>
+                </div>
+            </div>
+
+            <div class="forgot-link">
+                <a href="{% url 'forgot_password_page' %}">
+                    Forgot password?
+                </a>
+            </div>
+
+            <button type="submit" class="login-btn">
+                Log in
+            </button>
+
+        </form>
+
+        <div class="bottom-text">
+            Don't have an account?
+
+            <a href="{% url 'signup_page' %}">
+                Create one
+            </a>
+        </div>
+
+    </div>
+
+</div>
+
+<script src="{% static 'accounts/js/login.js' %}"></script>
+
+</body>
+</html>

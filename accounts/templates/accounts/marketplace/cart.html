@@ -1,0 +1,198 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cart | SQUEEB Market</title>
+
+    <link rel="stylesheet" href="{% static 'accounts/css/cart.css' %}">
+    <link rel="stylesheet"
+          href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+
+ <!-- ====================== DASHBOARD HEADER ====================== -->
+    <header class="dashboard-topbar">
+
+        <!-- Logo -->
+        <a href="{% url 'dashboard' %}" class="brand">
+            <img src="{% static 'accounts/img/logo.png' %}" alt="SQUEEB Logo">
+        </a>
+
+        <!-- Search Bar -->
+        <div class="dashboard-search">
+    <i class="fa fa-search"></i>
+
+    <input
+        type="text"
+        id="globalSearchInput"
+        placeholder="Search tasks, products, services and users">
+
+    <div class="search-results" id="searchResults"></div>
+</div>
+
+        <!-- Desktop Navigation -->
+        <nav class="dashboard-nav">
+            <a href="{% url 'dashboard' %}">Dashboard</a>
+            <a href="{% url 'earnings' %}">Earn</a>
+            <a href="{% url 'marketplace' %}">Marketplace</a>
+            <a href="{% url 'more_page' %}">List Items</a>
+        </nav>
+
+            <!-- Header Actions -->
+        <div class="top-actions">
+    <button class="icon-btn" onclick="window.location.href='{% url 'more_page' %}'">
+        <i class="fa-solid fa-gear"></i>
+    </button>
+
+            <a href="{% url 'logout' %}" class="logout-btn logout">
+                <i class="fa fa-power-off"></i>
+            </a>
+        </div>
+
+        <!-- Mobile Menu Button -->
+        <button class="mobile-menu-btn" id="mobileMenuBtn">
+            <i class="fa fa-bars"></i>
+        </button>
+
+        <!-- Mobile Dropdown -->
+        <div class="mobile-dropdown" id="mobileDropdown">
+            <a href="{% url 'dashboard' %}"><i class="fa fa-home"></i> Dashboard</a>
+            <a href="{% url 'marketplace' %}"><i class="fa fa-store"></i> Marketplace</a>
+            <a href="{% url 'more_page' %}"><i class="fa fa-ellipsis-h"></i> Sold Items</a>
+            <a href="{% url 'more_page' %}"><i class="fa fa-ellipsis-h"></i> List Items</a>
+            <a href="{% url 'more_page' %}"><i class="fa fa-ellipsis-h"></i> Profile</a>
+            <a href="{% url 'logout' %}" class="logout"><i class="fa fa-power-off"></i> Logout</a>
+        </div>
+
+    </header>
+
+<div class="cart-page">
+
+    <div class="cart-header">
+
+        <div>
+            <h1>Shopping Cart</h1>
+            <p>Review your items before checkout.</p>
+        </div>
+
+        <a href="{% url 'marketplace' %}" class="continue-btn">
+            Continue Shopping
+        </a>
+
+    </div>
+
+    <div class="cart-layout">
+
+        <!-- LEFT -->
+        <div class="cart-items">
+
+            {% if cart_products %}
+
+                {% for product in cart_products %}
+
+                <div class="cart-card">
+
+                    <div class="cart-image">
+
+                        {% if product.images.first %}
+                            <img src="{{ product.images.first.image.url }}">
+                        {% elif product.image %}
+                            <img src="{{ product.image.url }}">
+                        {% else %}
+                            <img src="{% static 'accounts/img/no-image.png' %}">
+                        {% endif %}
+
+                    </div>
+
+                    <div class="cart-info">
+
+                        <h3>{{ product.title }}</h3>
+
+                        <p class="seller">
+                            Sold by {{ product.seller.username }}
+                        </p>
+
+                        <p class="description">
+                            {{ product.description }}
+                        </p>
+
+                    </div>
+
+                    <div class="cart-right">
+
+                        <div class="price">
+                            £{{ product.price }}
+                        </div>
+
+                        <a href="{% url 'remove_from_cart' product.id %}"
+                           class="remove-btn">
+                            Remove
+                        </a>
+
+                    </div>
+
+                </div>
+
+                {% endfor %}
+
+            {% else %}
+
+            <div class="empty-cart">
+
+                <i class="fa fa-cart-shopping"></i>
+
+                <h2>Your cart is empty</h2>
+
+                <p>
+                    Browse products and add items to your cart.
+                </p>
+
+                <a href="{% url 'marketplace' %}" class="shop-btn">
+                    Browse Marketplace
+                </a>
+
+            </div>
+
+            {% endif %}
+
+        </div>
+
+        <!-- RIGHT -->
+        <div class="summary-card">
+
+            <h2>Order Summary</h2>
+
+            <div class="summary-row">
+                <span>Items</span>
+                <strong>{{ cart_products|length }}</strong>
+            </div>
+
+            <div class="summary-row">
+                <span>Total</span>
+                <strong>
+                    £{{ total_price }}
+                </strong>
+            </div>
+
+            <hr>
+
+            {% if cart_products %}
+
+            <button class="checkout-btn">
+                Proceed to Checkout
+            </button>
+
+            {% endif %}
+
+        </div>
+
+    </div>
+
+</div>
+
+<script src="{% static 'accounts/js/cart.js' %}"></script>
+
+</body>
+</html>

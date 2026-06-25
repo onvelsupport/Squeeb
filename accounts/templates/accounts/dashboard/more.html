@@ -1,0 +1,207 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Settings | SQUEEB</title>
+
+    <link rel="stylesheet" href="{% static 'accounts/css/more.css' %}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+
+<body>
+
+ <!-- ====================== DASHBOARD HEADER ====================== -->
+    <header class="dashboard-topbar">
+
+        <!-- Logo -->
+        <a href="{% url 'dashboard' %}" class="brand">
+            <img src="{% static 'accounts/img/logo.png' %}" alt="SQUEEB Logo">
+        </a>
+
+        <!-- Search Bar -->
+        <div class="dashboard-search">
+    <i class="fa fa-search"></i>
+
+    <input
+        type="text"
+        id="globalSearchInput"
+        placeholder="Search tasks, products, services and users">
+
+    <div class="search-results" id="searchResults"></div>
+</div>
+
+        <!-- Desktop Navigation -->
+        <nav class="dashboard-nav">
+            <a href="{% url 'dashboard' %}">Dashboard</a>
+            <a href="{% url 'earnings' %}">Earn</a>
+            <a href="{% url 'marketplace' %}">Marketplace</a>
+            <a href="{% url 'more_page' %}" class="active">More</a>
+        </nav>
+
+        <!-- Header Actions -->
+        <div class="top-actions">
+    <button class="icon-btn" onclick="window.location.href='{% url 'cart' %}'">
+        <i class="fa-solid fa-cart-shopping"></i>
+        <span>{{ request.session.cart|length|default:0 }}</span>
+    </button>
+
+            <a href="{% url 'logout' %}" class="logout-btn logout">
+                <i class="fa fa-power-off"></i>
+            </a>
+        </div>
+
+        <!-- Mobile Menu Button -->
+        <button class="mobile-menu-btn" id="mobileMenuBtn">
+            <i class="fa fa-bars"></i>
+        </button>
+
+        <!-- Mobile Dropdown -->
+        <div class="mobile-dropdown" id="mobileDropdown">
+            <a href="{% url 'dashboard' %}"><i class="fa fa-home"></i> Dashboard</a>
+            <a href="#" id="mobileEarnLink"><i class="fa fa-coins"></i> Earn</a>
+            <a href="#" id="mobileAdvertiseLink"><i class="fa fa-bullhorn"></i> Advertise</a>
+            <a href="{% url 'marketplace' %}"><i class="fa fa-store"></i> Market</a>
+            <a href="{% url 'more_page' %}"><i class="fa fa-ellipsis-h"></i> More</a>
+            <a href="{% url 'logout' %}" class="logout"><i class="fa fa-power-off"></i> Logout</a>
+        </div>
+
+    </header>
+
+<main class="settings-page">
+
+    <section class="settings-hero">
+        <div class="profile-box">
+            <img src="{% static 'accounts/img/avatar.png' %}" alt="Profile">
+
+            <div>
+                <p class="eyebrow">Account Settings</p>
+                <h1 id="usernameDisplay">Loading...</h1>
+                <span id="usernameTag">@loading</span>
+            </div>
+        </div>
+
+        <a href="{% url 'dashboard' %}" class="back-btn">
+             Edit Profile 
+        </a>
+    </section>
+
+    <section class="settings-grid">
+
+        <a href="#" class="setting-card">
+            <i class="fa fa-bag-shopping"></i>
+            <div>
+                <h3>My Orders</h3>
+                <p>View products you bought or requested.</p>
+            </div>
+        </a>
+
+        <a href="{% url 'marketplace' %}" class="setting-card">
+            <i class="fa fa-store"></i>
+            <div>
+                <h3>Marketplace</h3>
+                <p>Browse, buy, sell, and manage listings.</p>
+            </div>
+        </a>
+
+        <a href="{% url 'earnings' %}" class="setting-card">
+            <i class="fa fa-coins"></i>
+            <div>
+                <h3>Earnings</h3>
+                <p>Track your earnings and completed tasks.</p>
+            </div>
+        </a>
+
+        <a href="{% url 'dashboard' %}" class="setting-card">
+            <i class="fa fa-wallet"></i>
+            <div>
+                <h3>Wallet</h3>
+                <p>Fund wallet, withdraw, and check balances.</p>
+            </div>
+        </a>
+
+        <a href="{% url 'earnings' %}" class="setting-card">
+            <i class="fa fa-coins"></i>
+            <div>
+                <h3>Tasks</h3>
+                <p>Track and view your created tasks.</p>
+            </div>
+        </a>
+
+        <a href="#" class="setting-card">
+            <i class="fa fa-file-invoice"></i>
+            <div>
+                <h3>Transaction History</h3>
+                <p>Review deposits, payments, and withdrawals.</p>
+            </div>
+        </a>
+
+        <a href="#" class="setting-card">
+            <i class="fa fa-message"></i>
+            <div>
+                <h3>Messages</h3>
+                <p>View buyer, seller, and platform chats.</p>
+            </div>
+        </a>
+
+        <a href="#" class="setting-card">
+            <i class="fa fa-lock"></i>
+            <div>
+                <h3>Update Password</h3>
+                <p>Change your password and secure your account.</p>
+            </div>
+        </a>
+
+        <a href="#" class="setting-card">
+            <i class="fa fa-location-dot"></i>
+            <div>
+                <h3>Location</h3>
+                <p>Manage your city, delivery, and service area.</p>
+            </div>
+        </a>
+
+        <a href="#" class="setting-card">
+            <i class="fa fa-building-columns"></i>
+            <div>
+                <h3>Bank Details</h3>
+                <p>Manage payout details for withdrawals.</p>
+            </div>
+        </a>
+
+        <a href="{% url 'support' %}" class="setting-card">
+            <i class="fa fa-headset"></i>
+            <div>
+                <h3>Support</h3>
+                <p>Get help with your account or payments.</p>
+            </div>
+        </a>
+
+        <a href="{% url 'about' %}" class="setting-card">
+            <i class="fa fa-info-circle"></i>
+            <div>
+                <h3>About SQUEEB</h3>
+                <p>Learn more about the platform.</p>
+            </div>
+        </a>
+
+    </section>
+
+    <section class="danger-zone">
+        <div>
+            <h2>Account</h2>
+            <p>Log out of your SQUEEB account on this device.</p>
+        </div>
+
+        <a href="{% url 'logout' %}" class="danger-btn logout">
+            <i class="fa fa-power-off"></i>
+            Logout
+        </a>
+    </section>
+
+</main>
+
+<script src="{% static 'accounts/js/more.js' %}"></script>
+
+</body>
+</html>

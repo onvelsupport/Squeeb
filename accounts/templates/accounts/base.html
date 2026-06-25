@@ -1,0 +1,191 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0">
+
+    <title>{% block title %}Squeeb{% endblock %}</title>
+
+    <link rel="stylesheet"
+          href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+
+    <link rel="stylesheet"
+          href="{% static 'accounts/css/base.css' %}">
+
+    {% block extra_css %}
+    {% endblock %}
+</head>
+
+<body>
+
+{% if not user.is_authenticated %}
+<header class="site-header">
+    <nav class="navbar">
+
+        <a href="{% url 'home' %}" class="brand">
+            <img src="{% static 'accounts/img/logo.png' %}" alt="Squeeb logo">
+        </a>
+
+        <button class="menu-btn" id="menuBtn" aria-label="Open menu">
+            <i class="fa-solid fa-bars"></i>
+        </button>
+
+        <div class="nav-menu" id="navMenu">
+
+            <div class="nav-links">
+                <a href="{% url 'home' %}">Home</a>
+                <a href="{% url 'marketplace' %}">Marketplace</a>
+                <a href="{% url 'about' %}">About</a>
+                <a href="{% url 'earnings' %}">Earnings</a>
+                <a href="{% url 'support' %}">Support</a>
+            </div>
+
+            <div class="nav-actions">
+                <a href="{% url 'login' %}" class="login-link">Login</a>
+                <a href="{% url 'signup_page' %}" class="signup-btn">
+                    Create Account
+                </a>
+            </div>
+
+        </div>
+
+    </nav>
+</header>
+{% endif %}
+
+<main>
+    {% block content %}
+    {% endblock %}
+</main>
+
+<script>
+    const menuBtn = document.getElementById("menuBtn");
+    const navMenu = document.getElementById("navMenu");
+
+    if (menuBtn && navMenu) {
+        menuBtn.addEventListener("click", function () {
+            navMenu.classList.toggle("active");
+        });
+    }
+</script>
+
+{% block extra_js %}
+{% endblock %}
+
+<footer class="site-footer">
+
+    <div class="footer-top">
+
+        <div class="footer-brand">
+
+            <a href="{% url 'home' %}">
+                <img src="{% static 'accounts/img/logo2.png' %}" alt="Squeeb">
+            </a>
+
+            <p>
+                Buy, sell, earn rewards and complete tasks all from one platform.
+            </p>
+
+            <div class="social-links">
+                <a href="#"><i class="fab fa-facebook-f"></i></a>
+                <a href="#"><i class="fab fa-x-twitter"></i></a>
+                <a href="#"><i class="fab fa-instagram"></i></a>
+                <a href="#"><i class="fab fa-tiktok"></i></a>
+            </div>
+
+        </div>
+
+
+        {% if user.is_authenticated %}
+
+        <!-- Logged In -->
+        <div class="footer-column">
+
+            <h4>Dashboard</h4>
+
+            <a href="{% url 'dashboard' %}">Home</a>
+            <a href="{% url 'more_page' %}">My Profile</a>
+            <a href="{% url 'earnings' %}">Earnings</a>
+            <a href="{% url 'logout' %}">Logout</a>
+
+        </div>
+
+        <div class="footer-column">
+
+            <h4>Marketplace</h4>
+
+            <a href="{% url 'marketplace' %}">Browse Products</a>
+            <a href="{% url 'sell' %}">Sell Products</a>
+            <a href="{% url 'cart' %}">My Cart</a>
+            <a href="{% url 'seller_history' %}">Sold Items</a>
+
+        </div>
+
+        <div class="footer-column">
+
+            <h4>Tasks</h4>
+
+            <a href="{% url 'dashboard' %}">Create Task</a>
+            <a href="{% url 'earnings' %}">Earn Money</a>
+
+        </div>
+
+        {% else %}
+
+        <!-- Logged Out -->
+        <div class="footer-column">
+
+            <h4>Company</h4>
+
+            <a href="{% url 'about' %}">About</a>
+            <a href="{% url 'support' %}">Support</a>
+            <a href="#">Contact Us</a>
+            <a href="#">Careers</a>
+
+        </div>
+
+        <div class="footer-column">
+
+            <h4>Marketplace</h4>
+
+            <a href="{% url 'marketplace' %}">Browse Products</a>
+            <a href="{% url 'sell' %}">Sell Products</a>
+
+        </div>
+
+        <div class="footer-column">
+
+            <h4>Account</h4>
+
+            <a href="{% url 'login' %}">Login</a>
+            <a href="{% url 'signup' %}">Create Account</a>
+
+        </div>
+
+        {% endif %}
+
+        <div class="footer-column">
+
+            <h4>Legal</h4>
+
+            <a href="#">Privacy Policy</a>
+            <a href="#">Terms & Conditions</a>
+            <a href="#">Refund Policy</a>
+
+        </div>
+
+    </div>
+
+    <div class="footer-bottom">
+        <p>
+            © 2026 Squeeb. All rights reserved.
+        </p>
+    </div>
+
+</footer>
+
+</body>
+</html>

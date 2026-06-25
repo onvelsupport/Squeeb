@@ -1,0 +1,431 @@
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+}
+
+body{
+    background:#f6f8fc;
+    font-family:Arial, Helvetica, sans-serif;
+    color:#0f172a;
+}
+
+/* ==========================================================
+   DASHBOARD TOPBAR
+========================================================== */
+
+.dashboard-topbar{
+    background:#fff;
+    padding:18px 40px;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:20px;
+    border-bottom:1px solid #e5e7eb;
+    position:sticky;
+    top:0;
+    z-index:100;
+}
+
+.brand img{
+    width:150px;
+}
+
+.dashboard-search{
+    position: relative;
+    flex:1;
+    max-width:450px;
+    background:#f3f4f6;
+    padding:14px 18px;
+    border-radius:14px;
+    display:flex;
+    align-items:center;
+    gap:10px;
+}
+
+.dashboard-search input{
+    border:none;
+    background:none;
+    width:100%;
+    outline:none;
+    font-size:15px;
+}
+
+
+/* Search results dropdown */
+
+.search-results{
+    position:absolute;
+    top:calc(100% + 10px);
+    left:0;
+    right:0;
+
+    background:#fff;
+
+    border-radius:18px;
+
+    box-shadow:
+        0 10px 25px rgba(0,0,0,.08);
+
+    overflow:hidden;
+
+    display:none;
+
+    z-index:1000;
+
+    max-height:350px;
+
+    overflow-y:auto;
+}
+
+
+.search-item{
+    display:block;
+
+    padding:15px 20px;
+
+    text-decoration:none;
+
+    color:#111827;
+
+    border-bottom:1px solid #f1f5f9;
+
+    transition:.2s;
+}
+
+.search-item:hover{
+    background:#eff6ff;
+}
+
+
+.search-item strong{
+    display:block;
+    margin-bottom:4px;
+}
+
+
+.search-type{
+    font-size:12px;
+    color:#64748b;
+}
+
+
+
+
+
+.dashboard-nav{
+    display:flex;
+    align-items:center;
+    gap:25px;
+}
+
+.dashboard-nav a{
+    text-decoration:none;
+    font-size:14px;
+    font-weight:600;
+    color:#475569;
+    transition:.3s;
+}
+
+.dashboard-nav a:hover{
+    color:#2563eb;
+}
+
+.dashboard-nav a.active{
+    color:#2563eb;
+    font-weight:700;
+}
+
+
+
+
+
+.top-actions{
+    display:flex;
+    gap:15px;
+    align-items:center;
+}
+
+.icon-btn{
+    width:45px;
+    height:45px;
+    border:none;
+    background:#eff6ff;
+    border-radius:50%;
+    position:relative;
+    cursor:pointer;
+}
+
+.icon-btn span{
+    position:absolute;
+    top:-5px;
+    right:-5px;
+    background:red;
+    color:white;
+    width:20px;
+    height:20px;
+    border-radius:50%;
+    font-size:11px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+}
+
+.logout-btn{
+    width:45px;
+    height:45px;
+    background:#fee2e2;
+    color:red;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    border-radius:50%;
+}
+
+.mobile-menu-btn{
+    display:none;
+}
+
+.mobile-dropdown{
+    display:none;
+}
+
+/* ================= PAGE ================= */
+
+.profile-page{
+    width:92%;
+    max-width:1400px;
+    margin:auto;
+    padding:40px 0;
+}
+
+/* ================= HERO ================= */
+
+.profile-hero{
+    background:white;
+    border-radius:30px;
+    padding:45px;
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    gap:40px;
+    box-shadow:0 15px 40px rgba(0,0,0,.06);
+    margin-bottom:40px;
+}
+
+.profile-info{
+    display:flex;
+    align-items:center;
+    gap:30px;
+}
+
+.avatar{
+    width:130px;
+    height:130px;
+    border-radius:50%;
+    object-fit:cover;
+    border:5px solid #2563eb;
+}
+
+.eyebrow{
+    color:#2563eb;
+    font-weight:700;
+    margin-bottom:8px;
+}
+
+.profile-info h1{
+    font-size:38px;
+    margin-bottom:8px;
+}
+
+.profile-info span{
+    color:#64748b;
+}
+
+/* ================= STATS ================= */
+
+.follow-stats{
+    margin-top:30px;
+    display:flex;
+    gap:40px;
+}
+
+.follow-stats div{
+    text-align:center;
+}
+
+.follow-stats strong{
+    display:block;
+    font-size:28px;
+    margin-bottom:6px;
+}
+
+.follow-stats small{
+    color:#64748b;
+}
+
+/* ================= FOLLOW BUTTON ================= */
+
+.follow-btn{
+    background:#2563eb;
+    color:white;
+    border:none;
+    padding:16px 35px;
+    border-radius:18px;
+    cursor:pointer;
+    font-size:15px;
+    font-weight:700;
+    transition:.3s;
+}
+
+.follow-btn:hover{
+    background:#1d4ed8;
+    transform:translateY(-3px);
+}
+
+/* ================= SECTION ================= */
+
+.section-heading{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    margin-bottom:30px;
+}
+
+.section-heading h2{
+    font-size:32px;
+    margin-bottom:8px;
+}
+
+.section-heading p{
+    color:#64748b;
+}
+
+.market-btn{
+    background:white;
+    padding:14px 22px;
+    border-radius:16px;
+    text-decoration:none;
+    color:#2563eb;
+    font-weight:700;
+    box-shadow:0 10px 25px rgba(0,0,0,.05);
+}
+
+/* ================= PRODUCTS ================= */
+
+.product-grid{
+    display:grid;
+    grid-template-columns:
+    repeat(auto-fill,minmax(280px,1fr));
+    gap:30px;
+}
+
+.product-card{
+    background:white;
+    border-radius:28px;
+    overflow:hidden;
+    box-shadow:0 15px 40px rgba(0,0,0,.05);
+    transition:.3s;
+}
+
+.product-card:hover{
+    transform:translateY(-6px);
+}
+
+.product-image img{
+    width:100%;
+    height:250px;
+    object-fit:cover;
+}
+
+.product-body{
+    padding:24px;
+}
+
+.product-body h3{
+    font-size:20px;
+    margin-bottom:12px;
+}
+
+.price{
+    color:#2563eb;
+    font-size:24px;
+    font-weight:700;
+    margin-bottom:15px;
+}
+
+.desc{
+    color:#64748b;
+    line-height:1.7;
+    margin-bottom:20px;
+}
+
+.cart-btn{
+    display:block;
+    text-align:center;
+    background:#2563eb;
+    color:white;
+    text-decoration:none;
+    padding:14px;
+    border-radius:16px;
+    font-weight:700;
+    transition:.3s;
+}
+
+.cart-btn:hover{
+    background:#1d4ed8;
+}
+
+/* ================= EMPTY ================= */
+
+.empty-state{
+    grid-column:1/-1;
+    background:white;
+    border-radius:30px;
+    padding:70px;
+    text-align:center;
+}
+
+.empty-state i{
+    font-size:60px;
+    color:#94a3b8;
+    margin-bottom:20px;
+}
+
+.empty-state h3{
+    font-size:30px;
+    margin-bottom:12px;
+}
+
+.empty-state p{
+    color:#64748b;
+}
+
+/* ================= MOBILE ================= */
+
+@media(max-width:900px){
+
+    .profile-hero{
+        flex-direction:column;
+        text-align:center;
+    }
+
+    .profile-info{
+        flex-direction:column;
+    }
+
+    .follow-stats{
+        justify-content:center;
+    }
+
+    .section-heading{
+        flex-direction:column;
+        gap:20px;
+        text-align:center;
+    }
+
+    .profile-topbar nav{
+        display:none;
+    }
+
+}
