@@ -15,13 +15,102 @@
     <link rel="stylesheet"
           href="{% static 'accounts/css/base.css' %}">
 
+    {% if user.is_authenticated %}
+        <link rel="stylesheet" href="{% static 'accounts/css/dashboard.css' %}">
+    {% endif %}
+
     {% block extra_css %}
     {% endblock %}
 </head>
 
 <body>
 
-{% if not user.is_authenticated %}
+{% if user.is_authenticated %}
+
+<header class="dashboard-topbar">
+
+    <a href="{% url 'dashboard' %}" class="brand">
+        <img src="{% static 'accounts/img/logo.png' %}" alt="SQUEEB Logo">
+    </a>
+
+    <div class="dashboard-search">
+        <i class="fa fa-search"></i>
+
+        <input
+            type="text"
+            id="globalSearchInput"
+            placeholder="Search tasks, products, services and users">
+
+        <div class="search-results" id="searchResults"></div>
+    </div>
+
+    <nav class="dashboard-nav">
+        <a href="{% url 'dashboard' %}">Dashboard</a>
+        <a href="#" id="earnLink">Earn</a>
+        <a href="#" id="advertiseLink">Advertise</a>
+        <a href="{% url 'marketplace' %}">Marketplace</a>
+    </nav>
+
+    <div class="top-actions">
+        <button class="icon-btn notification-open-btn" id="openNotifications">
+            <i class="fa-solid fa-bell"></i>
+
+            {% if notification_count > 0 %}
+                <span class="notification-count">{{ notification_count }}</span>
+            {% endif %}
+        </button>
+
+        <a href="{% url 'logout' %}" class="logout-btn logout">
+            <i class="fa fa-power-off"></i>
+        </a>
+    </div>
+
+    <button class="mobile-menu-btn" id="mobileMenuBtn">
+        <i class="fa fa-bars"></i>
+    </button>
+
+    <div class="mobile-dropdown" id="mobileDropdown">
+        <a href="{% url 'dashboard' %}"><i class="fa fa-home"></i> Dashboard</a>
+        <a href="#" id="mobileEarnLink"><i class="fa fa-coins"></i> Earn</a>
+        <a href="#" id="mobileAdvertiseLink"><i class="fa fa-bullhorn"></i> Advertise</a>
+        <a href="{% url 'marketplace' %}"><i class="fa fa-store"></i> Market</a>
+        <a href="{% url 'more_page' %}"><i class="fa fa-ellipsis-h"></i> More</a>
+        <a href="{% url 'logout' %}" class="logout"><i class="fa fa-power-off"></i> Logout</a>
+    </div>
+
+</header>
+
+<div class="notification-overlay" id="notificationOverlay"></div>
+
+<aside class="notification-panel" id="notificationPanel">
+    <div class="notification-panel-header">
+        <h2>Notifications</h2>
+
+        <button id="closeNotifications">
+            <i class="fa-solid fa-xmark"></i>
+        </button>
+    </div>
+
+    <div class="notification-panel-body">
+        {% if notifications %}
+            {% for notification in notifications %}
+                <div class="notification-item {% if not notification.is_read %}unread{% endif %}">
+                    <h4>{{ notification.title }}</h4>
+                    <p>{{ notification.message }}</p>
+                    <span>{{ notification.created_at|timesince }} ago</span>
+                </div>
+            {% endfor %}
+        {% else %}
+            <div class="empty-notification">
+                <i class="fa-regular fa-bell-slash"></i>
+                <p>No notifications yet</p>
+            </div>
+        {% endif %}
+    </div>
+</aside>
+
+{% else %}
+
 <header class="site-header">
     <nav class="navbar">
 
@@ -54,6 +143,7 @@
 
     </nav>
 </header>
+
 {% endif %}
 
 <main>
@@ -61,19 +151,26 @@
     {% endblock %}
 </main>
 
-<script>
-    const menuBtn = document.getElementById("menuBtn");
-    const navMenu = document.getElementById("navMenu");
-
-    if (menuBtn && navMenu) {
-        menuBtn.addEventListener("click", function () {
-            navMenu.classList.toggle("active");
-        });
-    }
-</script>
-
 {% block extra_js %}
 {% endblock %}
+
+{% if user.is_authenticated %}
+    <script src="{% static 'accounts/js/dashboard.js' %}"></script>
+{% else %}
+    <script>
+        const menuBtn = document.getElementById("menuBtn");
+        const navMenu = document.getElementById("navMenu");
+
+        if (menuBtn && navMenu) {
+            menuBtn.addEventListener("click", function () {
+                navMenu.classList.toggle("active");
+            });
+        }
+    </script>
+{% endif %}
+
+
+<!-- ====================== FOOTER ====================== -->
 
 <footer class="site-footer">
 
@@ -81,7 +178,7 @@
 
         <div class="footer-brand">
 
-            <a href="{% url 'home' %}">
+            <a href="{% if user.is_authenticated %}{% url 'dashboard' %}{% else %}{% url 'home' %}{% endif %}">
                 <img src="{% static 'accounts/img/logo2.png' %}" alt="Squeeb">
             </a>
 
@@ -98,15 +195,15 @@
 
         </div>
 
-
         {% if user.is_authenticated %}
 
         <!-- Logged In -->
+
         <div class="footer-column">
 
             <h4>Dashboard</h4>
 
-            <a href="{% url 'dashboard' %}">Home</a>
+            <a href="{% url 'dashboard' %}">Dashboard</a>
             <a href="{% url 'more_page' %}">My Profile</a>
             <a href="{% url 'earnings' %}">Earnings</a>
             <a href="{% url 'logout' %}">Logout</a>
@@ -136,6 +233,7 @@
         {% else %}
 
         <!-- Logged Out -->
+
         <div class="footer-column">
 
             <h4>Company</h4>
@@ -161,7 +259,7 @@
             <h4>Account</h4>
 
             <a href="{% url 'login' %}">Login</a>
-            <a href="{% url 'signup' %}">Create Account</a>
+            <a href="{% url 'signup_page' %}">Create Account</a>
 
         </div>
 
@@ -186,6 +284,5 @@
     </div>
 
 </footer>
-
 </body>
 </html>
