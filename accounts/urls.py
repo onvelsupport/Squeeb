@@ -41,14 +41,15 @@ from .views import (
     edit_product,
     product_detail,
     send_product_message,
+    root_redirect,
 )
 
 urlpatterns = [
     # ======================
     # PUBLIC PAGES
     # ======================
-    path("", homepage, name="home"),
-    path("index/", homepage, name="homepage"),
+    path("", root_redirect, name="root"),
+    path("home/", homepage, name="home"),
 
     path("about/", about, name="about"),
     path("about/", about, name="about_page"),

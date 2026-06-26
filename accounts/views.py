@@ -17,6 +17,12 @@ from .models import Product, ProductImage, TaskCompletion, FundingPayment, Withd
 
 User = get_user_model()
 
+def root_redirect(request):
+    if request.user.is_authenticated:
+        return redirect("dashboard")
+    return redirect("home")
+
+
 def recent_activities_api(request):
     activities = RecentActivity.objects.all()[:10]
 
