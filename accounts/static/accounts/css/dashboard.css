@@ -1364,3 +1364,93 @@ a{
         font-size:16px !important;
     }
 }
+
+
+/* ==========================================================
+   FIX EARN / ADVERTISE MODALS ON MOBILE
+========================================================== */
+
+@media(max-width:700px){
+
+    .choice-modal-bg{
+        align-items:flex-end;
+        padding:0;
+    }
+
+    .choice-modal{
+        width:100%;
+        max-width:100%;
+        max-height:88vh;
+        overflow-y:auto;
+        border-radius:28px 28px 0 0;
+        padding:28px 20px 24px;
+    }
+
+    .choice-header{
+        text-align:left;
+        margin-bottom:20px;
+    }
+
+    .choice-header h2{
+        font-size:24px;
+        line-height:1.2;
+    }
+
+    .choice-header p{
+        font-size:14px;
+        line-height:1.4;
+    }
+
+    .choice-grid{
+        grid-template-columns:1fr;
+        gap:14px;
+    }
+
+    .choice-card{
+        display:grid;
+        grid-template-columns:54px 1fr 24px;
+        gap:14px;
+        align-items:center;
+        padding:18px;
+        border-radius:20px;
+    }
+
+    .choice-icon{
+        width:54px;
+        height:54px;
+        border-radius:16px;
+        font-size:20px;
+    }
+
+    .choice-card h3{
+        font-size:18px;
+        margin-bottom:5px;
+    }
+
+    .choice-card p{
+        font-size:13px;
+        line-height:1.4;
+    }
+
+    .choice-card .social-icons,
+    .choice-card .product-icons{
+        margin-top:10px;
+        display:flex;
+        flex-direction:row;
+        gap:6px;
+        flex-wrap:wrap;
+    }
+
+    .choice-card .social-icons img,
+    .choice-card .product-icons img{
+        width:24px;
+        height:24px;
+        border-radius:8px;
+        padding:2px;
+    }
+
+    .choice-arrow{
+        margin-top:0;
+        align-self:center;
+    }
+}
