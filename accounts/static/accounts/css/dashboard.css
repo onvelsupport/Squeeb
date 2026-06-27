@@ -1334,3 +1334,113 @@ a{
         z-index:2000;
     }
 }
+
+
+
+@media(max-width:700px){
+
+    .tasks-section{
+        margin-top:28px;
+    }
+
+    .section-heading h2{
+        font-size:28px;
+        line-height:1.2;
+    }
+
+    .section-heading p{
+        font-size:15px;
+        line-height:1.4;
+    }
+
+    .task-list{
+        gap:16px;
+    }
+
+    .task-card{
+        display:grid;
+        grid-template-columns:52px 1fr;
+        gap:14px;
+        padding:18px;
+        border-radius:24px;
+        align-items:center;
+    }
+
+    .task-icon{
+        grid-row:span 2;
+    }
+
+    .task-icon img{
+        width:48px;
+        height:48px;
+        object-fit:contain;
+    }
+
+    .task-info{
+        min-width:0;
+    }
+
+    .task-label{
+        font-size:12px;
+        margin-bottom:4px;
+        display:block;
+    }
+
+    .task-info h3{
+        font-size:18px;
+        line-height:1.25;
+        margin:0;
+        display:block;
+        overflow:visible;
+    }
+
+    .task-info p{
+        display:none;
+    }
+
+    .platforms{
+        margin-top:10px;
+        gap:7px;
+    }
+
+    .platforms img{
+        width:22px;
+        height:22px;
+    }
+
+    .task-action{
+        grid-column:1 / -1;
+        display:flex;
+        align-items:center;
+        justify-content:space-between;
+        gap:12px;
+        width:100%;
+        text-align:left;
+        padding-top:12px;
+        border-top:1px solid #eef2f7;
+    }
+
+    .task-action strong{
+        font-size:22px;
+        line-height:1;
+    }
+
+    .task-action span{
+        font-size:12px;
+        display:block;
+        margin-top:3px;
+    }
+
+    .select-btn{
+        width:auto;
+        margin:0;
+        padding:12px 18px;
+        border-radius:16px;
+        font-size:14px;
+        white-space:nowrap;
+    }
+
+    .site-footer{
+        padding-bottom:90px;
+    }
+}
