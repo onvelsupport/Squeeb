@@ -24,7 +24,7 @@ class WithdrawalRequest(models.Model):
     paypal_email = models.EmailField(blank=True, null=True)
 
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default="pending")
-    approval_token = models.UUIDField(default=uuid.uuid4, unique=True, editable=False)
+    approval_token = models.UUIDField(default=uuid.uuid4, editable=False)
 
     created_at = models.DateTimeField(auto_now_add=True)
     paid_at = models.DateTimeField(blank=True, null=True)
