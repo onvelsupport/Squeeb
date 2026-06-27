@@ -1261,3 +1261,200 @@ a{
         font-size: 24px;
     }
 }
+
+
+/* ==========================================================
+   MOBILE APP-LIKE DASHBOARD UI
+========================================================== */
+
+@media (max-width: 700px) {
+
+    .dashboard-main {
+        width: 94%;
+        padding: 22px 0;
+    }
+
+    /* HERO */
+    .hero-section {
+        margin-bottom: 20px;
+        gap: 14px;
+    }
+
+    .eyebrow {
+        font-size: 12px;
+        margin-bottom: 6px;
+    }
+
+    .hero-section h1 {
+        font-size: 26px;
+        margin-bottom: 6px;
+    }
+
+    .hero-text {
+        font-size: 13px;
+        line-height: 1.4;
+        max-width: 100%;
+    }
+
+    .profile-pill {
+        display: none;
+    }
+
+    /* STATS */
+    .dashboard-grid {
+        grid-template-columns: 1fr 1fr;
+        gap: 12px;
+        margin-bottom: 22px;
+    }
+
+    .wallet-card {
+        grid-column: span 2;
+        padding: 20px;
+        border-radius: 20px;
+    }
+
+    .wallet-top h2 {
+        font-size: 30px;
+    }
+
+    .wallet-actions {
+        flex-direction: row;
+        gap: 10px;
+        margin-top: 18px;
+    }
+
+    .wallet-actions button {
+        flex: 1;
+        padding: 12px;
+        font-size: 13px;
+    }
+
+    .stats-card {
+        padding: 16px;
+        border-radius: 18px;
+    }
+
+    .stats-card p {
+        font-size: 12px;
+    }
+
+    .stats-card h3 {
+        font-size: 24px;
+        margin: 8px 0;
+    }
+
+    .stats-card span {
+        display: none;
+    }
+
+    /* MEMBERSHIP */
+    .membership-banner {
+        padding: 20px;
+        border-radius: 20px;
+        margin-bottom: 24px;
+        gap: 14px;
+    }
+
+    .membership-banner p {
+        font-size: 12px;
+    }
+
+    .membership-banner h2 {
+        font-size: 18px;
+        margin: 8px 0;
+        line-height: 1.3;
+    }
+
+    .membership-banner span {
+        font-size: 13px;
+    }
+
+    .pay-btn {
+        padding: 13px 18px;
+        border-radius: 14px;
+        width: 100%;
+        text-align: center;
+    }
+
+    /* TASK SECTION */
+    .section-heading {
+        margin-bottom: 14px;
+    }
+
+    .section-heading h2 {
+        font-size: 22px;
+    }
+
+    .section-heading p {
+        font-size: 13px;
+    }
+
+    .task-list {
+        gap: 14px;
+    }
+
+    .task-card {
+        display: grid;
+        grid-template-columns: 52px 1fr auto;
+        align-items: center;
+        gap: 12px;
+        padding: 16px;
+        border-radius: 20px;
+    }
+
+    .task-icon img {
+        width: 46px;
+        height: 46px;
+        object-fit: contain;
+    }
+
+    .task-info h3 {
+        font-size: 15px;
+        margin: 4px 0;
+        line-height: 1.25;
+
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+    }
+
+    .task-label {
+        font-size: 11px;
+    }
+
+    .task-info p {
+        display: none;
+    }
+
+    .platforms {
+        margin-top: 8px;
+        gap: 6px;
+    }
+
+    .platforms img {
+        width: 18px;
+        height: 18px;
+    }
+
+    .task-action {
+        text-align: right;
+        width: auto;
+    }
+
+    .task-action strong {
+        font-size: 18px;
+    }
+
+    .task-action span {
+        font-size: 11px;
+    }
+
+    .select-btn {
+        margin-top: 8px;
+        padding: 9px 12px;
+        border-radius: 12px;
+        font-size: 12px;
+        white-space: nowrap;
+    }
+}
