@@ -1,176 +1,117 @@
+{% extends 'accounts/base.html' %}
 {% load static %}
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Earnings | SQUEEB</title>
 
-    <link rel="stylesheet" href="{% static 'accounts/css/earnings.css' %}">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-</head>
+{% block title %}
+Earnings | SQUEEB
+{% endblock %}
 
-<body>
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'accounts/css/earnings.css' %}">
+{% endblock %}
+
+{% block content %}
 
 <div class="dashboard-page">
 
-    <!-- ====================== DASHBOARD HEADER ====================== -->
-    <header class="dashboard-topbar">
+    <main class="earnings-page">
 
-        <!-- Logo -->
-        <a href="{% url 'dashboard' %}" class="brand">
-            <img src="{% static 'accounts/img/logo.png' %}" alt="SQUEEB Logo">
-        </a>
+        <section class="earnings-hero">
+            <div>
+                <p class="eyebrow">Earnings Dashboard</p>
+                <h1>Earn money on SQUEEB</h1>
+                <p>
+                    Complete social tasks, track your rewards, manage referrals, and monitor your earnings.
+                </p>
+            </div>
 
-        <!-- Search Bar -->
-        <div class="dashboard-search">
-    <i class="fa fa-search"></i>
-
-    <input
-        type="text"
-        id="globalSearchInput"
-        placeholder="Search tasks, products, services and users">
-
-    <div class="search-results" id="searchResults"></div>
-</div>
-
-        <!-- Desktop Navigation -->
-        <nav class="dashboard-nav">
-            <a href="{% url 'dashboard' %}">Dashboard</a>
-            <a href="{% url 'earnings' %}" class="active">Earn</a>
-            <a href="{% url 'marketplace' %}">Marketplace</a>
-            <a href="{% url 'more_page' %}">More</a>
-        </nav>
-
-        <!-- Header Actions -->
-        <div class="top-actions">
-            <button class="icon-btn" onclick="window.location.href='{% url 'notifications' %}'">
-        <i class="fa-solid fa-bell"></i>
-    </button>
-        <a {% if notification_count > 0 %}
-            <span>{{ notification_count }}</span>
-        {% endif %}
-    </a>
-
-            <a href="{% url 'logout' %}" class="logout-btn logout">
-                <i class="fa fa-power-off"></i>
+            <a href="{% url 'dashboard' %}" class="back-btn">
+                <i class="fa fa-plus"></i>
+                Create a Task
             </a>
-        </div>
+        </section>
 
-        <!-- Mobile Menu Button -->
-        <button class="mobile-menu-btn" id="mobileMenuBtn">
-            <i class="fa fa-bars"></i>
-        </button>
-
-        <!-- Mobile Dropdown -->
-        <div class="mobile-dropdown" id="mobileDropdown">
-            <a href="{% url 'dashboard' %}"><i class="fa fa-home"></i> Dashboard</a>
-            <a href="#" id="mobileEarnLink"><i class="fa fa-coins"></i> Earn</a>
-            <a href="#" id="mobileAdvertiseLink"><i class="fa fa-bullhorn"></i> Advertise</a>
-            <a href="{% url 'marketplace' %}"><i class="fa fa-store"></i> Market</a>
-            <a href="{% url 'more_page' %}"><i class="fa fa-ellipsis-h"></i> More</a>
-            <a href="{% url 'logout' %}" class="logout"><i class="fa fa-power-off"></i> Logout</a>
-        </div>
-
-    </header>
-
-<main class="earnings-page">
-
-    <section class="earnings-hero">
-        <div>
-            <p class="eyebrow">Earnings Dashboard</p>
-            <h1>Earn money on SQUEEB</h1>
-            <p>
-                Complete social tasks, track your rewards, manage referrals, and monitor your earnings.
-            </p>
-        </div>
-
-        <a href="{% url 'dashboard' %}" class="back-btn">
-            <i class="fa fa-plus"></i>
-            Create a Task
-        </a>
-    </section>
-
-    <section class="profile-strip">
-        <img src="{% static 'accounts/img/avatar.png' %}" alt="Profile">
-
-        <div>
-            <h3 id="usernameDisplay">User</h3>
-            <span id="usernameTag">@user</span>
-        </div>
-
-        <div class="profile-metrics">
-            <div>
-                <strong id="balanceAmount">£0.00</strong>
-                <span>Wallet</span>
-            </div>
+        <section class="profile-strip">
+            <img src="{% static 'accounts/img/avatar.png' %}" alt="Profile">
 
             <div>
-                <strong id="earningsTotal">£0.00</strong>
-                <span>Earnings</span>
+                <h3 id="usernameDisplay">User</h3>
+                <span id="usernameTag">@user</span>
             </div>
 
+            <div class="profile-metrics">
+                <div>
+                    <strong id="balanceAmount">£0.00</strong>
+                    <span>Wallet</span>
+                </div>
+
+                <div>
+                    <strong id="earningsTotal">£0.00</strong>
+                    <span>Earnings</span>
+                </div>
+
+                <div>
+                    <strong id="tasksCompleted">0</strong>
+                    <span>Tasks</span>
+                </div>
+
+                <div>
+                    <strong id="referrals">0</strong>
+                    <span>Referrals</span>
+                </div>
+            </div>
+        </section>
+
+        <section class="membership-panel" id="membershipSection">
             <div>
-                <strong id="tasksCompleted">0</strong>
-                <span>Tasks</span>
+                <p class="eyebrow">Membership</p>
+                <h2>Activate your earning access</h2>
+                <p>
+                    Pay the membership fee to unlock available tasks and start earning from social activity.
+                </p>
             </div>
 
-            <div>
-                <strong id="referrals">0</strong>
-                <span>Referrals</span>
+            <div class="membership-price">
+                <span>One-time fee</span>
+                <h2>£10</h2>
+                <button id="payMembershipBtn">Activate Membership</button>
             </div>
-        </div>
-    </section>
+        </section>
 
-    <section class="membership-panel" id="membershipSection">
-        <div>
-            <p class="eyebrow">Membership</p>
-            <h2>Activate your earning access</h2>
-            <p>
-                Pay the membership fee to unlock available tasks and start earning from social activity.
-            </p>
-        </div>
-
-        <div class="membership-price">
-            <span>One-time fee</span>
-            <h2>£10</h2>
-            <button id="payMembershipBtn">Activate Membership</button>
-        </div>
-    </section>
-
-    <section class="task-section">
-        <div class="section-heading">
-            <div>
-                <h2>Available Tasks</h2>
-                <p>Choose a task, complete it, and submit your proof.</p>
+        <section class="task-section">
+            <div class="section-heading">
+                <div>
+                    <h2>Available Tasks</h2>
+                    <p>Choose a task, complete it, and submit your proof.</p>
+                </div>
             </div>
-        </div>
 
-        <div id="taskList" class="task-grid">
-            <div class="empty-task">
-                <i class="fa fa-list-check"></i>
-                <h3>No tasks available yet</h3>
-                <p>Tasks will appear here once your account has access.</p>
+            <div id="taskList" class="task-grid">
+                <div class="empty-task">
+                    <i class="fa fa-list-check"></i>
+                    <h3>No tasks available yet</h3>
+                    <p>Tasks will appear here once your account has access.</p>
+                </div>
             </div>
-        </div>
-    </section>
+        </section>
 
-    <section class="activity-panel">
-        <div class="section-heading">
-            <div>
-                <h2>Recent Activity</h2>
-                <p>See what people are earning on SQUEEB.</p>
+        <section class="activity-panel">
+            <div class="section-heading">
+                <div>
+                    <h2>Recent Activity</h2>
+                    <p>See what people are earning on SQUEEB.</p>
+                </div>
             </div>
-        </div>
 
-        <div class="activity-list" id="activityList">
-            <div class="activity-item">
-                <p>Loading activities...</p>
+            <div class="activity-list" id="activityList">
+                <div class="activity-item">
+                    <p>Loading activities...</p>
+                </div>
             </div>
-        </div>
-    </section>
+        </section>
 
-</main>
+    </main>
+
+</div>
 
 <div class="task-modal-bg" id="taskModal">
     <div class="task-modal">
@@ -199,7 +140,8 @@
     </div>
 </div>
 
-<script src="{% static 'accounts/js/earnings.js' %}"></script>
+{% endblock %}
 
-</body>
-</html>
+{% block extra_js %}
+<script src="{% static 'accounts/js/earnings.js' %}"></script>
+{% endblock %}
