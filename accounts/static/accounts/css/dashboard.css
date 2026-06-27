@@ -1350,3 +1350,17 @@ a{
         padding-bottom:90px;
     }
 }
+
+/* Stop iPhone Safari input zoom */
+@media(max-width:900px){
+    input,
+    textarea,
+    select,
+    .dashboard-search input,
+    .modal-input,
+    .form-group input,
+    .form-group select,
+    #fundAmountInput{
+        font-size:16px !important;
+    }
+}
