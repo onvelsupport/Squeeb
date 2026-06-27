@@ -33,33 +33,37 @@ class WithdrawalAdmin(admin.ModelAdmin):
     list_display = (
         "user",
         "amount",
-        "sort_code",
-        "account_number",
+        "method",
         "status",
-        "requested_at",
-        "updated_at",
+        "created_at",
+        "paid_at",
     )
 
-    list_filter = ("status", "requested_at")
+    list_filter = (
+        "status",
+        "method",
+        "created_at",
+    )
+
     search_fields = (
         "user__username",
         "user__email",
-        "account_number",
+        "account_name",
+        "bank_name",
         "sort_code",
+        "account_number",
+        "paypal_email",
     )
 
-    ordering = ("-requested_at",)
+    ordering = ("-created_at",)
 
     readonly_fields = (
-        "requested_at",
-        "updated_at",
+        "approval_token",
+        "created_at",
+        "paid_at",
     )
 
-    actions = ["mark_as_approved", "mark_as_paid", "mark_as_rejected"]
-
-    @admin.action(description="Mark selected withdrawals as APPROVED")
-    def mark_as_approved(self, request, queryset):
-        queryset.update(status="approved")
+    actions = ["mark_as_paid", "mark_as_rejected"]
 
     @admin.action(description="Mark selected withdrawals as PAID")
     def mark_as_paid(self, request, queryset):

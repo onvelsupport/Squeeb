@@ -14,7 +14,12 @@ from django.core.mail import send_mail,EmailMultiAlternatives
 from django.conf import settings
 from accounts.models import Task
 from .models import Product, ProductImage, TaskCompletion, FundingPayment, WithdrawalRequest, Follow, RecentActivity, Notification, ProductMessage
-
+from decimal import Decimal
+from django.db import transaction
+from django.shortcuts import get_object_or_404
+from django.utils import timezone
+from django.urls import reverse
+from .models import WithdrawalRequest
 
 User = get_user_model()
 
@@ -766,9 +771,9 @@ def request_withdrawal(request):
             "message": "Invalid request method."
         }, status=405)
 
+    user = request.user
     method = request.POST.get("method")
     amount = request.POST.get("amount")
-    user = request.user
 
     if not method or not amount:
         return JsonResponse({
@@ -776,76 +781,48 @@ def request_withdrawal(request):
             "message": "Withdrawal method and amount are required."
         }, status=400)
 
-    if method == "Bank Account":
-        account_name = request.POST.get("account_name")
-        bank_name = request.POST.get("bank_name")
-        sort_code = request.POST.get("sort_code")
-        account_number = request.POST.get("account_number")
+    amount = Decimal(amount)
 
-        message = f"""
-New Bank Withdrawal Request
-
-User: {user.username}
-Email: {user.email}
-
-Amount: £{amount}
-Method: Bank Account
-
-Account Name: {account_name}
-Bank Name: {bank_name}
-Sort Code: {sort_code}
-Account Number: {account_number}
-"""
-
-        payment_info_html = f"""
-        <tr>
-            <td style="padding:12px;background:#f9fafb;font-weight:bold;">Account Name</td>
-            <td style="padding:12px;">{account_name}</td>
-        </tr>
-        <tr>
-            <td style="padding:12px;background:#f9fafb;font-weight:bold;">Bank Name</td>
-            <td style="padding:12px;">{bank_name}</td>
-        </tr>
-        <tr>
-            <td style="padding:12px;background:#f9fafb;font-weight:bold;">Sort Code</td>
-            <td style="padding:12px;">{sort_code}</td>
-        </tr>
-        <tr>
-            <td style="padding:12px;background:#f9fafb;font-weight:bold;">Account Number</td>
-            <td style="padding:12px;">{account_number}</td>
-        </tr>
-        """
-
-    elif method == "PayPal":
-        paypal_email = request.POST.get("paypal_email")
-
-        message = f"""
-New PayPal Withdrawal Request
-
-User: {user.username}
-Email: {user.email}
-
-Amount: £{amount}
-Method: PayPal
-
-PayPal Email: {paypal_email}
-"""
-
-        payment_info_html = f"""
-        <tr>
-            <td style="padding:12px;background:#f9fafb;font-weight:bold;">PayPal Email</td>
-            <td style="padding:12px;">{paypal_email}</td>
-        </tr>
-        """
-
-    else:
+    if amount <= 0:
         return JsonResponse({
             "success": False,
-            "message": "Invalid withdrawal method."
+            "message": "Invalid withdrawal amount."
         }, status=400)
 
+    if user.balance < amount:
+        return JsonResponse({
+            "success": False,
+            "message": "Insufficient balance."
+        }, status=400)
+
+    withdrawal = WithdrawalRequest.objects.create(
+        user=user,
+        amount=amount,
+        method=method,
+        account_name=request.POST.get("account_name"),
+        bank_name=request.POST.get("bank_name"),
+        sort_code=request.POST.get("sort_code"),
+        account_number=request.POST.get("account_number"),
+        paypal_email=request.POST.get("paypal_email"),
+    )
+
+    approve_url = request.build_absolute_uri(
+        reverse("approve_withdrawal", args=[withdrawal.approval_token])
+    )
+
     subject = "New SQUEEB Withdrawal Request"
-    text_content = message
+
+    text_content = f"""
+New Withdrawal Request
+
+User: {user.username}
+Email: {user.email}
+Amount: £{amount}
+Method: {method}
+
+Approve after manual payment:
+{approve_url}
+"""
 
     html_content = f"""
     <div style="font-family:Arial,sans-serif;background:#f5f7fb;padding:30px;">
@@ -853,12 +830,10 @@ PayPal Email: {paypal_email}
 
             <div style="background:linear-gradient(135deg,#2563eb,#7c3aed);color:white;padding:28px;">
                 <h1 style="margin:0;font-size:24px;">SQUEEB Withdrawal Request</h1>
-                <p style="margin:8px 0 0;opacity:.9;">A user has submitted a new withdrawal request.</p>
+                <p style="margin:8px 0 0;">A user has requested a withdrawal.</p>
             </div>
 
             <div style="padding:28px;">
-                <h2 style="margin:0 0 18px;color:#111827;">Request Details</h2>
-
                 <table style="width:100%;border-collapse:collapse;border:1px solid #e5e7eb;">
                     <tr>
                         <td style="padding:12px;background:#f9fafb;font-weight:bold;">User</td>
@@ -876,19 +851,39 @@ PayPal Email: {paypal_email}
                         <td style="padding:12px;background:#f9fafb;font-weight:bold;">Method</td>
                         <td style="padding:12px;">{method}</td>
                     </tr>
-
-                    {payment_info_html}
+                    <tr>
+                        <td style="padding:12px;background:#f9fafb;font-weight:bold;">Account Name</td>
+                        <td style="padding:12px;">{withdrawal.account_name or "-"}</td>
+                    </tr>
+                    <tr>
+                        <td style="padding:12px;background:#f9fafb;font-weight:bold;">Bank Name</td>
+                        <td style="padding:12px;">{withdrawal.bank_name or "-"}</td>
+                    </tr>
+                    <tr>
+                        <td style="padding:12px;background:#f9fafb;font-weight:bold;">Sort Code</td>
+                        <td style="padding:12px;">{withdrawal.sort_code or "-"}</td>
+                    </tr>
+                    <tr>
+                        <td style="padding:12px;background:#f9fafb;font-weight:bold;">Account Number</td>
+                        <td style="padding:12px;">{withdrawal.account_number or "-"}</td>
+                    </tr>
+                    <tr>
+                        <td style="padding:12px;background:#f9fafb;font-weight:bold;">PayPal Email</td>
+                        <td style="padding:12px;">{withdrawal.paypal_email or "-"}</td>
+                    </tr>
                 </table>
 
-                <div style="margin-top:24px;padding:16px;background:#eff6ff;border-radius:14px;color:#1e40af;font-size:14px;">
-                    Review this withdrawal request before sending payment manually.
+                <div style="margin-top:24px;text-align:center;">
+                    <a href="{approve_url}"
+                       style="display:inline-block;background:#2563eb;color:white;text-decoration:none;padding:14px 22px;border-radius:12px;font-weight:bold;">
+                        Mark as Paid & Deduct Balance
+                    </a>
                 </div>
-            </div>
 
-            <div style="padding:18px 28px;background:#f9fafb;color:#64748b;font-size:13px;">
-                This email was automatically generated by SQUEEB.
+                <p style="margin-top:20px;color:#64748b;font-size:13px;">
+                    Only click this after you have manually sent the payment.
+                </p>
             </div>
-
         </div>
     </div>
     """
@@ -907,6 +902,32 @@ PayPal Email: {paypal_email}
         "success": True,
         "message": "Withdrawal request submitted successfully."
     })
+
+
+
+def approve_withdrawal(request, token):
+    withdrawal = get_object_or_404(
+        WithdrawalRequest,
+        approval_token=token
+    )
+
+    if withdrawal.status == "paid":
+        return HttpResponse("This withdrawal has already been marked as paid.")
+
+    with transaction.atomic():
+        user = withdrawal.user
+
+        if user.balance < withdrawal.amount:
+            return HttpResponse("User does not have enough balance.")
+
+        user.balance -= withdrawal.amount
+        user.save()
+
+        withdrawal.status = "paid"
+        withdrawal.paid_at = timezone.now()
+        withdrawal.save()
+
+    return HttpResponse("Withdrawal marked as paid and user balance deducted successfully.")
 
 
 @login_required

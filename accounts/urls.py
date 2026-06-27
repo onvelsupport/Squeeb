@@ -52,6 +52,7 @@ from .views import (
     terms_conditions,
     refund_policy,
     api_edit_profile,
+    approve_withdrawal,
 
 )
 
@@ -151,7 +152,7 @@ urlpatterns = [
     path("api/create-funding-checkout/", create_funding_checkout, name="create_funding_checkout"),
     path("stripe/webhook/", stripe_webhook, name="stripe_webhook"),
     path("request-withdrawal/", request_withdrawal, name="request_withdrawal"),
-    
+    path("approve-withdrawal/<uuid:token>/", approve_withdrawal, name="approve_withdrawal"),
 
     # ======================
     # PASSWORD RESET API
