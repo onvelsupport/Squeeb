@@ -1,11 +1,16 @@
 document.addEventListener("DOMContentLoaded", () => {
+    const money = (n) => `£${parseFloat(n || 0).toFixed(2)}`;
 
     const bankModal = document.getElementById("bankModal");
     const paypalModal = document.getElementById("paypalModal");
     const openBankModal = document.getElementById("openBankModal");
     const openPaypalModal = document.getElementById("openPaypalModal");
 
-    /* ================= OPEN MODALS ================= */
+    const withdrawHistoryList = document.getElementById("withdrawHistoryList");
+    const withdrawTabs = document.querySelectorAll(".withdraw-tab");
+
+    let allWithdrawals = [];
+    let activeFilter = "all";
 
     openBankModal?.addEventListener("click", () => {
         bankModal?.classList.add("show");
@@ -14,8 +19,6 @@ document.addEventListener("DOMContentLoaded", () => {
     openPaypalModal?.addEventListener("click", () => {
         paypalModal?.classList.add("show");
     });
-
-    /* ================= CLOSE MODALS ================= */
 
     function closeModal(modal) {
         if (!modal) return;
@@ -42,13 +45,136 @@ document.addEventListener("DOMContentLoaded", () => {
 
     document.querySelectorAll(".modal-overlay").forEach(modal => {
         modal.addEventListener("click", event => {
-            if (event.target === modal) {
-                closeModal(modal);
-            }
+            if (event.target === modal) closeModal(modal);
         });
     });
 
-    /* ================= SUBMIT WITHDRAWAL ================= */
+    async function loadUser() {
+        try {
+            const res = await fetch("/api/user-info/", {
+                credentials: "include",
+                headers: { "Accept": "application/json" }
+            });
+
+            if (!res.ok) return;
+
+            const data = await res.json();
+
+            const usernameDisplay = document.getElementById("usernameDisplay");
+            const balanceAmount = document.getElementById("balanceAmount");
+
+            if (usernameDisplay) usernameDisplay.textContent = data.username || "User";
+            if (balanceAmount) balanceAmount.textContent = money(data.balance);
+
+        } catch (error) {
+            console.error("User load error:", error);
+        }
+    }
+
+    async function loadWithdrawals() {
+        if (!withdrawHistoryList) return;
+
+        try {
+            const res = await fetch("/api/withdrawal-history/", {
+                credentials: "include",
+                headers: { "Accept": "application/json" }
+            });
+
+            if (!res.ok) {
+                withdrawHistoryList.innerHTML = `
+                    <div class="empty-withdraw">
+                        <i class="fa fa-triangle-exclamation"></i>
+                        <h3>Could not load withdrawals</h3>
+                        <p>Please refresh the page and try again.</p>
+                    </div>
+                `;
+                return;
+            }
+
+            const data = await res.json();
+
+            allWithdrawals = data.withdrawals || [];
+
+            document.getElementById("pendingWithdrawals").textContent = money(data.pending_total || 0);
+            document.getElementById("paidWithdrawals").textContent = money(data.paid_total || 0);
+            document.getElementById("rejectedWithdrawals").textContent = data.rejected_count || 0;
+
+            renderWithdrawals();
+
+        } catch (error) {
+            console.error("Withdrawal history error:", error);
+        }
+    }
+
+    function statusIcon(status) {
+        if (status === "paid") return "fa-circle-check";
+        if (status === "rejected") return "fa-circle-xmark";
+        return "fa-clock";
+    }
+
+    function statusText(status) {
+        if (status === "paid") return "Paid";
+        if (status === "rejected") return "Rejected";
+        return "Pending";
+    }
+
+    function renderWithdrawals() {
+        if (!withdrawHistoryList) return;
+
+        let withdrawals = allWithdrawals;
+
+        if (activeFilter !== "all") {
+            withdrawals = allWithdrawals.filter(item => item.status === activeFilter);
+        }
+
+        if (!withdrawals.length) {
+            withdrawHistoryList.innerHTML = `
+                <div class="empty-withdraw">
+                    <i class="fa fa-wallet"></i>
+                    <h3>No ${activeFilter === "all" ? "" : activeFilter} withdrawals</h3>
+                    <p>Your withdrawal requests will appear here.</p>
+                </div>
+            `;
+            return;
+        }
+
+        withdrawHistoryList.innerHTML = withdrawals.map(item => `
+            <div class="withdraw-card">
+                <div>
+                    <span class="withdraw-status ${item.status}">
+                        <i class="fa ${statusIcon(item.status)}"></i>
+                        ${statusText(item.status)}
+                    </span>
+
+                    <h3>${item.method || "Withdrawal"}</h3>
+
+                    <p>
+                        <i class="fa fa-calendar"></i>
+                        Requested: ${item.created_at}
+                    </p>
+
+                    ${
+                        item.paid_at
+                            ? `<p><i class="fa fa-circle-check"></i> Paid: ${item.paid_at}</p>`
+                            : `<p><i class="fa fa-hourglass-half"></i> Waiting for admin review</p>`
+                    }
+                </div>
+
+                <div class="withdraw-amount">
+                    <strong>${money(item.amount)}</strong>
+                </div>
+            </div>
+        `).join("");
+    }
+
+    withdrawTabs.forEach(tab => {
+        tab.addEventListener("click", () => {
+            withdrawTabs.forEach(btn => btn.classList.remove("active"));
+            tab.classList.add("active");
+            activeFilter = tab.dataset.status;
+            renderWithdrawals();
+        });
+    });
 
     async function submitWithdrawal(form) {
         const msg = form.querySelector(".withdraw-msg");
@@ -75,38 +201,27 @@ document.addEventListener("DOMContentLoaded", () => {
                 }
             });
 
-            let data = {};
+            const data = await response.json();
 
-            try {
-                data = await response.json();
-            } catch {
-                data = {
-                    success: false,
-                    message: "Server returned an invalid response."
-                };
-            }
-
-            if (!response.ok) {
-                msg.textContent = data.message || `Request failed. Error ${response.status}`;
+            if (!response.ok || !data.success) {
+                msg.textContent = data.message || "Withdrawal request failed.";
                 msg.className = "withdraw-msg error";
                 return;
             }
 
-            if (data.success) {
-                msg.textContent = data.message || "Withdrawal request submitted successfully.";
-                msg.className = "withdraw-msg success";
+            msg.textContent = data.message || "Withdrawal request submitted and marked as pending.";
+            msg.className = "withdraw-msg success";
 
-                setTimeout(() => {
-                    const modal = form.closest(".modal-overlay");
-                    closeModal(modal);
-                }, 1200);
+            loadUser();
+            loadWithdrawals();
 
-            } else {
-                msg.textContent = data.message || "Something went wrong.";
-                msg.className = "withdraw-msg error";
-            }
+            setTimeout(() => {
+                const modal = form.closest(".modal-overlay");
+                closeModal(modal);
+            }, 1200);
 
         } catch (error) {
+            console.error("Withdrawal submit error:", error);
             msg.textContent = "Network error. Please try again.";
             msg.className = "withdraw-msg error";
         } finally {
@@ -114,8 +229,6 @@ document.addEventListener("DOMContentLoaded", () => {
             button.textContent = "Submit Withdrawal";
         }
     }
-
-    /* ================= FORM EVENTS ================= */
 
     const bankWithdrawForm = document.getElementById("bankWithdrawForm");
     const paypalWithdrawForm = document.getElementById("paypalWithdrawForm");
@@ -129,8 +242,6 @@ document.addEventListener("DOMContentLoaded", () => {
         event.preventDefault();
         submitWithdrawal(paypalWithdrawForm);
     });
-
-    /* ================= CSRF COOKIE ================= */
 
     function getCookie(name) {
         let cookieValue = null;
@@ -151,4 +262,6 @@ document.addEventListener("DOMContentLoaded", () => {
         return cookieValue;
     }
 
+    loadUser();
+    loadWithdrawals();
 });

@@ -957,7 +957,20 @@ def withdrawal_history_api(request):
 
     data = []
 
+    pending_total = Decimal("0.00")
+    paid_total = Decimal("0.00")
+    rejected_count = 0
+
     for withdrawal in withdrawals:
+        if withdrawal.status == "pending":
+            pending_total += withdrawal.amount
+
+        if withdrawal.status == "paid":
+            paid_total += withdrawal.amount
+
+        if withdrawal.status == "rejected":
+            rejected_count += 1
+
         data.append({
             "id": withdrawal.id,
             "amount": str(withdrawal.amount),
@@ -967,11 +980,11 @@ def withdrawal_history_api(request):
             "paid_at": withdrawal.paid_at.strftime("%d %b %Y, %I:%M %p") if withdrawal.paid_at else "",
         })
 
-    pending_total = sum(w.amount for w in withdrawals if w.status == "pending")
-
     return JsonResponse({
         "withdrawals": data,
         "pending_total": str(pending_total),
+        "paid_total": str(paid_total),
+        "rejected_count": rejected_count,
     })
 
 # ==========================

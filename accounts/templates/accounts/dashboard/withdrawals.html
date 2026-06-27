@@ -16,12 +16,30 @@
             <div>
                 <p class="eyebrow">Withdraw Funds</p>
                 <h1>Hello, <span id="usernameDisplay">User</span></h1>
+                <p>Submit withdrawal requests and track their approval status.</p>
             </div>
 
             <div class="balance-card">
                 <p>Available Balance</p>
                 <h2 id="balanceAmount">£0.00</h2>
                 <p>Choose how you want to withdraw from your SQUEEB wallet.</p>
+            </div>
+        </section>
+
+        <section class="withdraw-stats">
+            <div>
+                <strong id="pendingWithdrawals">£0.00</strong>
+                <span>Pending Withdrawals</span>
+            </div>
+
+            <div>
+                <strong id="paidWithdrawals">£0.00</strong>
+                <span>Total Paid</span>
+            </div>
+
+            <div>
+                <strong id="rejectedWithdrawals">0</strong>
+                <span>Rejected Requests</span>
             </div>
         </section>
 
@@ -39,6 +57,30 @@
                 <p>Send money to your PayPal account.</p>
             </button>
 
+        </section>
+
+        <section class="withdraw-history-section">
+            <div class="section-heading">
+                <div>
+                    <h2>Withdrawal History</h2>
+                    <p>Track pending, paid, and rejected withdrawal requests.</p>
+                </div>
+            </div>
+
+            <div class="withdraw-tabs">
+                <button class="withdraw-tab active" data-status="all">All</button>
+                <button class="withdraw-tab" data-status="pending">Pending</button>
+                <button class="withdraw-tab" data-status="paid">Paid</button>
+                <button class="withdraw-tab" data-status="rejected">Rejected</button>
+            </div>
+
+            <div class="withdraw-history-list" id="withdrawHistoryList">
+                <div class="empty-withdraw">
+                    <i class="fa fa-clock"></i>
+                    <h3>Loading withdrawals...</h3>
+                    <p>Please wait while we fetch your withdrawal history.</p>
+                </div>
+            </div>
         </section>
 
     </main>
