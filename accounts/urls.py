@@ -45,6 +45,7 @@ from .views import (
     edit_profile,
     bank_details,
     my_tasks,
+    my_tasks_api,
 )
 
 urlpatterns = [
@@ -83,6 +84,7 @@ urlpatterns = [
     path("more/edit-profile/", edit_profile, name="edit_profile"),
     path("more/bank-details/", bank_details, name="bank_details"),
     path("more/my-tasks/", my_tasks, name="my_tasks"),
+    path("api/my-tasks/", my_tasks_api, name="my_tasks_api"),
 
     # ======================
     # USER PROFILE

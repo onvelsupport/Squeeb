@@ -35,6 +35,34 @@ def bank_details(request):
 def my_tasks(request):
     return render(request, "accounts/dashboard/my_tasks.html")
 
+@login_required
+def my_tasks_api(request):
+    tasks = Task.objects.filter(
+        creator=request.user
+    ).order_by("-id")
+
+    data = []
+
+    for task in tasks:
+        data.append({
+            "id": task.id,
+            "title": task.title,
+            "platform": task.platforms,
+            "task_type": task.get_task_type_display(),
+            "available": task.available,
+            "budget": str(task.total_budget),
+            "reward": str(task.worker_reward),
+            "status": "Completed" if task.available == 0 else "Active",
+            "link": task.link,
+        })
+
+    return JsonResponse({
+        "tasks": data,
+        "total": tasks.count(),
+        "active": tasks.filter(available__gt=0).count(),
+        "completed": tasks.filter(available=0).count(),
+    })
+
 
 def recent_activities_api(request):
     activities = RecentActivity.objects.all()[:10]
