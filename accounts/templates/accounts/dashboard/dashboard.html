@@ -43,37 +43,36 @@ Dashboard | SQUEEB
         <section class="dashboard-grid">
 
             <!-- Wallet Card -->
-            <div class="wallet-card">
-                <div class="wallet-top">
-                    <div>
-                        <p>Wallet Balance</p>
-                        <h2 id="balanceAmount">£0.00</h2>
-                    </div>
+<div class="wallet-card">
+    <div class="wallet-top">
+        <div>
+            <p>Wallet Balance</p>
+            <h2 id="balanceAmount">£0.00</h2>
+        </div>
 
-                    <div class="wallet-icon">
-                        <i class="fa fa-wallet"></i>
-                    </div>
-                </div>
+        <div class="wallet-icon">
+            <i class="fa fa-wallet"></i>
+        </div>
+    </div>
 
-                <div class="wallet-actions">
-                    <button id="fundBtn">
-                        <i class="fa fa-plus"></i>
-                        Fund Wallet
-                    </button>
+    <div class="wallet-earnings-row">
+        <span>Total Earnings</span>
+        <strong id="earningsTotal">£0.00</strong>
+    </div>
 
-                    <button class="secondary" onclick="window.location.href='{% url 'withdrawals' %}'">
-                        <i class="fa fa-arrow-up"></i>
-                        Withdraw
-                    </button>
-                </div>
-            </div>
+    <div class="wallet-actions">
+        <button id="fundBtn">
+            <i class="fa fa-plus"></i>
+            Fund
+        </button>
 
-            <!-- Earnings Stat -->
-            <div class="stats-card">
-                <p>Total Earnings</p>
-                <h3 id="earningsTotal">£0.00</h3>
-                <span>Money earned from completed tasks.</span>
-            </div>
+        <button class="secondary" onclick="window.location.href='{% url 'withdrawals' %}'">
+            <i class="fa fa-arrow-up"></i>
+            Withdraw
+        </button>
+    </div>
+</div>
+
 
             <!-- Followers Stat -->
             <div class="stats-card">
