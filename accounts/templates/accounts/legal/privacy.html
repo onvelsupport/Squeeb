@@ -1,0 +1,70 @@
+{% extends 'accounts/base.html' %}
+{% load static %}
+
+{% block title %}Privacy Policy | SQUEEB{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'accounts/css/legal.css' %}">
+{% endblock %}
+
+{% block content %}
+
+<main class="legal-page">
+
+    <section class="legal-hero">
+        <p class="eyebrow">Legal</p>
+        <h1>Privacy Policy</h1>
+        <p>Last updated: June 2026</p>
+    </section>
+
+    <section class="legal-card">
+        <h2>1. Introduction</h2>
+        <p>
+            SQUEEB respects your privacy. This Privacy Policy explains how we collect,
+            use, store, and protect your personal information when you use our platform.
+        </p>
+
+        <h2>2. Information We Collect</h2>
+        <p>
+            We may collect your username, name, email address, wallet activity,
+            marketplace activity, social task activity, bank payout details,
+            device information, and payment-related information.
+        </p>
+
+        <h2>3. Payments</h2>
+        <p>
+            Payments may be processed by third-party providers such as Stripe.
+            SQUEEB does not store full card details.
+        </p>
+
+        <h2>4. Bank Details</h2>
+        <p>
+            If you request withdrawals, we may collect bank account name, bank name,
+            sort code, and account number for payout processing.
+        </p>
+
+        <h2>5. How We Use Your Data</h2>
+        <p>
+            We use your data to manage accounts, process payments, support withdrawals,
+            prevent fraud, provide marketplace services, and improve SQUEEB.
+        </p>
+
+        <h2>6. Your Rights</h2>
+        <p>
+            Under UK GDPR, you may request access, correction, deletion, or restriction
+            of your personal data.
+        </p>
+
+        <h2>7. Contact</h2>
+        <p>
+            For privacy questions, contact SQUEEB support through the support page.
+        </p>
+    </section>
+
+</main>
+
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'accounts/js/legal.js' %}"></script>
+{% endblock %}

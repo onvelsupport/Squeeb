@@ -1,0 +1,55 @@
+{% extends 'accounts/base.html' %}
+{% load static %}
+
+{% block title %}Acceptable Use Policy | SQUEEB{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'accounts/css/legal.css' %}">
+{% endblock %}
+
+{% block content %}
+
+<main class="legal-page">
+
+    <section class="legal-hero">
+        <p class="eyebrow">Legal</p>
+        <h1>Acceptable Use Policy</h1>
+        <p>Last updated: June 2026</p>
+    </section>
+
+    <section class="legal-card">
+        <h2>1. Fair Use</h2>
+        <p>
+            SQUEEB must be used honestly, safely, and lawfully.
+        </p>
+
+        <h2>2. Prohibited Activity</h2>
+        <p>
+            You must not use SQUEEB for scams, fraud, stolen payment methods,
+            fake accounts, fake proof, bots, spam, harassment, or illegal activity.
+        </p>
+
+        <h2>3. Social Tasks</h2>
+        <p>
+            Social task activity must be genuine. Fake engagement, automated actions,
+            or misleading submissions are not allowed.
+        </p>
+
+        <h2>4. Marketplace</h2>
+        <p>
+            You must not sell illegal, counterfeit, stolen, dangerous, or restricted items.
+        </p>
+
+        <h2>5. Enforcement</h2>
+        <p>
+            SQUEEB may suspend, restrict, or remove accounts that violate this policy.
+        </p>
+    </section>
+
+</main>
+
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'accounts/js/legal.js' %}"></script>
+{% endblock %}

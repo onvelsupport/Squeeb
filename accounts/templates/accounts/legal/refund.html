@@ -1,0 +1,60 @@
+{% extends 'accounts/base.html' %}
+{% load static %}
+
+{% block title %}Refund Policy | SQUEEB{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'accounts/css/legal.css' %}">
+{% endblock %}
+
+{% block content %}
+
+<main class="legal-page">
+
+    <section class="legal-hero">
+        <p class="eyebrow">Legal</p>
+        <h1>Refund Policy</h1>
+        <p>Last updated: June 2026</p>
+    </section>
+
+    <section class="legal-card">
+        <h2>1. Wallet Deposits</h2>
+        <p>
+            Wallet deposits are generally non-refundable once successfully credited,
+            unless required by law or caused by a confirmed platform error.
+        </p>
+
+        <h2>2. Membership Fees</h2>
+        <p>
+            Membership payments are generally non-refundable once activated.
+        </p>
+
+        <h2>3. Marketplace Purchases</h2>
+        <p>
+            Refunds for marketplace purchases depend on the seller, product condition,
+            and applicable consumer rights.
+        </p>
+
+        <h2>4. Failed Payments</h2>
+        <p>
+            If payment is taken but your balance is not updated, contact support.
+        </p>
+
+        <h2>5. Chargebacks</h2>
+        <p>
+            Misuse of chargebacks may result in account suspension or restriction.
+        </p>
+
+        <h2>6. Fraud</h2>
+        <p>
+            Transactions suspected of fraud may be reviewed, delayed, reversed, or reported.
+        </p>
+    </section>
+
+</main>
+
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'accounts/js/legal.js' %}"></script>
+{% endblock %}

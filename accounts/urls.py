@@ -83,8 +83,7 @@ urlpatterns = [
     path("notifications/", notifications, name="notifications"),
     path("more/edit-profile/", edit_profile, name="edit_profile"),
     path("more/bank-details/", bank_details, name="bank_details"),
-    path("more/my-tasks/", my_tasks, name="my_tasks"),
-    path("api/my-tasks/", my_tasks_api, name="my_tasks_api"),
+
 
     # ======================
     # USER PROFILE
@@ -135,6 +134,8 @@ urlpatterns = [
     path("create-task/", create_task, name="create_task"),
     path("api/complete-task/<int:task_id>/", complete_task, name="complete_task"),
     path("api/task/<int:task_id>/", get_single_task, name="get_single_task"),
+    path("more/my-tasks/", my_tasks, name="my_tasks"),
+    path("api/my-tasks/", my_tasks_api, name="my_tasks_api"),
 
     # ======================
     # FUNDING
@@ -147,4 +148,15 @@ urlpatterns = [
     # PASSWORD RESET API
     # ======================
     path("api/forgot-password/", forgot_password_api, name="forgot_password_api"),
+
+
+    # ======================
+    # LEGAL
+    # ======================
+    path("about/", about, name="about"),
+    path("about/", about, name="about_page"),
+
+
+
+
 ]

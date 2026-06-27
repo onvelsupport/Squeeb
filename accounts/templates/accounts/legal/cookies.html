@@ -1,0 +1,53 @@
+{% extends 'accounts/base.html' %}
+{% load static %}
+
+{% block title %}Cookie Policy | SQUEEB{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'accounts/css/legal.css' %}">
+{% endblock %}
+
+{% block content %}
+
+<main class="legal-page">
+
+    <section class="legal-hero">
+        <p class="eyebrow">Legal</p>
+        <h1>Cookie Policy</h1>
+        <p>Last updated: June 2026</p>
+    </section>
+
+    <section class="legal-card">
+        <h2>1. What Cookies Are</h2>
+        <p>
+            Cookies are small files stored on your device to help websites function properly.
+        </p>
+
+        <h2>2. Essential Cookies</h2>
+        <p>
+            SQUEEB uses essential cookies for login sessions, security, and account access.
+        </p>
+
+        <h2>3. Preference Cookies</h2>
+        <p>
+            We may use cookies to remember preferences and improve your experience.
+        </p>
+
+        <h2>4. Third-Party Cookies</h2>
+        <p>
+            Payment or analytics providers may use cookies when their services are loaded.
+        </p>
+
+        <h2>5. Managing Cookies</h2>
+        <p>
+            You can manage or block cookies through your browser settings.
+        </p>
+    </section>
+
+</main>
+
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'accounts/js/legal.js' %}"></script>
+{% endblock %}

@@ -1,0 +1,78 @@
+{% extends 'accounts/base.html' %}
+{% load static %}
+
+{% block title %}Terms & Conditions | SQUEEB{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'accounts/css/legal.css' %}">
+{% endblock %}
+
+{% block content %}
+
+<main class="legal-page">
+
+    <section class="legal-hero">
+        <p class="eyebrow">Legal</p>
+        <h1>Terms & Conditions</h1>
+        <p>Last updated: June 2026</p>
+    </section>
+
+    <section class="legal-card">
+        <h2>1. Agreement</h2>
+        <p>
+            By using SQUEEB, you agree to these Terms & Conditions.
+        </p>
+
+        <h2>2. Accounts</h2>
+        <p>
+            You must provide accurate information and keep your login details secure.
+            You are responsible for activity on your account.
+        </p>
+
+        <h2>3. Marketplace</h2>
+        <p>
+            SQUEEB allows users to buy and sell products. Sellers are responsible for
+            the accuracy of their listings and fulfilment of sales.
+        </p>
+
+        <h2>4. Social Tasks</h2>
+        <p>
+            Users may create or complete social tasks. Fake engagement, bots, fraud,
+            or misleading proof are not allowed.
+        </p>
+
+        <h2>5. Wallet</h2>
+        <p>
+            Wallet balances are used within SQUEEB and are not bank accounts.
+            Withdrawals may be reviewed before payment.
+        </p>
+
+        <h2>6. Membership</h2>
+        <p>
+            Some earning features may require membership activation.
+        </p>
+
+        <h2>7. Prohibited Use</h2>
+        <p>
+            You must not use SQUEEB for fraud, scams, illegal products, harassment,
+            stolen payment methods, or money laundering.
+        </p>
+
+        <h2>8. Suspension</h2>
+        <p>
+            SQUEEB may suspend or restrict accounts that break these terms.
+        </p>
+
+        <h2>9. Governing Law</h2>
+        <p>
+            These terms are governed by the laws of England and Wales.
+        </p>
+    </section>
+
+</main>
+
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'accounts/js/legal.js' %}"></script>
+{% endblock %}
