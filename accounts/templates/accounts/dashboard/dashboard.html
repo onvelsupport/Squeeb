@@ -99,13 +99,13 @@ Dashboard | SQUEEB
             </div>
 
             <div class="quick-grid">
-                <a href="#" id="earnQuick" class="quick-card">
+                <a href="{% url 'earnings' %}" class="quick-card">
                     <i class="fa fa-coins"></i>
                     <h3>Earn Money</h3>
                     <p>Complete tasks and build your balance.</p>
                 </a>
 
-                <a href="#" id="advertiseQuick" class="quick-card">
+                <a href="{% url 'dashboard' %}" class="quick-card">
                     <i class="fa fa-bullhorn"></i>
                     <h3>Advertise</h3>
                     <p>Promote your products, pages, or posts.</p>
@@ -117,10 +117,10 @@ Dashboard | SQUEEB
                     <p>Buy, sell, and resell products.</p>
                 </a>
 
-                <a href="{% url 'earnings' %}" class="quick-card">
-                    <i class="fa fa-chart-line"></i>
-                    <h3>Earnings</h3>
-                    <p>Track task earnings and progress.</p>
+                <a href="{% url 'more_page' %}" class="quick-card">
+                    <i class="fa fa-user"></i>
+                    <h3>Profile</h3>
+                    <p>Manage your account, settings, and personal information.</p>
                 </a>
             </div>
         </section> 
