@@ -40,67 +40,97 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     });
 
-    /* ================= SUBMIT WITHDRAWAL ================= */
+/* ================= SUBMIT WITHDRAWAL ================= */
 
-    async function submitWithdrawal(form) {
-        const msg = form.querySelector(".withdraw-msg");
-        const button = form.querySelector("button[type='submit']");
+async function submitWithdrawal(form) {
 
-        if (!msg || !button) return;
+    const msg = form.querySelector(".withdraw-msg");
+    const button = form.querySelector("button[type='submit']");
 
-        msg.textContent = "";
-        msg.className = "withdraw-msg";
+    if (!msg || !button) return;
 
-        button.disabled = true;
-        button.textContent = "Submitting...";
+    msg.textContent = "";
+    msg.className = "withdraw-msg";
 
-        const formData = new FormData(form);
+    button.disabled = true;
+    button.textContent = "Submitting...";
+
+    const formData = new FormData(form);
+
+    try {
+
+        const response = await fetch("/request-withdrawal/", {
+            method: "POST",
+            body: formData,
+            credentials: "include",
+            headers: {
+                "X-CSRFToken": getCookie("csrftoken"),
+                "X-Requested-With": "XMLHttpRequest"
+            }
+        });
+
+        let data = {};
 
         try {
-            const response = await fetch("/request-withdrawal/", {
-                method: "POST",
-                body: formData,
-                credentials: "include",
-                headers: {
-                    "X-CSRFToken": getCookie("csrftoken"),
-                    "X-Requested-With": "XMLHttpRequest"
-                }
-            });
+            data = await response.json();
+        } catch {
 
-            let data = {};
+            data = {
+                success: false,
+                message: "Server returned an invalid response."
+            };
 
-            try {
-                data = await response.json();
-            } catch {
-                data = {
-                    success: false,
-                    message: "Server returned an invalid response."
-                };
-            }
-
-            if (!response.ok) {
-                msg.textContent = data.message || `Request failed. Error ${response.status}`;
-                msg.className = "withdraw-msg error";
-                return;
-            }
-
-            if (data.success) {
-                msg.textContent = data.message || "Withdrawal request submitted successfully.";
-                msg.className = "withdraw-msg success";
-                form.reset();
-            } else {
-                msg.textContent = data.message || "Something went wrong.";
-                msg.className = "withdraw-msg error";
-            }
-
-        } catch (error) {
-            msg.textContent = "Network error. Please try again.";
-            msg.className = "withdraw-msg error";
-        } finally {
-            button.disabled = false;
-            button.textContent = "Submit Withdrawal";
         }
+
+        if (!response.ok) {
+
+            msg.textContent = data.message || `Request failed. Error ${response.status}`;
+            msg.className = "withdraw-msg error";
+            return;
+
+        }
+
+        if (data.success) {
+
+            msg.textContent = data.message || "Withdrawal request submitted successfully.";
+            msg.className = "withdraw-msg success";
+
+            form.reset();
+
+            // Close the modal after a short delay
+            setTimeout(() => {
+
+                const modal = form.closest(".modal-overlay");
+
+                if (modal) {
+                    modal.classList.remove("show");
+                }
+
+                msg.textContent = "";
+                msg.className = "withdraw-msg";
+
+            }, 1200);
+
+        } else {
+
+            msg.textContent = data.message || "Something went wrong.";
+            msg.className = "withdraw-msg error";
+
+        }
+
+    } catch (error) {
+
+        msg.textContent = "Network error. Please try again.";
+        msg.className = "withdraw-msg error";
+
+    } finally {
+
+        button.disabled = false;
+        button.textContent = "Submit Withdrawal";
+
     }
+
+}
 
     /* ================= FORM EVENTS ================= */
 
