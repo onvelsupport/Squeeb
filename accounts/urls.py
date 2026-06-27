@@ -57,6 +57,8 @@ from .views import (
     reject_task_completion,
     task_submission_reviews,
     task_submission_reviews_api,
+    my_task_submissions_api,
+    withdrawal_history_api,
 
 )
 
@@ -151,12 +153,8 @@ urlpatterns = [
     path("api/my-tasks/", my_tasks_api, name="my_tasks_api"),
     path("task-completions/<int:completion_id>/approve/", approve_task_completion, name="approve_task_completion"),
     path("task-completions/<int:completion_id>/reject/", reject_task_completion, name="reject_task_completion"),
-
-path(
-    "my-tasks/<int:task_id>/reviews/",
-    task_submission_reviews,
-    name="task_submission_reviews"
-),
+    path("api/my-task-submissions/", my_task_submissions_api, name="my_task_submissions_api",),
+    path("my-tasks/<int:task_id>/reviews/", task_submission_reviews, name="task_submission_reviews"),
 
 path(
     "api/my-tasks/<int:task_id>/reviews/",
@@ -171,6 +169,12 @@ path(
     path("stripe/webhook/", stripe_webhook, name="stripe_webhook"),
     path("request-withdrawal/", request_withdrawal, name="request_withdrawal"),
     path("approve-withdrawal/<uuid:token>/", approve_withdrawal, name="approve_withdrawal"),
+    path(
+    "api/withdrawal-history/",
+    withdrawal_history_api,
+    name="withdrawal_history_api",
+),
+    
 
     # ======================
     # PASSWORD RESET API

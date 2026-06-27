@@ -946,6 +946,34 @@ def approve_withdrawal(request, token):
 def withdrawals(request):
     return render(request, "accounts/dashboard/withdrawals.html")
 
+
+
+
+@login_required
+def withdrawal_history_api(request):
+    withdrawals = WithdrawalRequest.objects.filter(
+        user=request.user
+    ).order_by("-created_at")
+
+    data = []
+
+    for withdrawal in withdrawals:
+        data.append({
+            "id": withdrawal.id,
+            "amount": str(withdrawal.amount),
+            "method": withdrawal.method,
+            "status": withdrawal.status,
+            "created_at": withdrawal.created_at.strftime("%d %b %Y, %I:%M %p"),
+            "paid_at": withdrawal.paid_at.strftime("%d %b %Y, %I:%M %p") if withdrawal.paid_at else "",
+        })
+
+    pending_total = sum(w.amount for w in withdrawals if w.status == "pending")
+
+    return JsonResponse({
+        "withdrawals": data,
+        "pending_total": str(pending_total),
+    })
+
 # ==========================
 # SELL PRODUCT
 # ==========================
@@ -1101,7 +1129,27 @@ def create_task(request):
         "new_balance": str(user.balance)
     })
 
+@login_required
+def my_task_submissions_api(request):
+    submissions = TaskCompletion.objects.filter(
+        user=request.user
+    ).select_related("task").order_by("-completed_at")
 
+    data = []
+
+    for submission in submissions:
+        data.append({
+            "id": submission.id,
+            "task_title": submission.task.title,
+            "platform": submission.task.platforms,
+            "reward": str(submission.reward_amount),
+            "status": submission.status,
+            "proof": submission.proof.url if submission.proof else "",
+            "submitted_at": submission.completed_at.strftime("%d %b %Y, %I:%M %p"),
+            "reviewed_at": submission.reviewed_at.strftime("%d %b %Y, %I:%M %p") if submission.reviewed_at else "",
+        })
+
+    return JsonResponse({"submissions": data})
 
 
 @login_required

@@ -20,7 +20,7 @@ Earnings | SQUEEB
                 <p class="eyebrow">Earnings Dashboard</p>
                 <h1>Earn money on SQUEEB</h1>
                 <p>
-                    Complete social tasks, track your rewards, manage referrals, and monitor your earnings.
+                    Complete social tasks, submit proof, and track pending, approved, and rejected submissions.
                 </p>
             </div>
 
@@ -51,7 +51,7 @@ Earnings | SQUEEB
 
                 <div>
                     <strong id="tasksCompleted">0</strong>
-                    <span>Tasks</span>
+                    <span>Approved Tasks</span>
                 </div>
 
                 <div>
@@ -81,7 +81,7 @@ Earnings | SQUEEB
             <div class="section-heading">
                 <div>
                     <h2>Available Tasks</h2>
-                    <p>Choose a task, complete it, and submit your proof.</p>
+                    <p>Choose a task, complete it, and submit your proof for review.</p>
                 </div>
             </div>
 
@@ -90,6 +90,30 @@ Earnings | SQUEEB
                     <i class="fa fa-list-check"></i>
                     <h3>No tasks available yet</h3>
                     <p>Tasks will appear here once your account has access.</p>
+                </div>
+            </div>
+        </section>
+
+        <section class="submission-panel">
+            <div class="section-heading">
+                <div>
+                    <h2>My Task Submissions</h2>
+                    <p>Track tasks you submitted for review.</p>
+                </div>
+            </div>
+
+            <div class="submission-tabs">
+                <button class="submission-tab active" data-status="all">All</button>
+                <button class="submission-tab" data-status="pending">Pending</button>
+                <button class="submission-tab" data-status="approved">Approved</button>
+                <button class="submission-tab" data-status="rejected">Rejected</button>
+            </div>
+
+            <div id="submissionList" class="submission-list">
+                <div class="empty-task">
+                    <i class="fa fa-clock"></i>
+                    <h3>Loading submissions...</h3>
+                    <p>Please wait while we fetch your submitted tasks.</p>
                 </div>
             </div>
         </section>

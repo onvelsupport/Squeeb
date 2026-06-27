@@ -2,18 +2,35 @@ document.addEventListener("DOMContentLoaded", () => {
     const money = (n) => `£${parseFloat(n || 0).toFixed(2)}`;
 
     const membershipSection = document.getElementById("membershipSection");
-    const taskSection = document.getElementById("taskSection");
+    const taskSection = document.querySelector(".task-section");
     const payMembershipBtn = document.getElementById("payMembershipBtn");
 
     const taskModal = document.getElementById("taskModal");
     const cancelTaskBtn = document.getElementById("cancelTaskBtn");
     const submitProofBtn = document.getElementById("submitProofBtn");
 
+    const submissionList = document.getElementById("submissionList");
+    const submissionTabs = document.querySelectorAll(".submission-tab");
+
     let selectedTaskId = null;
+    let allSubmissions = [];
+    let activeSubmissionFilter = "all";
 
     function setText(id, value) {
         const element = document.getElementById(id);
         if (element) element.textContent = value;
+    }
+
+    function statusLabel(status) {
+        if (status === "approved") return "Approved";
+        if (status === "rejected") return "Rejected";
+        return "Pending";
+    }
+
+    function statusIcon(status) {
+        if (status === "approved") return "fa-circle-check";
+        if (status === "rejected") return "fa-circle-xmark";
+        return "fa-clock";
     }
 
     async function loadUser() {
@@ -21,9 +38,7 @@ document.addEventListener("DOMContentLoaded", () => {
             const res = await fetch("/api/user-info/", {
                 method: "GET",
                 credentials: "include",
-                headers: {
-                    "Accept": "application/json"
-                }
+                headers: { "Accept": "application/json" }
             });
 
             if (res.status === 401 || res.status === 403 || res.redirected) {
@@ -31,17 +46,12 @@ document.addEventListener("DOMContentLoaded", () => {
                 return;
             }
 
-            if (!res.ok) {
-                console.error("User info failed:", res.status);
-                return;
-            }
+            if (!res.ok) return;
 
             const data = await res.json();
 
             setText("usernameDisplay", data.username || "User");
             setText("usernameTag", "@" + (data.username || "user"));
-            setText("usernameDynamic", data.username || "User");
-
             setText("balanceAmount", money(data.balance));
             setText("earningsTotal", money(data.earnings));
             setText("tasksCompleted", data.tasks_completed || 0);
@@ -61,124 +71,20 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     }
 
-
-
-
-
-    
-    // ==========================================================
-    // LOGOUT
-    // ==========================================================
-
-    async function logout(e) {
-        if (e) e.preventDefault();
-
-        try {
-            await fetch("/api/logout/", {
-                method: "POST",
-                credentials: "same-origin",
-                headers: {
-                    "Content-Type": "application/json"
-                }
-            });
-        } catch (err) {
-            console.error("Logout error:", err);
-        }
-
-        window.location.href = "/login/";
-    }
-
-    document.querySelectorAll(".logout").forEach((btn) => {
-        btn.addEventListener("click", logout);
-    });
-
-
-    // ==========================================================
-    // SEARCH BAR
-    // ==========================================================
-    const searchInput = document.getElementById("globalSearchInput");
-    const searchResults = document.getElementById("searchResults");
-
-searchInput?.addEventListener("input", async () => {
-
-    const query = searchInput.value.trim();
-
-    if (!query) {
-        searchResults.style.display = "none";
-        searchResults.innerHTML = "";
-        return;
-    }
-
-    try {
-
-        const res = await fetch(
-            `/api/search/?q=${encodeURIComponent(query)}`
-        );
-
-        const data = await res.json();
-
-        searchResults.innerHTML = "";
-
-        if (!data.results.length) {
-
-            searchResults.innerHTML =
-                `<div class="search-item">No results found</div>`;
-
-            searchResults.style.display = "block";
-
-            return;
-        }
-
-        data.results.forEach(item => {
-
-            searchResults.innerHTML += `
-                <a href="${item.url}" class="search-item">
-
-                    <strong>${item.name}</strong>
-
-                    <div class="search-type">
-                        ${item.type}
-                    </div>
-
-                </a>
-            `;
-
-        });
-
-        searchResults.style.display = "block";
-
-    }
-
-    catch(err) {
-
-        console.error(err);
-
-    }
-
-});
-
-
-
     async function loadTasks() {
+        const taskList = document.getElementById("taskList");
+        if (!taskList) return;
+
         try {
             const res = await fetch("/api/tasks/", {
                 method: "GET",
                 credentials: "include",
-                headers: {
-                    "Accept": "application/json"
-                }
+                headers: { "Accept": "application/json" }
             });
 
-            if (!res.ok) {
-                console.error("Task load failed:", res.status);
-                return;
-            }
+            if (!res.ok) return;
 
             const data = await res.json();
-            const taskList = document.getElementById("taskList");
-
-            if (!taskList) return;
-
             taskList.innerHTML = "";
 
             if (!data.tasks || data.tasks.length === 0) {
@@ -196,14 +102,9 @@ searchInput?.addEventListener("input", async () => {
                 taskList.innerHTML += `
                     <div class="earn-task-card">
                         <div>
-                            <span class="task-badge">${task.platform || "Task"}</span>
-
+                            <span class="task-badge">${task.platforms || "Task"}</span>
                             <h3>${task.title || "Untitled Task"}</h3>
-
-                            <p>
-                                ${task.instructions || "Complete this task and upload proof."}
-                            </p>
-
+                            <p>${task.short_desc || task.instructions || "Complete this task and upload proof."}</p>
                             <strong class="task-reward">
                                 ${money(task.payout)} per ${task.task_type || "task"}
                             </strong>
@@ -221,27 +122,111 @@ searchInput?.addEventListener("input", async () => {
         }
     }
 
+    async function loadSubmissions() {
+        if (!submissionList) return;
+
+        try {
+            const res = await fetch("/api/my-task-submissions/", {
+                method: "GET",
+                credentials: "include",
+                headers: { "Accept": "application/json" }
+            });
+
+            if (!res.ok) return;
+
+            const data = await res.json();
+            allSubmissions = data.submissions || [];
+            renderSubmissions();
+
+        } catch (err) {
+            console.error("SUBMISSIONS LOAD ERROR:", err);
+        }
+    }
+
+    function renderSubmissions() {
+        if (!submissionList) return;
+
+        let submissions = allSubmissions;
+
+        if (activeSubmissionFilter !== "all") {
+            submissions = allSubmissions.filter(
+                item => item.status === activeSubmissionFilter
+            );
+        }
+
+        if (!submissions.length) {
+            submissionList.innerHTML = `
+                <div class="empty-task">
+                    <i class="fa fa-clock"></i>
+                    <h3>No ${activeSubmissionFilter === "all" ? "" : activeSubmissionFilter} submissions</h3>
+                    <p>Your submitted tasks will appear here.</p>
+                </div>
+            `;
+            return;
+        }
+
+        submissionList.innerHTML = submissions.map(item => `
+            <div class="submission-card">
+                <div>
+                    <span class="submission-status ${item.status}">
+                        <i class="fa ${statusIcon(item.status)}"></i>
+                        ${statusLabel(item.status)}
+                    </span>
+
+                    <h3>${item.task_title}</h3>
+
+                    <p>
+                        <i class="fa fa-globe"></i>
+                        ${item.platform || "Platform"}
+                    </p>
+
+                    <p>
+                        <i class="fa fa-calendar"></i>
+                        Submitted: ${item.submitted_at}
+                    </p>
+
+                    ${
+                        item.reviewed_at
+                            ? `<p><i class="fa fa-check"></i> Reviewed: ${item.reviewed_at}</p>`
+                            : `<p><i class="fa fa-hourglass-half"></i> Waiting for task creator approval</p>`
+                    }
+                </div>
+
+                <div class="submission-money">
+                    <strong>${money(item.reward)}</strong>
+                    ${
+                        item.proof
+                            ? `<a href="${item.proof}" target="_blank">View Proof</a>`
+                            : ""
+                    }
+                </div>
+            </div>
+        `).join("");
+    }
+
+    submissionTabs.forEach((tab) => {
+        tab.addEventListener("click", () => {
+            submissionTabs.forEach(btn => btn.classList.remove("active"));
+            tab.classList.add("active");
+            activeSubmissionFilter = tab.dataset.status;
+            renderSubmissions();
+        });
+    });
+
     async function loadRecentActivities() {
         const activityList = document.getElementById("activityList");
-
         if (!activityList) return;
 
         try {
             const res = await fetch("/api/recent-activities/", {
                 method: "GET",
                 credentials: "include",
-                headers: {
-                    "Accept": "application/json"
-                }
+                headers: { "Accept": "application/json" }
             });
 
-            if (!res.ok) {
-                console.error("Activity load failed:", res.status);
-                return;
-            }
+            if (!res.ok) return;
 
             const data = await res.json();
-
             activityList.innerHTML = "";
 
             if (!data.activities || data.activities.length === 0) {
@@ -260,7 +245,6 @@ searchInput?.addEventListener("input", async () => {
                 activityList.innerHTML += `
                     <div class="activity-item">
                         <img src="/static/accounts/img/${platform}.png" alt="${platform}">
-
                         <p>
                             <strong>@${activity.username || "user"}</strong>
                             just earned £${amount}
@@ -276,7 +260,6 @@ searchInput?.addEventListener("input", async () => {
 
     document.addEventListener("click", async (e) => {
         const button = e.target.closest(".select-task-btn");
-
         if (!button) return;
 
         selectedTaskId = button.dataset.id;
@@ -285,15 +268,10 @@ searchInput?.addEventListener("input", async () => {
             const res = await fetch(`/api/task/${selectedTaskId}/`, {
                 method: "GET",
                 credentials: "include",
-                headers: {
-                    "Accept": "application/json"
-                }
+                headers: { "Accept": "application/json" }
             });
 
-            if (!res.ok) {
-                console.error("Task fetch failed:", res.status);
-                return;
-            }
+            if (!res.ok) return;
 
             const task = await res.json();
 
@@ -375,12 +353,13 @@ searchInput?.addEventListener("input", async () => {
                 return;
             }
 
-            alert(data.message || "Task completed. Balance updated.");
+            alert(data.message || "Task submitted for review.");
 
             if (taskModal) taskModal.style.display = "none";
 
             loadUser();
             loadTasks();
+            loadSubmissions();
             loadRecentActivities();
 
         } catch (err) {
@@ -400,9 +379,7 @@ searchInput?.addEventListener("input", async () => {
             const res = await fetch("/pay-membership/", {
                 method: "POST",
                 credentials: "include",
-                headers: {
-                    "Content-Type": "application/json"
-                }
+                headers: { "Content-Type": "application/json" }
             });
 
             const data = await res.json();
@@ -439,27 +416,8 @@ searchInput?.addEventListener("input", async () => {
         }
     });
 
-    document.querySelectorAll(".logout").forEach((btn) => {
-        btn.addEventListener("click", async (e) => {
-            e.preventDefault();
-
-            try {
-                await fetch("/api/logout/", {
-                    method: "POST",
-                    credentials: "include",
-                    headers: {
-                        "Content-Type": "application/json"
-                    }
-                });
-            } catch (err) {
-                console.error("LOGOUT ERROR:", err);
-            }
-
-            window.location.href = "/login/";
-        });
-    });
-
     loadUser();
+    loadSubmissions();
     loadRecentActivities();
 
     setInterval(loadRecentActivities, 5000);
