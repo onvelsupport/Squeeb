@@ -22,6 +22,15 @@ def root_redirect(request):
         return redirect("dashboard")
     return redirect("home")
 
+@login_required
+def edit_profile(request):
+    return render(request, "accounts/dashboard/edit_profile.html")
+
+
+@login_required
+def bank_details(request):
+    return render(request, "accounts/dashboard/bank_details.html")
+
 
 def recent_activities_api(request):
     activities = RecentActivity.objects.all()[:10]

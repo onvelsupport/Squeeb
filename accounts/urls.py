@@ -42,6 +42,8 @@ from .views import (
     product_detail,
     send_product_message,
     root_redirect,
+    edit_profile,
+    bank_details,
 )
 
 urlpatterns = [
@@ -77,6 +79,8 @@ urlpatterns = [
     path("withdrawals/", withdrawals, name="withdrawals"),
     path("api/search/", global_search, name="global_search"),
     path("notifications/", notifications, name="notifications"),
+    path("more/edit-profile/", edit_profile, name="edit_profile"),
+    path("more/bank-details/", bank_details, name="bank_details"),
 
     # ======================
     # USER PROFILE
