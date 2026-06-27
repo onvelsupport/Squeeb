@@ -174,34 +174,30 @@ a{
         padding:22px 0 60px;
     }
 
+    /* Hide greeting/title on mobile */
+    .withdraw-hero > div:first-child{
+        display:none;
+    }
+
     .withdraw-hero{
-        padding:22px;
-        border-radius:24px;
-        background:white;
-        display:flex;
-        flex-direction:column;
-        gap:18px;
-        align-items:flex-start;
-        margin-bottom:24px;
-        box-shadow:0 12px 35px rgba(15,23,42,.06);
-    }
-
-    .withdraw-hero h1{
-        font-size:30px;
-        line-height:1.15;
-        margin:8px 0;
-    }
-
-    .withdraw-hero p{
-        font-size:14px;
-        line-height:1.5;
+        display:block;
+        padding:0;
+        margin-bottom:20px;
+        background:none;
+        box-shadow:none;
+        border-radius:0;
     }
 
     .balance-card{
         width:100%;
         min-width:0;
-        padding:20px;
-        border-radius:20px;
+        margin:0;
+        padding:22px;
+        border-radius:22px;
+    }
+
+    .balance-card p{
+        font-size:13px;
     }
 
     .balance-card h2{
@@ -297,10 +293,6 @@ a{
 }
 
 @media(max-width:420px){
-
-    .withdraw-hero h1{
-        font-size:26px;
-    }
 
     .balance-card h2{
         font-size:30px;
