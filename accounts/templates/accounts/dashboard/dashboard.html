@@ -6,107 +6,17 @@ Dashboard | SQUEEB
 {% endblock %}
 
 {% block extra_css %}
-<link rel="stylesheet" href="{% static 'accounts/css/dashboard.css' %}">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 {% endblock %}
 
 {% block content %}
 
+
+<!-- ====================== MAIN DASHBOARD CONTENT ====================== -->
 <div class="dashboard-page">
-
-    {% comment %}
-    <!-- ====================== DASHBOARD HEADER ====================== -->
-    <header class="dashboard-topbar">
-
-        <!-- Logo -->
-        <a href="{% url 'dashboard' %}" class="brand">
-            <img src="{% static 'accounts/img/logo.png' %}" alt="SQUEEB Logo">
-        </a>
-
-        <!-- Search Bar -->
-        <div class="dashboard-search">
-    <i class="fa fa-search"></i>
-
-    <input
-        type="text"
-        id="globalSearchInput"
-        placeholder="Search tasks, products, services and users">
-
-    <div class="search-results" id="searchResults"></div>
-</div>
-
-        <!-- Desktop Navigation -->
-        <nav class="dashboard-nav">
-            <a href="{% url 'dashboard' %}" class="active">Dashboard</a>
-            <a href="#" id="earnLink">Earn</a>
-            <a href="#" id="advertiseLink">Advertise</a>
-            <a href="{% url 'marketplace' %}">Marketplace</a>
-        </nav>
-
-        <!-- Header Actions -->
-        
-<div class="top-actions">
-    <button class="icon-btn notification-open-btn" id="openNotifications">
-    <i class="fa-solid fa-bell"></i>
-
-    {% if notification_count > 0 %}
-        <span class="notification-count">{{ notification_count }}</span>
-    {% endif %}
-</button>
-
-<div class="notification-overlay" id="notificationOverlay"></div>
-
-<aside class="notification-panel" id="notificationPanel">
-    <div class="notification-panel-header">
-        <h2>Notifications</h2>
-        <button id="closeNotifications">
-            <i class="fa-solid fa-xmark"></i>
-        </button>
-    </div>
-
-    <div class="notification-panel-body">
-        {% if notifications %}
-            {% for notification in notifications %}
-                <div class="notification-item {% if not notification.is_read %}unread{% endif %}">
-                    <h4>{{ notification.title }}</h4>
-                    <p>{{ notification.message }}</p>
-                    <span>{{ notification.created_at|timesince }} ago</span>
-                </div>
-            {% endfor %}
-        {% else %}
-            <div class="empty-notification">
-                <i class="fa-regular fa-bell-slash"></i>
-                <p>No notifications yet</p>
-            </div>
-        {% endif %}
-    </div>
-</aside>
-
-            <a href="{% url 'logout' %}" class="logout-btn logout">
-                <i class="fa fa-power-off"></i>
-            </a>
-        </div>
-
-        <!-- Mobile Menu Button -->
-        <button class="mobile-menu-btn" id="mobileMenuBtn">
-            <i class="fa fa-bars"></i>
-        </button>
-
-        <!-- Mobile Dropdown -->
-        <div class="mobile-dropdown" id="mobileDropdown">
-            <a href="{% url 'dashboard' %}"><i class="fa fa-home"></i> Dashboard</a>
-            <a href="#" id="mobileEarnLink"><i class="fa fa-coins"></i> Earn</a>
-            <a href="#" id="mobileAdvertiseLink"><i class="fa fa-bullhorn"></i> Advertise</a>
-            <a href="{% url 'marketplace' %}"><i class="fa fa-store"></i> Market</a>
-            <a href="{% url 'more_page' %}"><i class="fa fa-ellipsis-h"></i> More</a>
-            <a href="{% url 'logout' %}" class="logout"><i class="fa fa-power-off"></i> Logout</a>
-        </div>
-
-    </header>
-{% endcomment %}
-
-    <!-- ====================== MAIN DASHBOARD CONTENT ====================== -->
     <main class="dashboard-main">
+
+    <div class="dashboard-main">
 
         <!-- Hero / Welcome Section -->
         <section class="hero-section">
@@ -384,7 +294,7 @@ Dashboard | SQUEEB
             </div>
         </section>
 
-    </main>
+    </div>
 </div>
 
 
@@ -607,9 +517,4 @@ Dashboard | SQUEEB
     </div>
 </div>
 
-{% endblock %}
-
-
-{% block extra_js %}
-<script src="{% static 'accounts/js/dashboard.js' %}"></script>
 {% endblock %}
