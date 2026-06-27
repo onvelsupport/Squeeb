@@ -420,6 +420,82 @@ def create_funding_checkout(request):
             "error": str(e)
         }, status=500)
 
+
+@csrf_exempt
+@login_required
+def api_edit_profile(request):
+    if request.method != "POST":
+        return JsonResponse({
+            "success": False,
+            "message": "POST request required."
+        }, status=405)
+
+    try:
+        data = json.loads(request.body.decode("utf-8") or "{}")
+
+        user = request.user
+
+        first_name = data.get("first_name", "").strip()
+        last_name = data.get("last_name", "").strip()
+        username = data.get("username", "").strip()
+        email = data.get("email", "").strip()
+        phone_number = data.get("phone_number", "").strip()
+        city = data.get("city", "").strip()
+
+        if not username:
+            return JsonResponse({
+                "success": False,
+                "message": "Username is required."
+            }, status=400)
+
+        # Check username uniqueness
+        if User.objects.filter(username=username).exclude(id=user.id).exists():
+            return JsonResponse({
+                "success": False,
+                "message": "Username already exists."
+            }, status=400)
+
+        # Check email uniqueness
+        if email and User.objects.filter(email=email).exclude(id=user.id).exists():
+            return JsonResponse({
+                "success": False,
+                "message": "Email address is already in use."
+            }, status=400)
+
+        user.first_name = first_name
+        user.last_name = last_name
+        user.username = username
+        user.email = email
+
+        if hasattr(user, "phone_number"):
+            user.phone_number = phone_number
+
+        if hasattr(user, "city"):
+            user.city = city
+
+        user.save()
+
+        return JsonResponse({
+            "success": True,
+            "message": "Profile updated successfully."
+        })
+
+    except json.JSONDecodeError:
+        return JsonResponse({
+            "success": False,
+            "message": "Invalid JSON data."
+        }, status=400)
+
+    except Exception as e:
+        print("EDIT PROFILE ERROR:", e)
+
+        return JsonResponse({
+            "success": False,
+            "message": str(e)
+        }, status=500)
+    
+
+
 @csrf_exempt
 @login_required
 def create_cart_checkout(request):

@@ -51,6 +51,7 @@ from .views import (
     cookie_policy,
     terms_conditions,
     refund_policy,
+    api_edit_profile,
 
 )
 
@@ -96,6 +97,7 @@ urlpatterns = [
     # ======================
     path("user/<str:username>/", public_user_profile, name="public_user_profile"),
     path("api/follow/<str:username>/", toggle_follow, name="toggle_follow"),
+    path("api/edit-profile/", api_edit_profile, name="api_edit_profile"),
 
     # ======================
     # MARKETPLACE

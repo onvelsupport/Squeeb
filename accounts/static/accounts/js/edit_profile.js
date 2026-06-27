@@ -5,6 +5,7 @@ document.addEventListener("DOMContentLoaded", () => {
     async function loadProfile() {
         try {
             const res = await fetch("/api/user-info/", {
+                method: "GET",
                 credentials: "same-origin",
                 headers: {
                     "Accept": "application/json"
@@ -19,7 +20,7 @@ document.addEventListener("DOMContentLoaded", () => {
             document.getElementById("lastName").value = data.last_name || "";
             document.getElementById("username").value = data.username || "";
             document.getElementById("email").value = data.email || "";
-            document.getElementById("phone").value = data.phone || "";
+            document.getElementById("phone").value = data.phone_number || "";
             document.getElementById("city").value = data.city || "";
 
         } catch (err) {
@@ -31,13 +32,14 @@ document.addEventListener("DOMContentLoaded", () => {
         e.preventDefault();
 
         msg.textContent = "Saving...";
+        msg.style.color = "#2563eb";
 
         const payload = {
             first_name: document.getElementById("firstName").value.trim(),
             last_name: document.getElementById("lastName").value.trim(),
             username: document.getElementById("username").value.trim(),
             email: document.getElementById("email").value.trim(),
-            phone: document.getElementById("phone").value.trim(),
+            phone_number: document.getElementById("phone").value.trim(),
             city: document.getElementById("city").value.trim()
         };
 
@@ -46,23 +48,27 @@ document.addEventListener("DOMContentLoaded", () => {
                 method: "POST",
                 credentials: "same-origin",
                 headers: {
-                    "Content-Type": "application/json"
+                    "Content-Type": "application/json",
+                    "Accept": "application/json"
                 },
                 body: JSON.stringify(payload)
             });
 
             const data = await res.json();
 
-            if (!res.ok) {
-                msg.textContent = data.error || "Profile update failed.";
+            if (!res.ok || data.success === false) {
+                msg.textContent = data.message || data.error || "Profile update failed.";
+                msg.style.color = "red";
                 return;
             }
 
             msg.textContent = data.message || "Profile updated successfully.";
+            msg.style.color = "green";
 
         } catch (err) {
             console.error("Profile save error:", err);
             msg.textContent = "Network error. Try again.";
+            msg.style.color = "red";
         }
     });
 
