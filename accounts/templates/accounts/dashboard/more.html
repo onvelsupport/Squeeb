@@ -1,73 +1,15 @@
+{% extends 'accounts/base.html' %}
 {% load static %}
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Settings | SQUEEB</title>
 
-    <link rel="stylesheet" href="{% static 'accounts/css/more.css' %}">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-</head>
+{% block title %}
+More | SQUEEB
+{% endblock %}
 
-<body>
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'accounts/css/more.css' %}">
+{% endblock %}
 
- <!-- ====================== DASHBOARD HEADER ====================== -->
-    <header class="dashboard-topbar">
-
-        <!-- Logo -->
-        <a href="{% url 'dashboard' %}" class="brand">
-            <img src="{% static 'accounts/img/logo.png' %}" alt="SQUEEB Logo">
-        </a>
-
-        <!-- Search Bar -->
-        <div class="dashboard-search">
-    <i class="fa fa-search"></i>
-
-    <input
-        type="text"
-        id="globalSearchInput"
-        placeholder="Search tasks, products, services and users">
-
-    <div class="search-results" id="searchResults"></div>
-</div>
-
-        <!-- Desktop Navigation -->
-        <nav class="dashboard-nav">
-            <a href="{% url 'dashboard' %}">Dashboard</a>
-            <a href="{% url 'earnings' %}">Earn</a>
-            <a href="{% url 'marketplace' %}">Marketplace</a>
-            <a href="{% url 'more_page' %}" class="active">More</a>
-        </nav>
-
-        <!-- Header Actions -->
-        <div class="top-actions">
-    <button class="icon-btn" onclick="window.location.href='{% url 'cart' %}'">
-        <i class="fa-solid fa-cart-shopping"></i>
-        <span>{{ request.session.cart|length|default:0 }}</span>
-    </button>
-
-            <a href="{% url 'logout' %}" class="logout-btn logout">
-                <i class="fa fa-power-off"></i>
-            </a>
-        </div>
-
-        <!-- Mobile Menu Button -->
-        <button class="mobile-menu-btn" id="mobileMenuBtn">
-            <i class="fa fa-bars"></i>
-        </button>
-
-        <!-- Mobile Dropdown -->
-        <div class="mobile-dropdown" id="mobileDropdown">
-            <a href="{% url 'dashboard' %}"><i class="fa fa-home"></i> Dashboard</a>
-            <a href="#" id="mobileEarnLink"><i class="fa fa-coins"></i> Earn</a>
-            <a href="#" id="mobileAdvertiseLink"><i class="fa fa-bullhorn"></i> Advertise</a>
-            <a href="{% url 'marketplace' %}"><i class="fa fa-store"></i> Market</a>
-            <a href="{% url 'more_page' %}"><i class="fa fa-ellipsis-h"></i> More</a>
-            <a href="{% url 'logout' %}" class="logout"><i class="fa fa-power-off"></i> Logout</a>
-        </div>
-
-    </header>
+{% block content %}
 
 <main class="settings-page">
 
@@ -201,7 +143,11 @@
 
 </main>
 
+{% endblock %}
+
+{% block extra_js %}
 <script src="{% static 'accounts/js/more.js' %}"></script>
+{% endblock %}
 
 </body>
 </html>
