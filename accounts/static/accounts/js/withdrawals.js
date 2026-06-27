@@ -1,34 +1,56 @@
 document.addEventListener("DOMContentLoaded", () => {
+
     const bankModal = document.getElementById("bankModal");
     const paypalModal = document.getElementById("paypalModal");
+    const openBankModal = document.getElementById("openBankModal");
+    const openPaypalModal = document.getElementById("openPaypalModal");
 
-    document.getElementById("openBankModal")?.addEventListener("click", () => {
-        bankModal.classList.add("show");
+    /* ================= OPEN MODALS ================= */
+
+    openBankModal?.addEventListener("click", () => {
+        if (bankModal) {
+            bankModal.classList.add("show");
+        }
     });
 
-    document.getElementById("openPaypalModal")?.addEventListener("click", () => {
-        paypalModal.classList.add("show");
+    openPaypalModal?.addEventListener("click", () => {
+        if (paypalModal) {
+            paypalModal.classList.add("show");
+        }
     });
 
-    document.querySelectorAll(".close-modal").forEach(btn => {
-        btn.addEventListener("click", () => {
-            document.getElementById(btn.dataset.close).classList.remove("show");
-        });
-    });
+    /* ================= CLOSE MODALS ================= */
 
-    document.querySelectorAll(".modal-overlay").forEach(modal => {
-        modal.addEventListener("click", e => {
-            if (e.target === modal) {
+    document.querySelectorAll(".close-modal").forEach(button => {
+        button.addEventListener("click", () => {
+            const modalId = button.dataset.close;
+            const modal = document.getElementById(modalId);
+
+            if (modal) {
                 modal.classList.remove("show");
             }
         });
     });
 
+    document.querySelectorAll(".modal-overlay").forEach(modal => {
+        modal.addEventListener("click", event => {
+            if (event.target === modal) {
+                modal.classList.remove("show");
+            }
+        });
+    });
+
+    /* ================= SUBMIT WITHDRAWAL ================= */
+
     async function submitWithdrawal(form) {
         const msg = form.querySelector(".withdraw-msg");
         const button = form.querySelector("button[type='submit']");
 
+        if (!msg || !button) return;
+
         msg.textContent = "";
+        msg.className = "withdraw-msg";
+
         button.disabled = true;
         button.textContent = "Submitting...";
 
@@ -38,15 +60,32 @@ document.addEventListener("DOMContentLoaded", () => {
             const response = await fetch("/request-withdrawal/", {
                 method: "POST",
                 body: formData,
+                credentials: "include",
                 headers: {
-                    "X-CSRFToken": getCookie("csrftoken")
+                    "X-CSRFToken": getCookie("csrftoken"),
+                    "X-Requested-With": "XMLHttpRequest"
                 }
             });
 
-            const data = await response.json();
+            let data = {};
+
+            try {
+                data = await response.json();
+            } catch {
+                data = {
+                    success: false,
+                    message: "Server returned an invalid response."
+                };
+            }
+
+            if (!response.ok) {
+                msg.textContent = data.message || `Request failed. Error ${response.status}`;
+                msg.className = "withdraw-msg error";
+                return;
+            }
 
             if (data.success) {
-                msg.textContent = "Withdrawal request submitted successfully.";
+                msg.textContent = data.message || "Withdrawal request submitted successfully.";
                 msg.className = "withdraw-msg success";
                 form.reset();
             } else {
@@ -63,15 +102,22 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     }
 
-    document.getElementById("bankWithdrawForm")?.addEventListener("submit", e => {
-        e.preventDefault();
-        submitWithdrawal(e.target);
+    /* ================= FORM EVENTS ================= */
+
+    const bankWithdrawForm = document.getElementById("bankWithdrawForm");
+    const paypalWithdrawForm = document.getElementById("paypalWithdrawForm");
+
+    bankWithdrawForm?.addEventListener("submit", event => {
+        event.preventDefault();
+        submitWithdrawal(bankWithdrawForm);
     });
 
-    document.getElementById("paypalWithdrawForm")?.addEventListener("submit", e => {
-        e.preventDefault();
-        submitWithdrawal(e.target);
+    paypalWithdrawForm?.addEventListener("submit", event => {
+        event.preventDefault();
+        submitWithdrawal(paypalWithdrawForm);
     });
+
+    /* ================= CSRF COOKIE ================= */
 
     function getCookie(name) {
         let cookieValue = null;
@@ -91,4 +137,5 @@ document.addEventListener("DOMContentLoaded", () => {
 
         return cookieValue;
     }
+
 });

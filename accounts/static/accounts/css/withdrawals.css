@@ -54,7 +54,7 @@ body{
 
 .balance-card{
     width:320px;
-    background:#2563eb;
+    background:linear-gradient(135deg,#2563eb,#7c3aed);
     color:#fff;
     border-radius:20px;
     padding:28px;
