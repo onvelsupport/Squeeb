@@ -271,40 +271,198 @@ body{
     color:#dc2626;
 }
 
-/* ==========================================================
-   MOBILE
-========================================================== */
+@media(max-width:900px){
 
-@media(max-width:768px){
+    body{
+        overflow-x:hidden;
+    }
 
-    .withdraw-page{
-        padding:25px 15px 50px;
+    .withdraw-main{
+        width:100%;
+        padding:18px 14px 70px;
     }
 
     .withdraw-hero{
-        flex-direction:column;
-        align-items:flex-start;
+        display:block;
+        margin-bottom:18px;
     }
 
-    .withdraw-hero h1{
-        font-size:28px;
+    .withdraw-hero > div:first-child{
+        display:none;
     }
 
     .balance-card{
         width:100%;
+        min-width:0;
+        padding:20px;
+        border-radius:22px;
+    }
+
+    .balance-card p{
+        font-size:13px;
+        line-height:1.5;
+    }
+
+    .balance-card h2{
+        font-size:32px;
+        margin:8px 0;
     }
 
     .withdraw-options{
-        grid-template-columns:1fr;
+        display:flex;
+        flex-direction:column;
+        gap:16px;
+        margin-bottom:18px;
     }
 
     .withdraw-option{
-        padding:35px 25px;
+        width:100%;
+        padding:24px 18px;
+        border-radius:22px;
+    }
+
+    .withdraw-option:hover{
+        transform:none;
+    }
+
+    .withdraw-option i{
+        width:58px;
+        height:58px;
+        font-size:24px;
+        margin-bottom:14px;
+    }
+
+    .withdraw-option h3{
+        font-size:20px;
+        margin-bottom:8px;
+    }
+
+    .withdraw-option p{
+        font-size:13px;
+        line-height:1.5;
+    }
+
+    .info-card{
+        width:100%;
+        padding:20px;
+        border-radius:22px;
+    }
+
+    .info-card h3{
+        font-size:20px;
+        margin-bottom:14px;
+    }
+
+    .info-item{
+        gap:12px;
+        padding:12px 0;
+        margin-bottom:0;
+    }
+
+    .info-item i{
+        width:40px;
+        height:40px;
+        border-radius:50%;
+        font-size:16px;
+    }
+
+    .info-item strong{
+        font-size:14px;
+    }
+
+    .info-item p{
+        font-size:13px;
+        line-height:1.45;
+    }
+
+    .modal-overlay{
+        align-items:flex-end;
+        padding:0;
     }
 
     .withdraw-modal{
-        padding:25px;
-        border-radius:18px;
+        width:100%;
+        max-width:none;
+        max-height:88vh;
+        padding:24px 18px 28px;
+        border-radius:24px 24px 0 0;
+        animation:mobileModal .25s ease;
     }
 
+    @keyframes mobileModal{
+        from{
+            opacity:0;
+            transform:translateY(100%);
+        }
+
+        to{
+            opacity:1;
+            transform:translateY(0);
+        }
+    }
+
+    .close-modal{
+        top:14px;
+        right:14px;
+        width:36px;
+        height:36px;
+        font-size:22px;
+    }
+
+    .withdraw-modal h2{
+        font-size:22px;
+        padding-right:45px;
+    }
+
+    .withdraw-modal > p{
+        font-size:13px;
+        margin-bottom:18px;
+    }
+
+    .withdraw-modal label{
+        font-size:13px;
+        margin:12px 0 6px;
+    }
+
+    .withdraw-modal input{
+        height:50px;
+        padding:0 14px;
+        border-radius:14px;
+        font-size:16px !important;
+    }
+
+    .withdraw-modal button[type="submit"]{
+        height:52px;
+        font-size:15px;
+        border-radius:15px;
+        margin-top:18px;
+    }
+
+    .withdraw-msg{
+        font-size:13px;
+        text-align:center;
+    }
+}
+
+@media(max-width:420px){
+
+    .withdraw-main{
+        padding:16px 12px 65px;
+    }
+
+    .balance-card{
+        padding:18px;
+    }
+
+    .balance-card h2{
+        font-size:29px;
+    }
+
+    .withdraw-option{
+        padding:22px 16px;
+    }
+
+    .withdraw-modal{
+        padding:22px 16px 26px;
+    }
 }
