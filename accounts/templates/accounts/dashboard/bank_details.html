@@ -1,0 +1,54 @@
+{% extends 'accounts/base.html' %}
+{% load static %}
+
+{% block title %}
+Bank Details | SQUEEB
+{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'accounts/css/bank_details.css' %}">
+{% endblock %}
+
+{% block content %}
+
+<main class="bank-page">
+
+    <section class="bank-hero">
+        <div>
+            <p class="eyebrow">Payout Settings</p>
+            <h1>Bank Details</h1>
+            <p>Save your UK bank details for withdrawals.</p>
+        </div>
+
+        <a href="{% url 'more_page' %}" class="back-btn">
+            Back to More
+        </a>
+    </section>
+
+    <form class="bank-card" id="bankDetailsForm">
+
+        <label>Account Name</label>
+        <input type="text" id="accountName" placeholder="Your full name">
+
+        <label>Bank Name</label>
+        <input type="text" id="bankName" placeholder="Bank name">
+
+        <label>Sort Code</label>
+        <input type="text" id="sortCode" placeholder="12-34-56" maxlength="8">
+
+        <label>Account Number</label>
+        <input type="text" id="accountNumber" placeholder="12345678" maxlength="8">
+
+        <button type="submit">Save Bank Details</button>
+
+        <p id="bankMsg"></p>
+
+    </form>
+
+</main>
+
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'accounts/js/bank_details.js' %}"></script>
+{% endblock %}

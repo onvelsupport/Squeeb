@@ -1,0 +1,74 @@
+{% extends 'accounts/base.html' %}
+{% load static %}
+
+{% block title %}
+Edit Profile | SQUEEB
+{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'accounts/css/edit_profile.css' %}">
+{% endblock %}
+
+{% block content %}
+
+<main class="edit-page">
+
+    <section class="edit-hero">
+        <div>
+            <p class="eyebrow">Profile Settings</p>
+            <h1>Edit Profile</h1>
+            <p>Update your personal account details.</p>
+        </div>
+
+        <a href="{% url 'more_page' %}" class="back-btn">
+            Back to More
+        </a>
+    </section>
+
+    <form class="edit-card" id="editProfileForm">
+
+        <div class="form-grid">
+            <div>
+                <label>First Name</label>
+                <input type="text" id="firstName" placeholder="First name">
+            </div>
+
+            <div>
+                <label>Last Name</label>
+                <input type="text" id="lastName" placeholder="Last name">
+            </div>
+
+            <div>
+                <label>Username</label>
+                <input type="text" id="username" placeholder="Username">
+            </div>
+
+            <div>
+                <label>Email</label>
+                <input type="email" id="email" placeholder="Email address">
+            </div>
+
+            <div>
+                <label>Phone Number</label>
+                <input type="text" id="phone" placeholder="Phone number">
+            </div>
+
+            <div>
+                <label>City</label>
+                <input type="text" id="city" placeholder="City">
+            </div>
+        </div>
+
+        <button type="submit">Save Profile</button>
+
+        <p id="profileMsg"></p>
+
+    </form>
+
+</main>
+
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'accounts/js/edit_profile.js' %}"></script>
+{% endblock %}

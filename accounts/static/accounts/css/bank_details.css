@@ -1,0 +1,123 @@
+.bank-page{
+    width:92%;
+    max-width:850px;
+    margin:auto;
+    padding:40px 0 70px;
+}
+
+.bank-hero{
+    background:linear-gradient(135deg,#0f172a,#2563eb,#7c3aed);
+    color:white;
+    padding:40px;
+    border-radius:32px;
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    gap:30px;
+    margin-bottom:30px;
+}
+
+.eyebrow{
+    color:#bfdbfe;
+    font-size:13px;
+    font-weight:800;
+    text-transform:uppercase;
+    margin-bottom:10px;
+}
+
+.bank-hero h1{
+    font-size:40px;
+    margin-bottom:10px;
+}
+
+.bank-hero p{
+    color:#dbeafe;
+}
+
+.back-btn{
+    background:white;
+    color:#111827;
+    padding:15px 22px;
+    border-radius:16px;
+    font-weight:800;
+}
+
+.bank-card{
+    background:white;
+    padding:35px;
+    border-radius:28px;
+    box-shadow:0 12px 35px rgba(15,23,42,.08);
+}
+
+.bank-card label{
+    display:block;
+    font-weight:800;
+    margin:18px 0 8px;
+}
+
+.bank-card input{
+    width:100%;
+    padding:16px;
+    border:1px solid #d1d5db;
+    border-radius:15px;
+    outline:none;
+    font-size:16px;
+}
+
+.bank-card input:focus{
+    border-color:#2563eb;
+    box-shadow:0 0 0 4px rgba(37,99,235,.12);
+}
+
+.bank-card button{
+    width:100%;
+    margin-top:28px;
+    border:none;
+    background:linear-gradient(135deg,#2563eb,#7c3aed);
+    color:white;
+    padding:17px;
+    border-radius:16px;
+    font-weight:800;
+    cursor:pointer;
+}
+
+#bankMsg{
+    margin-top:16px;
+    font-weight:700;
+    color:#2563eb;
+}
+
+@media(max-width:900px){
+    .bank-page{
+        width:94%;
+        padding:22px 0 60px;
+    }
+
+    .bank-hero{
+        padding:22px;
+        border-radius:24px;
+        flex-direction:column;
+        align-items:flex-start;
+        gap:18px;
+    }
+
+    .bank-hero h1{
+        font-size:30px;
+    }
+
+    .back-btn{
+        width:100%;
+        text-align:center;
+    }
+
+    .bank-card{
+        padding:22px;
+        border-radius:22px;
+    }
+
+    input,
+    textarea,
+    select{
+        font-size:16px !important;
+    }
+}
