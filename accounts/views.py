@@ -754,27 +754,25 @@ def user_info(request):
         "is_member": request.user.is_member,
     })
 
-# ==========================
-# WITHDRAWAL
-# ==========================
 @login_required
 def request_withdrawal(request):
     if request.method != "POST":
         return JsonResponse({
             "success": False,
             "message": "Invalid request method."
-        })
+        }, status=405)
 
     method = request.POST.get("method")
     amount = request.POST.get("amount")
+    user = request.user
 
     if not method or not amount:
         return JsonResponse({
             "success": False,
             "message": "Withdrawal method and amount are required."
-        })
+        }, status=400)
 
-    user = request.user
+    payment_rows = ""
 
     if method == "Bank Account":
         account_name = request.POST.get("account_name")
@@ -782,12 +780,18 @@ def request_withdrawal(request):
         sort_code = request.POST.get("sort_code")
         account_number = request.POST.get("account_number")
 
-        message = f"""
+        payment_rows = f"""
+        <tr><td>Account Name</td><td>{account_name}</td></tr>
+        <tr><td>Bank Name</td><td>{bank_name}</td></tr>
+        <tr><td>Sort Code</td><td>{sort_code}</td></tr>
+        <tr><td>Account Number</td><td>{account_number}</td></tr>
+        """
+
+        text_content = f"""
 New Bank Withdrawal Request
 
 User: {user.username}
 Email: {user.email}
-
 Amount: £{amount}
 Method: Bank Account
 
@@ -800,14 +804,18 @@ Account Number: {account_number}
     elif method == "PayPal":
         paypal_email = request.POST.get("paypal_email")
 
-        message = f"""
+        payment_rows = f"""
+        <tr><td>PayPal Email</td><td>{paypal_email}</td></tr>
+        """
+
+        text_content = f"""
 New PayPal Withdrawal Request
 
 User: {user.username}
 Email: {user.email}
-
 Amount: £{amount}
 Method: PayPal
+
 PayPal Email: {paypal_email}
 """
 
@@ -815,72 +823,48 @@ PayPal Email: {paypal_email}
         return JsonResponse({
             "success": False,
             "message": "Invalid withdrawal method."
-        })
+        }, status=400)
 
-    send_mail(
-        subject = "New SQUEEB Withdrawal Request"
+    subject = "New SQUEEB Withdrawal Request"
 
-text_content = message
+    html_content = f"""
+    <div style="font-family:Arial,sans-serif;background:#f5f7fb;padding:30px;">
+        <div style="max-width:620px;margin:auto;background:#ffffff;border-radius:18px;overflow:hidden;">
+            <div style="background:linear-gradient(135deg,#2563eb,#7c3aed);color:#ffffff;padding:28px;">
+                <h1 style="margin:0;font-size:24px;">SQUEEB Withdrawal Request</h1>
+                <p style="margin:8px 0 0;">A user submitted a new withdrawal request.</p>
+            </div>
 
-html_content = f"""
-<div style="font-family: Arial, sans-serif; background:#f5f7fb; padding:30px;">
-    <div style="max-width:600px; margin:auto; background:white; border-radius:18px; overflow:hidden; box-shadow:0 10px 30px rgba(0,0,0,.08);">
+            <div style="padding:28px;">
+                <table style="width:100%;border-collapse:collapse;">
+                    <tr><td>User</td><td>{user.username}</td></tr>
+                    <tr><td>Email</td><td>{user.email}</td></tr>
+                    <tr><td>Amount</td><td><strong>£{amount}</strong></td></tr>
+                    <tr><td>Method</td><td>{method}</td></tr>
+                    {payment_rows}
+                </table>
+            </div>
 
-        <div style="background:linear-gradient(135deg,#2563eb,#7c3aed); color:white; padding:28px;">
-            <h1 style="margin:0; font-size:24px;">SQUEEB Withdrawal Request</h1>
-            <p style="margin:8px 0 0; opacity:.9;">A user has submitted a new withdrawal request.</p>
-        </div>
-
-        <div style="padding:28px;">
-            <h2 style="margin:0 0 18px; color:#111827;">Request Details</h2>
-
-            <table style="width:100%; border-collapse:collapse;">
-                <tr>
-                    <td style="padding:12px; background:#f9fafb; font-weight:bold;">User</td>
-                    <td style="padding:12px;">{user.username}</td>
-                </tr>
-                <tr>
-                    <td style="padding:12px; background:#f9fafb; font-weight:bold;">Email</td>
-                    <td style="padding:12px;">{user.email}</td>
-                </tr>
-                <tr>
-                    <td style="padding:12px; background:#f9fafb; font-weight:bold;">Amount</td>
-                    <td style="padding:12px; font-weight:bold; color:#2563eb;">£{amount}</td>
-                </tr>
-                <tr>
-                    <td style="padding:12px; background:#f9fafb; font-weight:bold;">Method</td>
-                    <td style="padding:12px;">{method}</td>
-                </tr>
-            </table>
-
-            <div style="margin-top:24px; padding:18px; background:#eff6ff; border-radius:14px;">
-                <h3 style="margin:0 0 12px; color:#1e40af;">Payment Information</h3>
-                <pre style="white-space:pre-wrap; font-family:Arial, sans-serif; margin:0; color:#111827;">{message}</pre>
+            <div style="padding:18px 28px;background:#f9fafb;color:#64748b;font-size:13px;">
+                This email was automatically generated by SQUEEB.
             </div>
         </div>
-
-        <div style="padding:18px 28px; background:#f9fafb; color:#64748b; font-size:13px;">
-            This email was automatically generated by SQUEEB.
-        </div>
-
     </div>
-</div>
-"""
+    """
 
-email = EmailMultiAlternatives(
-    subject=subject,
-    body=text_content,
-    from_email=settings.DEFAULT_FROM_EMAIL,
-    to=[settings.ADMIN_EMAIL],
-)
-
-email.attach_alternative(html_content, "text/html")
-email.send()
+    email = EmailMultiAlternatives(
+        subject=subject,
+        body=text_content,
+        from_email=settings.DEFAULT_FROM_EMAIL,
+        to=[settings.ADMIN_EMAIL],
     )
+
+    email.attach_alternative(html_content, "text/html")
+    email.send()
 
     return JsonResponse({
         "success": True,
-        "message": "Withdrawal request submitted."
+        "message": "Withdrawal request submitted successfully."
     })
 
 
