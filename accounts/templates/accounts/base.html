@@ -46,8 +46,8 @@
 
     <nav class="dashboard-nav">
         <a href="{% url 'dashboard' %}">Dashboard</a>
-        <a href="#" id="earnLink">Earn</a>
-        <a href="#" id="advertiseLink">Advertise</a>
+        <a href="{% url 'earnings' %}">Earn</a>
+        <a href="{% url 'dashboard' %}">Advertise</a>
         <a href="{% url 'marketplace' %}">Marketplace</a>
     </nav>
 
@@ -73,7 +73,7 @@
         <a href="{% url 'dashboard' %}"><i class="fa fa-home"></i> Dashboard</a>
         <a href="#" id="mobileEarnLink"><i class="fa fa-coins"></i> Earn</a>
         <a href="#" id="mobileAdvertiseLink"><i class="fa fa-bullhorn"></i> Advertise</a>
-        <a href="{% url 'marketplace' %}"><i class="fa fa-store"></i> Market</a>
+        <a href="{% url 'marketplace' %}"><i class="fa fa-store"></i> Marketplace</a>
         <a href="{% url 'more_page' %}"><i class="fa fa-ellipsis-h"></i> More</a>
         <a href="{% url 'logout' %}" class="logout"><i class="fa fa-power-off"></i> Logout</a>
     </div>
