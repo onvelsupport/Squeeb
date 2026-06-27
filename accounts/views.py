@@ -754,6 +754,10 @@ def user_info(request):
         "is_member": request.user.is_member,
     })
 
+# ==========================
+# WITHDRAWAL
+# ==========================
+
 @login_required
 def request_withdrawal(request):
     if request.method != "POST":
@@ -772,26 +776,18 @@ def request_withdrawal(request):
             "message": "Withdrawal method and amount are required."
         }, status=400)
 
-    payment_rows = ""
-
     if method == "Bank Account":
         account_name = request.POST.get("account_name")
         bank_name = request.POST.get("bank_name")
         sort_code = request.POST.get("sort_code")
         account_number = request.POST.get("account_number")
 
-        payment_rows = f"""
-        <tr><td>Account Name</td><td>{account_name}</td></tr>
-        <tr><td>Bank Name</td><td>{bank_name}</td></tr>
-        <tr><td>Sort Code</td><td>{sort_code}</td></tr>
-        <tr><td>Account Number</td><td>{account_number}</td></tr>
-        """
-
-        text_content = f"""
+        message = f"""
 New Bank Withdrawal Request
 
 User: {user.username}
 Email: {user.email}
+
 Amount: £{amount}
 Method: Bank Account
 
@@ -801,23 +797,46 @@ Sort Code: {sort_code}
 Account Number: {account_number}
 """
 
+        payment_info_html = f"""
+        <tr>
+            <td style="padding:12px;background:#f9fafb;font-weight:bold;">Account Name</td>
+            <td style="padding:12px;">{account_name}</td>
+        </tr>
+        <tr>
+            <td style="padding:12px;background:#f9fafb;font-weight:bold;">Bank Name</td>
+            <td style="padding:12px;">{bank_name}</td>
+        </tr>
+        <tr>
+            <td style="padding:12px;background:#f9fafb;font-weight:bold;">Sort Code</td>
+            <td style="padding:12px;">{sort_code}</td>
+        </tr>
+        <tr>
+            <td style="padding:12px;background:#f9fafb;font-weight:bold;">Account Number</td>
+            <td style="padding:12px;">{account_number}</td>
+        </tr>
+        """
+
     elif method == "PayPal":
         paypal_email = request.POST.get("paypal_email")
 
-        payment_rows = f"""
-        <tr><td>PayPal Email</td><td>{paypal_email}</td></tr>
-        """
-
-        text_content = f"""
+        message = f"""
 New PayPal Withdrawal Request
 
 User: {user.username}
 Email: {user.email}
+
 Amount: £{amount}
 Method: PayPal
 
 PayPal Email: {paypal_email}
 """
+
+        payment_info_html = f"""
+        <tr>
+            <td style="padding:12px;background:#f9fafb;font-weight:bold;">PayPal Email</td>
+            <td style="padding:12px;">{paypal_email}</td>
+        </tr>
+        """
 
     else:
         return JsonResponse({
@@ -826,28 +845,50 @@ PayPal Email: {paypal_email}
         }, status=400)
 
     subject = "New SQUEEB Withdrawal Request"
+    text_content = message
 
     html_content = f"""
     <div style="font-family:Arial,sans-serif;background:#f5f7fb;padding:30px;">
-        <div style="max-width:620px;margin:auto;background:#ffffff;border-radius:18px;overflow:hidden;">
-            <div style="background:linear-gradient(135deg,#2563eb,#7c3aed);color:#ffffff;padding:28px;">
+        <div style="max-width:620px;margin:auto;background:white;border-radius:18px;overflow:hidden;box-shadow:0 10px 30px rgba(0,0,0,.08);">
+
+            <div style="background:linear-gradient(135deg,#2563eb,#7c3aed);color:white;padding:28px;">
                 <h1 style="margin:0;font-size:24px;">SQUEEB Withdrawal Request</h1>
-                <p style="margin:8px 0 0;">A user submitted a new withdrawal request.</p>
+                <p style="margin:8px 0 0;opacity:.9;">A user has submitted a new withdrawal request.</p>
             </div>
 
             <div style="padding:28px;">
-                <table style="width:100%;border-collapse:collapse;">
-                    <tr><td>User</td><td>{user.username}</td></tr>
-                    <tr><td>Email</td><td>{user.email}</td></tr>
-                    <tr><td>Amount</td><td><strong>£{amount}</strong></td></tr>
-                    <tr><td>Method</td><td>{method}</td></tr>
-                    {payment_rows}
+                <h2 style="margin:0 0 18px;color:#111827;">Request Details</h2>
+
+                <table style="width:100%;border-collapse:collapse;border:1px solid #e5e7eb;">
+                    <tr>
+                        <td style="padding:12px;background:#f9fafb;font-weight:bold;">User</td>
+                        <td style="padding:12px;">{user.username}</td>
+                    </tr>
+                    <tr>
+                        <td style="padding:12px;background:#f9fafb;font-weight:bold;">Email</td>
+                        <td style="padding:12px;">{user.email}</td>
+                    </tr>
+                    <tr>
+                        <td style="padding:12px;background:#f9fafb;font-weight:bold;">Amount</td>
+                        <td style="padding:12px;font-weight:bold;color:#2563eb;">£{amount}</td>
+                    </tr>
+                    <tr>
+                        <td style="padding:12px;background:#f9fafb;font-weight:bold;">Method</td>
+                        <td style="padding:12px;">{method}</td>
+                    </tr>
+
+                    {payment_info_html}
                 </table>
+
+                <div style="margin-top:24px;padding:16px;background:#eff6ff;border-radius:14px;color:#1e40af;font-size:14px;">
+                    Review this withdrawal request before sending payment manually.
+                </div>
             </div>
 
             <div style="padding:18px 28px;background:#f9fafb;color:#64748b;font-size:13px;">
                 This email was automatically generated by SQUEEB.
             </div>
+
         </div>
     </div>
     """
