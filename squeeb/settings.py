@@ -16,6 +16,18 @@ SECRET_KEY = os.getenv("DJANGO_SECRET_KEY") or os.getenv("SECRET_KEY")
 
 ADMIN_EMAIL = "sammyperazzi@gmail.com"
 DEFAULT_FROM_EMAIL = "SQUEEB <noreply@squeeb.co.uk>"
+# =============================
+# EMAIL SETTINGS - RESEND
+# =============================
+
+EMAIL_BACKEND = "anymail.backends.resend.EmailBackend"
+
+ANYMAIL = {
+    "RESEND_API_KEY": os.getenv("RESEND_API_KEY"),
+}
+
+ADMIN_EMAIL = "sammyperazzi@gmail.com"
+DEFAULT_FROM_EMAIL = "SQUEEB <noreply@squeeb.co.uk>"
 
 
 # SECURITY WARNING: don't run with debug turned on in production!
@@ -42,6 +54,8 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'accounts.apps.AccountsConfig',
     'corsheaders',
+
+    'anymail',
 ]
 
 MIDDLEWARE = [
