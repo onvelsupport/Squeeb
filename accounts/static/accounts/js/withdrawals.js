@@ -8,129 +8,112 @@ document.addEventListener("DOMContentLoaded", () => {
     /* ================= OPEN MODALS ================= */
 
     openBankModal?.addEventListener("click", () => {
-        if (bankModal) {
-            bankModal.classList.add("show");
-        }
+        bankModal?.classList.add("show");
     });
 
     openPaypalModal?.addEventListener("click", () => {
-        if (paypalModal) {
-            paypalModal.classList.add("show");
-        }
+        paypalModal?.classList.add("show");
     });
 
     /* ================= CLOSE MODALS ================= */
 
+    function closeModal(modal) {
+        if (!modal) return;
+
+        modal.classList.remove("show");
+
+        const form = modal.querySelector("form");
+        const msg = modal.querySelector(".withdraw-msg");
+
+        form?.reset();
+
+        if (msg) {
+            msg.textContent = "";
+            msg.className = "withdraw-msg";
+        }
+    }
+
     document.querySelectorAll(".close-modal").forEach(button => {
         button.addEventListener("click", () => {
-            const modalId = button.dataset.close;
-            const modal = document.getElementById(modalId);
-
-            if (modal) {
-                modal.classList.remove("show");
-            }
+            const modal = document.getElementById(button.dataset.close);
+            closeModal(modal);
         });
     });
 
     document.querySelectorAll(".modal-overlay").forEach(modal => {
         modal.addEventListener("click", event => {
             if (event.target === modal) {
-                modal.classList.remove("show");
+                closeModal(modal);
             }
         });
     });
 
-/* ================= SUBMIT WITHDRAWAL ================= */
+    /* ================= SUBMIT WITHDRAWAL ================= */
 
-async function submitWithdrawal(form) {
+    async function submitWithdrawal(form) {
+        const msg = form.querySelector(".withdraw-msg");
+        const button = form.querySelector("button[type='submit']");
 
-    const msg = form.querySelector(".withdraw-msg");
-    const button = form.querySelector("button[type='submit']");
+        if (!msg || !button) return;
 
-    if (!msg || !button) return;
+        msg.textContent = "";
+        msg.className = "withdraw-msg";
 
-    msg.textContent = "";
-    msg.className = "withdraw-msg";
+        button.disabled = true;
+        button.textContent = "Submitting...";
 
-    button.disabled = true;
-    button.textContent = "Submitting...";
-
-    const formData = new FormData(form);
-
-    try {
-
-        const response = await fetch("/request-withdrawal/", {
-            method: "POST",
-            body: formData,
-            credentials: "include",
-            headers: {
-                "X-CSRFToken": getCookie("csrftoken"),
-                "X-Requested-With": "XMLHttpRequest"
-            }
-        });
-
-        let data = {};
+        const formData = new FormData(form);
 
         try {
-            data = await response.json();
-        } catch {
-
-            data = {
-                success: false,
-                message: "Server returned an invalid response."
-            };
-
-        }
-
-        if (!response.ok) {
-
-            msg.textContent = data.message || `Request failed. Error ${response.status}`;
-            msg.className = "withdraw-msg error";
-            return;
-
-        }
-
-        if (data.success) {
-
-            msg.textContent = data.message || "Withdrawal request submitted successfully.";
-            msg.className = "withdraw-msg success";
-
-            form.reset();
-
-            // Close the modal after a short delay
-            setTimeout(() => {
-
-                const modal = form.closest(".modal-overlay");
-
-                if (modal) {
-                    modal.classList.remove("show");
+            const response = await fetch("/request-withdrawal/", {
+                method: "POST",
+                body: formData,
+                credentials: "include",
+                headers: {
+                    "X-CSRFToken": getCookie("csrftoken"),
+                    "X-Requested-With": "XMLHttpRequest"
                 }
+            });
 
-                msg.textContent = "";
-                msg.className = "withdraw-msg";
+            let data = {};
 
-            }, 1200);
+            try {
+                data = await response.json();
+            } catch {
+                data = {
+                    success: false,
+                    message: "Server returned an invalid response."
+                };
+            }
 
-        } else {
+            if (!response.ok) {
+                msg.textContent = data.message || `Request failed. Error ${response.status}`;
+                msg.className = "withdraw-msg error";
+                return;
+            }
 
-            msg.textContent = data.message || "Something went wrong.";
+            if (data.success) {
+                msg.textContent = data.message || "Withdrawal request submitted successfully.";
+                msg.className = "withdraw-msg success";
+
+                setTimeout(() => {
+                    const modal = form.closest(".modal-overlay");
+                    closeModal(modal);
+                }, 1200);
+
+            } else {
+                msg.textContent = data.message || "Something went wrong.";
+                msg.className = "withdraw-msg error";
+            }
+
+        } catch (error) {
+            msg.textContent = "Network error. Please try again.";
             msg.className = "withdraw-msg error";
-
+        } finally {
+            button.disabled = false;
+            button.textContent = "Submit Withdrawal";
         }
-
-    } catch (error) {
-
-        msg.textContent = "Network error. Please try again.";
-        msg.className = "withdraw-msg error";
-
-    } finally {
-
-        button.disabled = false;
-        button.textContent = "Submit Withdrawal";
-
     }
-
-}
 
     /* ================= FORM EVENTS ================= */
 
