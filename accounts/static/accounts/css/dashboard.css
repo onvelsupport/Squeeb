@@ -1020,6 +1020,7 @@ a{
     transform:translateY(-4px);
 }
 
+
 /* ==========================================================
    RESPONSIVE DASHBOARD
 ========================================================== */
@@ -1038,12 +1039,7 @@ a{
 
     input,
     textarea,
-    select,
-    .dashboard-search input,
-    .modal-input,
-    .form-group input,
-    .form-group select,
-    #fundAmountInput{
+    select{
         font-size:16px !important;
     }
 
@@ -1096,6 +1092,10 @@ a{
         margin-top:12px;
         padding:13px 16px;
         border-radius:16px;
+    }
+
+    .dashboard-search input{
+        font-size:16px !important;
     }
 
     .search-results{
@@ -1218,43 +1218,6 @@ a{
 
     .stats-card span{
         display:none;
-    }
-
-    .quick-actions{
-        margin-bottom:24px;
-    }
-
-    .quick-grid{
-        display:grid;
-        grid-template-columns:repeat(2,1fr);
-        gap:12px;
-    }
-
-    .quick-card{
-        min-height:132px;
-        padding:18px;
-        border-radius:20px;
-        text-align:center;
-        display:flex;
-        flex-direction:column;
-        align-items:center;
-        justify-content:center;
-    }
-
-    .quick-card i{
-        font-size:28px;
-        margin-bottom:12px;
-    }
-
-    .quick-card h3{
-        font-size:15px;
-        margin-bottom:6px;
-        line-height:1.25;
-    }
-
-    .quick-card p{
-        font-size:12px;
-        line-height:1.4;
     }
 
     .membership-banner{
@@ -1388,156 +1351,207 @@ a{
     }
 }
 
-@media(max-width:480px){
-
-    .quick-grid{
-        grid-template-columns:repeat(2,1fr);
-        gap:10px;
-    }
-
-    .quick-card{
-        min-height:118px;
-        padding:16px;
-    }
-
-    .quick-card i{
-        font-size:24px;
-    }
-
-    .quick-card h3{
-        font-size:14px;
-    }
-
-    .quick-card p{
-        display:none;
+/* Stop iPhone Safari input zoom */
+@media(max-width:900px){
+    input,
+    textarea,
+    select,
+    .dashboard-search input,
+    .modal-input,
+    .form-group input,
+    .form-group select,
+    #fundAmountInput{
+        font-size:16px !important;
     }
 }
 
 
 /* ==========================================================
-   TASK MODAL MOBILE FIX
+   FIX EARN / ADVERTISE MODALS ON MOBILE
 ========================================================== */
 
-@media(max-width:900px){
+@media(max-width:700px){
 
-    #taskModal{
-        position:fixed !important;
-        inset:0 !important;
-        width:100vw !important;
-        height:100dvh !important;
-        background:rgba(15,23,42,.55) !important;
-        z-index:99999 !important;
-        display:none;
-        align-items:center !important;
-        justify-content:center !important;
-        padding:14px !important;
-        overflow:hidden !important;
+    .choice-modal-bg{
+        align-items:flex-end;
+        padding:0;
     }
 
-    #taskModal.show{
-        display:flex !important;
+    .choice-modal{
+        width:100%;
+        max-width:100%;
+        max-height:88vh;
+        overflow-y:auto;
+        border-radius:28px 28px 0 0;
+        padding:28px 20px 24px;
     }
 
-    #taskModal[style*="display: flex"],
-    #taskModal[style*="display:flex"]{
-        display:flex !important;
+    .choice-header{
+        text-align:left;
+        margin-bottom:20px;
     }
 
-    #taskModal .modal-content,
-    #taskModal .task-modal-content,
-    #taskModal .task-popup{
-        width:100% !important;
-        max-width:390px !important;
-        max-height:68dvh !important;
-        overflow-y:auto !important;
-        background:#fff !important;
-        border-radius:22px !important;
-        padding:16px !important;
-        margin:0 !important;
-        box-shadow:0 20px 60px rgba(15,23,42,.28) !important;
+    .choice-header h2{
+        font-size:24px;
+        line-height:1.2;
     }
 
-    #taskModal h1,
-    #taskModal h2{
-        font-size:20px !important;
-        line-height:1.22 !important;
-        margin:0 0 8px !important;
+    .choice-header p{
+        font-size:14px;
+        line-height:1.4;
     }
 
-    #taskModal p{
-        font-size:13px !important;
-        line-height:1.3 !important;
-        margin:0 0 10px !important;
+    .choice-grid{
+        grid-template-columns:1fr;
+        gap:14px;
     }
 
-    #taskModal label{
-        font-size:13px !important;
-        margin:0 0 5px !important;
-        display:block !important;
+    .choice-card{
+        display:grid;
+        grid-template-columns:54px 1fr 24px;
+        gap:14px;
+        align-items:center;
+        padding:18px;
+        border-radius:20px;
     }
 
-    #taskModal .form-group{
-        margin-bottom:10px !important;
+    .choice-icon{
+        width:54px;
+        height:54px;
+        border-radius:16px;
+        font-size:20px;
     }
 
-    #taskModal input,
-    #taskModal select,
-    #taskModal textarea{
-        width:100% !important;
-        min-height:44px !important;
-        height:44px !important;
-        padding:10px 12px !important;
-        font-size:16px !important;
-        border-radius:13px !important;
+    .choice-card h3{
+        font-size:18px;
+        margin-bottom:5px;
     }
 
-    #taskModal textarea{
-        height:76px !important;
-        min-height:76px !important;
-        resize:none !important;
+    .choice-card p{
+        font-size:13px;
+        line-height:1.4;
     }
 
-    #taskModal button{
-        width:100% !important;
-        min-height:46px !important;
-        padding:10px 14px !important;
-        border-radius:14px !important;
-        font-size:15px !important;
+    .choice-card .social-icons,
+    .choice-card .product-icons{
+        margin-top:10px;
+        display:flex;
+        flex-direction:row;
+        gap:6px;
+        flex-wrap:wrap;
     }
 
-    #taskModal .modal-actions{
-        gap:8px !important;
-        margin-top:10px !important;
+    .choice-card .social-icons img,
+    .choice-card .product-icons img{
+        width:24px;
+        height:24px;
+        border-radius:8px;
+        padding:2px;
+    }
+
+    .choice-arrow{
+        margin-top:0;
+        align-self:center;
     }
 }
 
-@media(max-width:480px){
+/* ==========================================================
+   CREATE TASK MODAL MOBILE FIX
+========================================================== */
 
-    #taskModal{
-        padding:10px !important;
+@media(max-width:700px){
+
+    #taskActionModal{
+        align-items:center !important;
+        justify-content:center !important;
+        padding:12px !important;
+        overflow:hidden !important;
     }
 
-    #taskModal .modal-content,
-    #taskModal .task-modal-content,
-    #taskModal .task-popup{
-        max-width:calc(100vw - 20px) !important;
-        max-height:64dvh !important;
-        padding:14px !important;
+    .task-action-container{
+        width:100% !important;
+        max-width:390px !important;
+        max-height:82vh !important;
+        overflow-y:auto !important;
+        padding:18px !important;
+        border-radius:22px !important;
     }
 
-    #taskModal h1,
-    #taskModal h2{
+    .modal-close{
+        top:10px !important;
+        right:10px !important;
+        width:32px !important;
+        height:32px !important;
+        font-size:14px !important;
+    }
+
+    .task-action-header{
+        display:block !important;
+        margin-bottom:12px !important;
+    }
+
+    .task-icon-wrap img{
+        width:48px !important;
+        height:48px !important;
+        margin-bottom:8px !important;
+    }
+
+    .task-action-header h2{
         font-size:19px !important;
+        line-height:1.25 !important;
+        margin-bottom:6px !important;
+        padding-right:35px !important;
     }
 
-    #taskModal input,
-    #taskModal select{
-        height:42px !important;
-        min-height:42px !important;
+    .task-price,
+    #taskActionDescription{
+        font-size:13px !important;
+        line-height:1.35 !important;
     }
 
-    #taskModal textarea{
-        height:68px !important;
-        min-height:68px !important;
+    .task-action-container hr{
+        margin:12px 0 !important;
+    }
+
+    .form-group{
+        margin-bottom:10px !important;
+    }
+
+    .form-group label{
+        font-size:13px !important;
+        margin-bottom:5px !important;
+    }
+
+    .form-group input,
+    .form-group select{
+        height:44px !important;
+        min-height:44px !important;
+        padding:10px 12px !important;
+        border-radius:13px !important;
+        font-size:16px !important;
+    }
+
+    .task-total-bar{
+        margin-top:12px !important;
+        padding:14px !important;
+        border-radius:18px !important;
+        display:block !important;
+    }
+
+    .task-total-bar span{
+        font-size:13px !important;
+    }
+
+    .task-total-bar h3{
+        font-size:24px !important;
+        margin:4px 0 12px !important;
+    }
+
+    .submit-task-btn{
+        width:100% !important;
+        height:46px !important;
+        padding:10px 14px !important;
+        border-radius:14px !important;
+        font-size:14px !important;
     }
 }
