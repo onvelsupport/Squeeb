@@ -71,8 +71,8 @@
 
     <div class="mobile-dropdown" id="mobileDropdown">
         <a href="{% url 'dashboard' %}"><i class="fa fa-home"></i> Dashboard</a>
-        <a href="#" id="mobileEarnLink"><i class="fa fa-coins"></i> Earn</a>
-        <a href="#" id="mobileAdvertiseLink"><i class="fa fa-bullhorn"></i> Advertise</a>
+        <a href="{% url 'earnings' %}"><i class="fa fa-coins"></i> Earn</a>
+        <a href="{% url 'dashboard' %}"></a><i class="fa fa-bullhorn"></i> Advertise</a>
         <a href="{% url 'marketplace' %}"><i class="fa fa-store"></i> Marketplace</a>
         <a href="{% url 'more_page' %}"><i class="fa fa-ellipsis-h"></i> More</a>
         <a href="{% url 'logout' %}" class="logout"><i class="fa fa-power-off"></i> Logout</a>
