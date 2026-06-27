@@ -88,7 +88,7 @@ body{
 .heading p{
     color:var(--muted);
 
-    font-size:15px;
+    font-size:16px;
 }
 
 .form-group{
@@ -130,7 +130,7 @@ body{
     border:none;
     outline:none;
 
-    font-size:15px;
+    font-size:16px;
 
     background:none;
 }
@@ -177,7 +177,7 @@ body{
 
     color:white;
 
-    font-size:15px;
+    font-size:16px;
     font-weight:700;
 
     cursor:pointer;
