@@ -1296,3 +1296,41 @@ a{
         white-space:nowrap;
     }
 }
+
+@media(max-width:900px){
+
+    /* Hide logout icon on mobile */
+    .top-actions .logout-btn{
+        display:none;
+    }
+
+    /* Keep notification button */
+    .top-actions{
+        margin-left:auto;
+    }
+
+    /* Show mobile search below topbar */
+    .dashboard-search{
+        display:flex;
+        order:10;
+        width:100%;
+        max-width:100%;
+        flex-basis:100%;
+        margin-top:12px;
+        padding:13px 16px;
+        border-radius:16px;
+    }
+
+    .dashboard-topbar{
+        flex-wrap:wrap;
+    }
+
+    .dashboard-search input{
+        font-size:14px;
+    }
+
+    .search-results{
+        top:calc(100% + 8px);
+        z-index:2000;
+    }
+}
