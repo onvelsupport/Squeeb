@@ -1,0 +1,244 @@
+.my-tasks-page{
+    width:92%;
+    max-width:1200px;
+    margin:auto;
+    padding:40px 0 70px;
+}
+
+.tasks-hero{
+    background:linear-gradient(135deg,#0f172a,#2563eb,#7c3aed);
+    color:white;
+    padding:40px;
+    border-radius:32px;
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    gap:30px;
+    margin-bottom:30px;
+}
+
+.eyebrow{
+    color:#bfdbfe;
+    font-size:13px;
+    font-weight:800;
+    text-transform:uppercase;
+    margin-bottom:10px;
+}
+
+.tasks-hero h1{
+    font-size:40px;
+    margin-bottom:10px;
+}
+
+.tasks-hero p{
+    color:#dbeafe;
+}
+
+.back-btn{
+    background:white;
+    color:#111827;
+    padding:15px 22px;
+    border-radius:16px;
+    font-weight:800;
+    white-space:nowrap;
+}
+
+.tasks-summary{
+    display:grid;
+    grid-template-columns:repeat(3,1fr);
+    gap:18px;
+    margin-bottom:30px;
+}
+
+.tasks-summary div{
+    background:white;
+    padding:24px;
+    border-radius:24px;
+    box-shadow:0 12px 35px rgba(15,23,42,.08);
+}
+
+.tasks-summary strong{
+    display:block;
+    font-size:30px;
+    color:#111827;
+    margin-bottom:6px;
+}
+
+.tasks-summary span{
+    color:#64748b;
+    font-size:14px;
+}
+
+.section-heading{
+    margin-bottom:20px;
+}
+
+.section-heading h2{
+    font-size:28px;
+    margin-bottom:8px;
+}
+
+.section-heading p{
+    color:#64748b;
+}
+
+.posted-task-list{
+    display:flex;
+    flex-direction:column;
+    gap:16px;
+}
+
+.posted-task-card,
+.empty-task{
+    background:white;
+    padding:24px;
+    border-radius:24px;
+    box-shadow:0 12px 35px rgba(15,23,42,.08);
+}
+
+.posted-task-card{
+    display:grid;
+    grid-template-columns:1fr auto;
+    gap:20px;
+    align-items:center;
+}
+
+.task-badge{
+    display:inline-block;
+    background:#eff6ff;
+    color:#2563eb;
+    padding:7px 12px;
+    border-radius:999px;
+    font-size:12px;
+    font-weight:800;
+    margin-bottom:10px;
+}
+
+.posted-task-card h3{
+    font-size:20px;
+    margin-bottom:8px;
+}
+
+.posted-task-card p{
+    color:#64748b;
+    line-height:1.5;
+}
+
+.task-meta{
+    display:flex;
+    gap:14px;
+    flex-wrap:wrap;
+    margin-top:12px;
+    color:#475569;
+    font-size:14px;
+}
+
+.task-status{
+    text-align:right;
+}
+
+.task-status strong{
+    display:block;
+    font-size:22px;
+    color:#2563eb;
+    margin-bottom:8px;
+}
+
+.status-pill{
+    display:inline-block;
+    padding:7px 12px;
+    border-radius:999px;
+    font-size:12px;
+    font-weight:800;
+    background:#ecfdf5;
+    color:#047857;
+}
+
+.status-pill.closed{
+    background:#f1f5f9;
+    color:#64748b;
+}
+
+.empty-task{
+    text-align:center;
+    padding:45px 25px;
+}
+
+.empty-task i{
+    font-size:42px;
+    color:#2563eb;
+    margin-bottom:16px;
+}
+
+.empty-task h3{
+    margin-bottom:8px;
+}
+
+.empty-task p{
+    color:#64748b;
+}
+
+@media(max-width:900px){
+    .my-tasks-page{
+        width:94%;
+        padding:22px 0 60px;
+    }
+
+    .tasks-hero{
+        padding:22px;
+        border-radius:24px;
+        flex-direction:column;
+        align-items:flex-start;
+        gap:18px;
+    }
+
+    .tasks-hero h1{
+        font-size:30px;
+    }
+
+    .back-btn{
+        width:100%;
+        text-align:center;
+    }
+
+    .tasks-summary{
+        grid-template-columns:repeat(3,1fr);
+        gap:10px;
+    }
+
+    .tasks-summary div{
+        padding:16px 8px;
+        text-align:center;
+        border-radius:18px;
+    }
+
+    .tasks-summary strong{
+        font-size:22px;
+    }
+
+    .tasks-summary span{
+        font-size:12px;
+    }
+
+    .posted-task-card{
+        grid-template-columns:1fr;
+        gap:16px;
+        padding:18px;
+        border-radius:22px;
+    }
+
+    .task-status{
+        text-align:left;
+        display:flex;
+        justify-content:space-between;
+        align-items:center;
+        border-top:1px solid #eef2f7;
+        padding-top:14px;
+    }
+
+    input,
+    textarea,
+    select{
+        font-size:16px !important;
+    }
+}

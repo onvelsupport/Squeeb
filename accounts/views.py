@@ -31,6 +31,10 @@ def edit_profile(request):
 def bank_details(request):
     return render(request, "accounts/dashboard/bank_details.html")
 
+@login_required
+def my_tasks(request):
+    return render(request, "accounts/dashboard/my_tasks.html")
+
 
 def recent_activities_api(request):
     activities = RecentActivity.objects.all()[:10]

@@ -1,0 +1,66 @@
+{% extends 'accounts/base.html' %}
+{% load static %}
+
+{% block title %}
+My Tasks | SQUEEB
+{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'accounts/css/my_tasks.css' %}">
+{% endblock %}
+
+{% block content %}
+
+<main class="my-tasks-page">
+
+    <section class="tasks-hero">
+        <div>
+            <p class="eyebrow">Task Management</p>
+            <h1>My Posted Tasks</h1>
+            <p>View the social tasks you created and track their progress.</p>
+        </div>
+
+        <a href="{% url 'dashboard' %}" class="back-btn">
+            Create New Task
+        </a>
+    </section>
+
+    <section class="tasks-summary">
+        <div>
+            <strong id="totalTasks">0</strong>
+            <span>Total Tasks</span>
+        </div>
+
+        <div>
+            <strong id="activeTasks">0</strong>
+            <span>Active</span>
+        </div>
+
+        <div>
+            <strong id="completedTasks">0</strong>
+            <span>Completed</span>
+        </div>
+    </section>
+
+    <section class="task-list-section">
+        <div class="section-heading">
+            <h2>Tasks You Posted</h2>
+            <p>Manage your created tasks from one place.</p>
+        </div>
+
+        <div class="posted-task-list" id="postedTaskList">
+            <div class="empty-task">
+                <i class="fa fa-list-check"></i>
+                <h3>Loading tasks...</h3>
+                <p>Please wait while we fetch your posted tasks.</p>
+            </div>
+        </div>
+    </section>
+
+</main>
+
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'accounts/js/my_tasks.js' %}"></script>
+{% endblock %}

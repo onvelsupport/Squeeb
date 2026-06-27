@@ -44,6 +44,7 @@ from .views import (
     root_redirect,
     edit_profile,
     bank_details,
+    my_tasks,
 )
 
 urlpatterns = [
@@ -81,6 +82,7 @@ urlpatterns = [
     path("notifications/", notifications, name="notifications"),
     path("more/edit-profile/", edit_profile, name="edit_profile"),
     path("more/bank-details/", bank_details, name="bank_details"),
+    path("more/my-tasks/", my_tasks, name="my_tasks"),
 
     # ======================
     # USER PROFILE
