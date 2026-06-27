@@ -439,6 +439,40 @@ def create_funding_checkout(request):
         }, status=500)
 
 
+
+@login_required
+def transaction_history(request):
+    return render(request, "accounts/dashboard/transaction_history.html")
+
+
+@login_required
+def transaction_history_api(request):
+    transactions = []
+
+    # Wallet funding / deposits
+    for payment in FundingPayment.objects.filter(user=request.user):
+        transactions.append({
+            "type": "Deposit",
+            "amount": str(payment.amount),
+            "status": payment.status,
+            "date": payment.created_at.strftime("%d %b %Y, %I:%M %p"),
+        })
+
+    # Withdrawals
+    for withdrawal in WithdrawalRequest.objects.filter(user=request.user):
+        transactions.append({
+            "type": "Withdrawal",
+            "amount": str(withdrawal.amount),
+            "status": withdrawal.status,
+            "date": withdrawal.created_at.strftime("%d %b %Y, %I:%M %p"),
+        })
+
+    transactions.sort(key=lambda x: x["date"], reverse=True)
+
+    return JsonResponse({
+        "transactions": transactions
+    })
+
 @csrf_exempt
 @login_required
 def api_edit_profile(request):

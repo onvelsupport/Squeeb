@@ -59,6 +59,8 @@ from .views import (
     task_submission_reviews_api,
     my_task_submissions_api,
     withdrawal_history_api,
+    transaction_history,
+    transaction_history_api,
 
 )
 
@@ -169,10 +171,16 @@ path(
     path("stripe/webhook/", stripe_webhook, name="stripe_webhook"),
     path("request-withdrawal/", request_withdrawal, name="request_withdrawal"),
     path("approve-withdrawal/<uuid:token>/", approve_withdrawal, name="approve_withdrawal"),
-    path(
-    "api/withdrawal-history/",
-    withdrawal_history_api,
-    name="withdrawal_history_api",
+    path("api/withdrawal-history/",withdrawal_history_api,name="withdrawal_history_api"),
+    path("transaction-history/",
+    transaction_history,
+    name="transaction_history"
+),
+
+path(
+    "api/transaction-history/",
+    transaction_history_api,
+    name="transaction_history_api"
 ),
     
 

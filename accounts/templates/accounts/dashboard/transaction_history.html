@@ -1,0 +1,46 @@
+{% extends 'accounts/base.html' %}
+{% load static %}
+
+{% block title %}
+Transaction History | SQUEEB
+{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'accounts/css/transaction_history.css' %}">
+{% endblock %}
+
+{% block content %}
+
+<main class="transaction-page">
+
+    <section class="transaction-hero">
+        <div>
+            <p class="eyebrow">Wallet Activity</p>
+            <h1>Transaction History</h1>
+            <p>Review your deposits, withdrawals, and payment activity.</p>
+        </div>
+
+        <a href="{% url 'more_page' %}" class="back-btn">
+            Back
+        </a>
+    </section>
+
+    <section class="transaction-card">
+
+        <div class="table-header">
+            <h2>Recent Transactions</h2>
+        </div>
+
+        <div id="transactionList" class="transaction-list">
+            <p class="loading">Loading transactions...</p>
+        </div>
+
+    </section>
+
+</main>
+
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'accounts/js/transaction_history.js' %}"></script>
+{% endblock %}
