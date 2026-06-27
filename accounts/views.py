@@ -10,7 +10,8 @@ from decimal import Decimal
 import json
 import stripe
 from django.contrib.auth import authenticate, login as django_login, logout, get_user_model
-
+from django.core.mail import send_mail
+from django.conf import settings
 from accounts.models import Task
 from .models import Product, ProductImage, TaskCompletion, FundingPayment, WithdrawalRequest, Follow, RecentActivity, Notification, ProductMessage
 
@@ -756,50 +757,77 @@ def user_info(request):
 # ==========================
 # WITHDRAWAL
 # ==========================
-@csrf_exempt
 @login_required
 def request_withdrawal(request):
     if request.method != "POST":
-        return JsonResponse({"error": "POST method required"}, status=400)
+        return JsonResponse({
+            "success": False,
+            "message": "Invalid request method."
+        })
 
-    try:
-        data = json.loads(request.body.decode("utf-8") or "{}")
-        amount = Decimal(str(data.get("amount", "0")))
-        sort_code = data.get("sort_code", "").strip()
-        account_number = data.get("account_number", "").strip()
-    except Exception:
-        return JsonResponse({"error": "Invalid withdrawal request."}, status=400)
+    method = request.POST.get("method")
+    amount = request.POST.get("amount")
 
-    if amount < Decimal("5.00"):
-        return JsonResponse({"error": "Minimum withdrawal amount is £5.00."}, status=400)
+    if not method or not amount:
+        return JsonResponse({
+            "success": False,
+            "message": "Withdrawal method and amount are required."
+        })
 
-    if not sort_code or not account_number:
-        return JsonResponse({"error": "Bank details are required."}, status=400)
+    user = request.user
 
-    with transaction.atomic():
-        from django.contrib.auth import get_user_model
-        User = get_user_model()
+    if method == "Bank Account":
+        account_name = request.POST.get("account_name")
+        bank_name = request.POST.get("bank_name")
+        sort_code = request.POST.get("sort_code")
+        account_number = request.POST.get("account_number")
 
-        user = User.objects.select_for_update().get(id=request.user.id)
+        message = f"""
+New Bank Withdrawal Request
 
-        if user.balance < amount:
-            return JsonResponse({"error": "Insufficient balance."}, status=400)
+User: {user.username}
+Email: {user.email}
 
-        user.balance -= amount
-        user.save(update_fields=["balance"])
+Amount: £{amount}
+Method: Bank Account
 
-        withdrawal = WithdrawalRequest.objects.create(
-            user=user,
-            amount=amount,
-            sort_code=sort_code,
-            account_number=account_number,
-            status="pending"
-        )
+Account Name: {account_name}
+Bank Name: {bank_name}
+Sort Code: {sort_code}
+Account Number: {account_number}
+"""
+
+    elif method == "PayPal":
+        paypal_email = request.POST.get("paypal_email")
+
+        message = f"""
+New PayPal Withdrawal Request
+
+User: {user.username}
+Email: {user.email}
+
+Amount: £{amount}
+Method: PayPal
+PayPal Email: {paypal_email}
+"""
+
+    else:
+        return JsonResponse({
+            "success": False,
+            "message": "Invalid withdrawal method."
+        })
+
+    send_mail(
+        subject="New SQUEEB Withdrawal Request",
+        message=message,
+        from_email=settings.DEFAULT_FROM_EMAIL,
+        recipient_list=[settings.ADMIN_EMAIL],
+        fail_silently=False,
+    )
 
     return JsonResponse({
-        "message": "Withdrawal request submitted. It will be reviewed manually.",
-        "new_balance": str(user.balance),
-        "withdrawal_id": withdrawal.id
+        "success": True,
+        "message": "Withdrawal request submitted."
     })
 
 

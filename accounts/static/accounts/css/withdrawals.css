@@ -1,3 +1,7 @@
+/* ==========================================================
+   WITHDRAWALS PAGE
+========================================================== */
+
 *{
     margin:0;
     padding:0;
@@ -5,301 +9,302 @@
 }
 
 body{
-    background:#f5f7fb;
+    background:#f4f7fb;
     font-family:Arial, Helvetica, sans-serif;
     color:#111827;
 }
 
-a{
-    text-decoration:none;
+.withdraw-page{
+    width:100%;
+    min-height:100vh;
+    padding:40px 20px 80px;
 }
-
-/* ================= PAGE ================= */
 
 .withdraw-main{
-    width:92%;
-    max-width:1200px;
+    max-width:1150px;
     margin:auto;
-    padding:40px 0;
 }
 
-/* ================= HERO ================= */
+/* ==========================================================
+   HERO
+========================================================== */
 
 .withdraw-hero{
     display:flex;
     justify-content:space-between;
     align-items:center;
     gap:30px;
-    margin-bottom:35px;
+    margin-bottom:40px;
+    flex-wrap:wrap;
 }
 
 .eyebrow{
     color:#2563eb;
-    font-weight:800;
-    margin-bottom:10px;
-}
-
-.withdraw-hero h1{
-    font-size:42px;
-    margin-bottom:12px;
-}
-
-.withdraw-hero p{
-    color:#64748b;
-    line-height:1.6;
-}
-
-.balance-card{
-    background:linear-gradient(135deg,#2563eb,#7c3aed);
-    color:white;
-    padding:30px;
-    border-radius:25px;
-    min-width:280px;
-}
-
-.balance-card p{
-    color:#dbeafe;
-}
-
-.balance-card h2{
-    font-size:42px;
-    margin-top:10px;
-}
-
-/* ================= CONTENT GRID ================= */
-
-.withdraw-grid{
-    display:grid;
-    grid-template-columns:1.4fr .8fr;
-    gap:30px;
-}
-
-/* ================= CARDS ================= */
-
-.withdraw-card,
-.info-card{
-    background:white;
-    border-radius:28px;
-    padding:35px;
-    box-shadow:0 12px 35px rgba(15,23,42,.08);
-}
-
-.withdraw-card h2{
+    font-size:14px;
+    font-weight:700;
+    text-transform:uppercase;
+    letter-spacing:1px;
     margin-bottom:8px;
 }
 
-.form-sub{
-    color:#64748b;
-    margin-bottom:25px;
+.withdraw-hero h1{
+    font-size:36px;
+    font-weight:700;
 }
 
-/* ================= FORM ================= */
-
-.withdraw-card label{
-    display:block;
-    margin:18px 0 8px;
-    font-weight:800;
+.balance-card{
+    width:320px;
+    background:#2563eb;
+    color:#fff;
+    border-radius:20px;
+    padding:28px;
+    box-shadow:0 18px 40px rgba(37,99,235,.25);
 }
 
-.withdraw-card input{
+.balance-card p:first-child{
+    opacity:.85;
+}
+
+.balance-card h2{
+    font-size:38px;
+    margin:12px 0;
+}
+
+.balance-card p:last-child{
+    line-height:1.6;
+    font-size:14px;
+    opacity:.9;
+}
+
+/* ==========================================================
+   OPTIONS
+========================================================== */
+
+.withdraw-options{
+    display:grid;
+    grid-template-columns:repeat(auto-fit,minmax(320px,1fr));
+    gap:25px;
+}
+
+.withdraw-option{
+    background:#fff;
+    border:none;
+    border-radius:22px;
+    padding:45px 30px;
+    cursor:pointer;
+    transition:.3s;
+    text-align:center;
+    box-shadow:0 10px 30px rgba(0,0,0,.06);
+}
+
+.withdraw-option:hover{
+    transform:translateY(-6px);
+    box-shadow:0 18px 40px rgba(37,99,235,.18);
+}
+
+.withdraw-option i{
+    width:85px;
+    height:85px;
+    border-radius:50%;
+    background:#eff6ff;
+    color:#2563eb;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    margin:0 auto 25px;
+    font-size:34px;
+}
+
+.withdraw-option h3{
+    font-size:24px;
+    margin-bottom:12px;
+}
+
+.withdraw-option p{
+    color:#6b7280;
+    line-height:1.6;
+}
+
+/* ==========================================================
+   MODAL
+========================================================== */
+
+.modal-overlay{
+    position:fixed;
+    inset:0;
+    background:rgba(15,23,42,.65);
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    padding:20px;
+    opacity:0;
+    visibility:hidden;
+    transition:.3s;
+    z-index:9999;
+}
+
+.modal-overlay.show{
+    opacity:1;
+    visibility:visible;
+}
+
+.withdraw-modal{
     width:100%;
-    padding:16px;
-    border:1px solid #d1d5db;
-    border-radius:15px;
-    outline:none;
-    font-size:16px;
+    max-width:520px;
+    background:#fff;
+    border-radius:22px;
+    padding:35px;
+    position:relative;
+    animation:popup .25s ease;
 }
 
-.withdraw-card input:focus{
+@keyframes popup{
+
+    from{
+        opacity:0;
+        transform:translateY(25px) scale(.96);
+    }
+
+    to{
+        opacity:1;
+        transform:translateY(0) scale(1);
+    }
+
+}
+
+.close-modal{
+    position:absolute;
+    top:15px;
+    right:15px;
+    width:38px;
+    height:38px;
+    border:none;
+    border-radius:50%;
+    background:#f3f4f6;
+    cursor:pointer;
+    font-size:22px;
+    transition:.2s;
+}
+
+.close-modal:hover{
+    background:#2563eb;
+    color:#fff;
+}
+
+.withdraw-modal h2{
+    margin-bottom:8px;
+    font-size:28px;
+}
+
+.withdraw-modal p{
+    color:#6b7280;
+    margin-bottom:28px;
+}
+
+/* ==========================================================
+   FORM
+========================================================== */
+
+.withdraw-modal form{
+    display:flex;
+    flex-direction:column;
+}
+
+.withdraw-modal label{
+    margin-bottom:8px;
+    font-weight:600;
+}
+
+.withdraw-modal input{
+    width:100%;
+    padding:14px 16px;
+    border:1px solid #d1d5db;
+    border-radius:12px;
+    margin-bottom:20px;
+    outline:none;
+    transition:.2s;
+    font-size:15px;
+}
+
+.withdraw-modal input:focus{
     border-color:#2563eb;
     box-shadow:0 0 0 4px rgba(37,99,235,.12);
 }
 
-.withdraw-card button{
-    width:100%;
-    margin-top:25px;
+.withdraw-modal button[type="submit"]{
+    margin-top:8px;
+    padding:15px;
     border:none;
-    background:linear-gradient(135deg,#2563eb,#7c3aed);
-    color:white;
-    padding:17px;
-    border-radius:16px;
-    font-weight:800;
-    cursor:pointer;
-}
-
-#withdrawMsg{
-    margin-top:15px;
+    border-radius:12px;
+    background:#2563eb;
+    color:#fff;
+    font-size:16px;
     font-weight:700;
-    color:#2563eb;
+    cursor:pointer;
+    transition:.25s;
 }
 
-/* ================= INFO CARD ================= */
-
-.info-card h3{
-    margin-bottom:24px;
+.withdraw-modal button[type="submit"]:hover{
+    background:#1d4ed8;
 }
 
-.info-item{
-    display:flex;
-    gap:15px;
-    margin-bottom:25px;
-}
-
-.info-item i{
-    width:45px;
-    height:45px;
-    background:#eff6ff;
-    color:#2563eb;
-    border-radius:14px;
-    display:flex;
-    align-items:center;
-    justify-content:center;
-    flex-shrink:0;
-}
-
-.info-item p{
-    color:#64748b;
-    margin-top:6px;
-    line-height:1.5;
+.withdraw-modal button[type="submit"]:disabled{
+    opacity:.6;
+    cursor:not-allowed;
 }
 
 /* ==========================================================
-   MOBILE WITHDRAWAL PAGE
+   MESSAGE
 ========================================================== */
 
-@media(max-width:900px){
+.withdraw-msg{
+    margin-top:18px;
+    text-align:center;
+    font-weight:600;
+}
 
-    .withdraw-main{
-        width:94%;
-        padding:22px 0 60px;
-    }
+.withdraw-msg.success{
+    color:#16a34a;
+}
 
-    /* Hide greeting/title on mobile */
-    .withdraw-hero > div:first-child{
-        display:none;
+.withdraw-msg.error{
+    color:#dc2626;
+}
+
+/* ==========================================================
+   MOBILE
+========================================================== */
+
+@media(max-width:768px){
+
+    .withdraw-page{
+        padding:25px 15px 50px;
     }
 
     .withdraw-hero{
-        display:block;
-        padding:0;
-        margin-bottom:20px;
-        background:none;
-        box-shadow:none;
-        border-radius:0;
+        flex-direction:column;
+        align-items:flex-start;
+    }
+
+    .withdraw-hero h1{
+        font-size:28px;
     }
 
     .balance-card{
         width:100%;
-        min-width:0;
-        margin:0;
-        padding:22px;
-        border-radius:22px;
     }
 
-    .balance-card p{
-        font-size:13px;
+    .withdraw-options{
+        grid-template-columns:1fr;
     }
 
-    .balance-card h2{
-        font-size:34px;
-        margin-top:8px;
+    .withdraw-option{
+        padding:35px 25px;
     }
 
-    .withdraw-grid{
-        display:flex;
-        flex-direction:column;
-        gap:18px;
+    .withdraw-modal{
+        padding:25px;
+        border-radius:18px;
     }
 
-    .withdraw-card,
-    .info-card{
-        width:100%;
-        padding:22px;
-        border-radius:22px;
-    }
-
-    .withdraw-card h2{
-        font-size:24px;
-        margin-bottom:6px;
-    }
-
-    .form-sub{
-        font-size:14px;
-        margin-bottom:20px;
-    }
-
-    .withdraw-card label{
-        font-size:13px;
-        margin:14px 0 6px;
-        display:block;
-    }
-
-    .withdraw-card input{
-        width:100%;
-        height:52px;
-        padding:0 16px;
-        border-radius:14px;
-        font-size:16px !important;
-        margin-bottom:14px;
-    }
-
-    .withdraw-card button{
-        width:100%;
-        height:54px;
-        border-radius:16px;
-        font-size:16px;
-        margin-top:10px;
-    }
-
-    #withdrawMsg{
-        margin-top:16px;
-        font-size:14px;
-    }
-
-    .info-card h3{
-        font-size:22px;
-        margin-bottom:18px;
-    }
-
-    .info-item{
-        display:flex;
-        gap:14px;
-        align-items:flex-start;
-        padding:14px 0;
-        margin-bottom:0;
-    }
-
-    .info-item i{
-        width:42px;
-        height:42px;
-        border-radius:50%;
-        font-size:18px;
-    }
-
-    .info-item strong{
-        font-size:15px;
-    }
-
-    .info-item p{
-        font-size:13px;
-        line-height:1.5;
-    }
-
-    input,
-    textarea,
-    select{
-        font-size:16px !important;
-    }
-}
-
-@media(max-width:420px){
-
-    .balance-card h2{
-        font-size:30px;
-    }
-
-    .withdraw-card,
-    .info-card{
-        padding:18px;
-    }
 }

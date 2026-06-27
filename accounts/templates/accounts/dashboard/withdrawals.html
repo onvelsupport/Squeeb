@@ -1,9 +1,7 @@
 {% extends 'accounts/base.html' %}
 {% load static %}
 
-{% block title %}
-Withdrawals | SQUEEB
-{% endblock %}
+{% block title %}Withdrawals | SQUEEB{% endblock %}
 
 {% block extra_css %}
 <link rel="stylesheet" href="{% static 'accounts/css/withdrawals.css' %}">
@@ -11,9 +9,7 @@ Withdrawals | SQUEEB
 
 {% block content %}
 
-
 <div class="withdraw-page">
-
     <main class="withdraw-main">
 
         <section class="withdraw-hero">
@@ -25,91 +21,82 @@ Withdrawals | SQUEEB
             <div class="balance-card">
                 <p>Available Balance</p>
                 <h2 id="balanceAmount">£0.00</h2>
-                <p>
-                    Request a withdrawal from your SQUEEB wallet to your UK bank account.
-                </p>
+                <p>Choose how you want to withdraw from your SQUEEB wallet.</p>
             </div>
         </section>
 
-        <section class="withdraw-grid">
+        <section class="withdraw-options">
 
-            <form class="withdraw-card" id="withdrawForm">
-                <h2>Request Withdrawal</h2>
-                <p class="form-sub">Enter your bank details carefully.</p>
+            <button class="withdraw-option" id="openBankModal">
+                <i class="fa fa-building-columns"></i>
+                <h3>Withdraw to Bank</h3>
+                <p>Send money to a UK bank account.</p>
+            </button>
 
-                <label for="amount">Amount</label>
-                <input type="number"
-                       id="amount"
-                       placeholder="e.g. 20"
-                       min="1"
-                       step="0.01"
-                       required>
-
-                <label for="accountName">Account Name</label>
-                <input type="text"
-                       id="accountName"
-                       placeholder="Your full name"
-                       required>
-
-                <label for="bankName">Bank Name</label>
-                <input type="text"
-                       id="bankName"
-                       placeholder="Bank name"
-                       required>
-
-                <label for="sortCode">Sort Code</label>
-                <input type="text"
-                       id="sortCode"
-                       placeholder="12-34-56"
-                       maxlength="8"
-                       required>
-
-                <label for="accountNumber">Account Number</label>
-                <input type="text"
-                       id="accountNumber"
-                       placeholder="12345678"
-                       maxlength="8"
-                       required>
-
-                <button type="submit" id="withdrawBtn">
-                    Submit Withdrawal
-                </button>
-
-                <p id="withdrawMsg"></p>
-            </form>
-
-            <aside class="info-card">
-                <h3>Withdrawal Information</h3>
-
-                <div class="info-item">
-                    <i class="fa fa-clock"></i>
-                    <div>
-                        <strong>Processing Time</strong>
-                        <p>Withdrawals are reviewed before payment.</p>
-                    </div>
-                </div>
-
-                <div class="info-item">
-                    <i class="fa fa-building-columns"></i>
-                    <div>
-                        <strong>UK Bank Only</strong>
-                        <p>Use a valid sort code and account number.</p>
-                    </div>
-                </div>
-
-                <div class="info-item">
-                    <i class="fa fa-shield-halved"></i>
-                    <div>
-                        <strong>Security Check</strong>
-                        <p>Incorrect details may delay your withdrawal.</p>
-                    </div>
-                </div>
-            </aside>
+            <button class="withdraw-option" id="openPaypalModal">
+                <i class="fa-brands fa-paypal"></i>
+                <h3>Withdraw to PayPal</h3>
+                <p>Send money to your PayPal account.</p>
+            </button>
 
         </section>
 
     </main>
+</div>
 
+<!-- BANK MODAL -->
+<div class="modal-overlay" id="bankModal">
+    <div class="withdraw-modal">
+        <button class="close-modal" data-close="bankModal">&times;</button>
+
+        <h2>Bank Withdrawal</h2>
+        <p>Enter your UK bank details carefully.</p>
+
+        <form id="bankWithdrawForm">
+            <input type="hidden" name="method" value="Bank Account">
+
+            <label>Amount</label>
+            <input type="number" name="amount" min="1" step="0.01" required>
+
+            <label>Account Name</label>
+            <input type="text" name="account_name" required>
+
+            <label>Bank Name</label>
+            <input type="text" name="bank_name" required>
+
+            <label>Sort Code</label>
+            <input type="text" name="sort_code" placeholder="12-34-56" maxlength="8" required>
+
+            <label>Account Number</label>
+            <input type="text" name="account_number" maxlength="8" required>
+
+            <button type="submit">Submit Withdrawal</button>
+            <p class="withdraw-msg"></p>
+        </form>
+    </div>
+</div>
+
+<!-- PAYPAL MODAL -->
+<div class="modal-overlay" id="paypalModal">
+    <div class="withdraw-modal">
+        <button class="close-modal" data-close="paypalModal">&times;</button>
+
+        <h2>PayPal Withdrawal</h2>
+        <p>Enter the PayPal email you want to receive money with.</p>
+
+        <form id="paypalWithdrawForm">
+            <input type="hidden" name="method" value="PayPal">
+
+            <label>Amount</label>
+            <input type="number" name="amount" min="1" step="0.01" required>
+
+            <label>PayPal Email</label>
+            <input type="email" name="paypal_email" required>
+
+            <button type="submit">Submit Withdrawal</button>
+            <p class="withdraw-msg"></p>
+        </form>
+    </div>
 </div>
 
 {% endblock %}
