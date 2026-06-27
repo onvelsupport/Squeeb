@@ -1000,3 +1000,51 @@ a{
         font-size:22px;
     }
 }
+
+@media(max-width:900px){
+
+    .profile-strip{
+        display:block;
+        padding:16px;
+    }
+
+    .profile-strip > img,
+    .profile-strip > div:first-of-type{
+        display:none;
+    }
+
+    .profile-metrics{
+        display:grid;
+        grid-template-columns:repeat(4, 1fr);
+        gap:8px;
+        width:100%;
+        margin:0;
+    }
+
+    .profile-metrics div{
+        min-width:0;
+        padding:12px 6px;
+        border-radius:16px;
+    }
+
+    .profile-metrics strong{
+        font-size:18px;
+        margin-bottom:4px;
+        white-space:nowrap;
+    }
+
+    .profile-metrics span{
+        font-size:11px;
+        white-space:nowrap;
+    }
+}
+
+@media(max-width:420px){
+    .profile-metrics strong{
+        font-size:16px;
+    }
+
+    .profile-metrics span{
+        font-size:10px;
+    }
+}
