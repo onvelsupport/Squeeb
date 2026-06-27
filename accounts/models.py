@@ -149,17 +149,33 @@ class RecentActivity(models.Model):
 
 
 class TaskCompletion(models.Model):
+    STATUS_CHOICES = [
+        ("pending", "Pending"),
+        ("approved", "Approved"),
+        ("rejected", "Rejected"),
+    ]
+
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     task = models.ForeignKey(Task, on_delete=models.CASCADE)
+
     proof = models.ImageField(upload_to="task_proofs/", null=True, blank=True)
-    approved = models.BooleanField(default=True)
+
+    status = models.CharField(
+        max_length=20,
+        choices=STATUS_CHOICES,
+        default="pending"
+    )
+
+    reward_amount = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+
     completed_at = models.DateTimeField(auto_now_add=True)
+    reviewed_at = models.DateTimeField(blank=True, null=True)
 
     class Meta:
         unique_together = ("user", "task")
 
     def __str__(self):
-        return f"{self.user.username} completed {self.task.title}"
+        return f"{self.user.username} submitted {self.task.title} - {self.status}"
 
 
 class FundingPayment(models.Model):

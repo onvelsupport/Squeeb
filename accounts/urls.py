@@ -53,6 +53,10 @@ from .views import (
     refund_policy,
     api_edit_profile,
     approve_withdrawal,
+    approve_task_completion,
+    reject_task_completion,
+    task_submission_reviews,
+    task_submission_reviews_api,
 
 )
 
@@ -145,6 +149,20 @@ urlpatterns = [
     path("api/task/<int:task_id>/", get_single_task, name="get_single_task"),
     path("more/my-tasks/", my_tasks, name="my_tasks"),
     path("api/my-tasks/", my_tasks_api, name="my_tasks_api"),
+    path("task-completions/<int:completion_id>/approve/", approve_task_completion, name="approve_task_completion"),
+    path("task-completions/<int:completion_id>/reject/", reject_task_completion, name="reject_task_completion"),
+
+path(
+    "my-tasks/<int:task_id>/reviews/",
+    task_submission_reviews,
+    name="task_submission_reviews"
+),
+
+path(
+    "api/my-tasks/<int:task_id>/reviews/",
+    task_submission_reviews_api,
+    name="task_submission_reviews_api"
+),
 
     # ======================
     # FUNDING

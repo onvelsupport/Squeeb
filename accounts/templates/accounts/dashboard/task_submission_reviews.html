@@ -1,0 +1,45 @@
+{% extends 'accounts/base.html' %}
+{% load static %}
+
+{% block title %}
+Review Submissions | SQUEEB
+{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'accounts/css/task_submission_reviews.css' %}">
+{% endblock %}
+
+{% block content %}
+
+<main class="review-page">
+
+    <section class="review-hero">
+        <div>
+            <p class="eyebrow">Task Review</p>
+            <h1>{{ task.title }}</h1>
+            <p>Review submitted proof and approve or reject workers.</p>
+        </div>
+
+        <a href="{% url 'my_tasks' %}" class="back-btn">
+            Back to My Tasks
+        </a>
+    </section>
+
+    <section class="review-list" id="reviewList">
+        <div class="empty-review">
+            <h3>Loading submissions...</h3>
+            <p>Please wait while we fetch submitted proofs.</p>
+        </div>
+    </section>
+
+</main>
+
+<script>
+    window.TASK_ID = "{{ task.id }}";
+</script>
+
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'accounts/js/task_submission_reviews.js' %}"></script>
+{% endblock %}

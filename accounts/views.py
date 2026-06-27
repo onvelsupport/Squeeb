@@ -1,25 +1,37 @@
-from django.http import JsonResponse, HttpResponse
-from django.views.decorators.csrf import csrf_exempt
-from django.contrib.auth.decorators import login_required
-from django.shortcuts import render, get_object_or_404, redirect
-from django.contrib.auth import logout, get_user_model
-from django.conf import settings
-from django.utils import timezone
-from django.db import transaction
-from decimal import Decimal
 import json
-import stripe
-from django.contrib.auth import authenticate, login as django_login, logout, get_user_model
-from django.core.mail import send_mail,EmailMultiAlternatives
-from django.conf import settings
-from accounts.models import Task
-from .models import Product, ProductImage, TaskCompletion, FundingPayment, WithdrawalRequest, Follow, RecentActivity, Notification, ProductMessage
 from decimal import Decimal
+
+import stripe
+
+from django.conf import settings
+from django.contrib.auth import (
+    authenticate,
+    get_user_model,
+    login as django_login,
+    logout,
+)
+from django.contrib.auth.decorators import login_required
+from django.core.mail import EmailMultiAlternatives, send_mail
 from django.db import transaction
-from django.shortcuts import get_object_or_404
-from django.utils import timezone
+from django.http import HttpResponse, JsonResponse
+from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
-from .models import WithdrawalRequest
+from django.utils import timezone
+from django.views.decorators.csrf import csrf_exempt
+
+from accounts.models import Task
+
+from .models import (
+    Follow,
+    FundingPayment,
+    Notification,
+    Product,
+    ProductImage,
+    ProductMessage,
+    RecentActivity,
+    TaskCompletion,
+    WithdrawalRequest,
+)
 
 User = get_user_model()
 
@@ -1090,42 +1102,82 @@ def create_task(request):
     })
 
 
+
+
+@login_required
+def my_tasks_api(request):
+    tasks = Task.objects.filter(creator=request.user).order_by("-created_at")
+
+    data = []
+
+    for task in tasks:
+        approved_count = TaskCompletion.objects.filter(
+            task=task,
+            status="approved"
+        ).count()
+
+        pending_count = TaskCompletion.objects.filter(
+            task=task,
+            status="pending"
+        ).count()
+
+        rejected_count = TaskCompletion.objects.filter(
+            task=task,
+            status="rejected"
+        ).count()
+
+        total_actions = task.available + approved_count + pending_count
+
+        status = "completed" if task.available <= 0 else "active"
+
+        data.append({
+            "id": task.id,
+            "title": task.title,
+            "description": task.short_desc,
+            "task_type": task.get_task_type_display(),
+            "platform": task.platforms,
+            "quantity": total_actions,
+            "available": task.available,
+            "pending": pending_count,
+            "completed": approved_count,
+            "rejected": rejected_count,
+            "worker_reward": str(task.worker_reward),
+            "total_cost": str(task.total_budget),
+            "status": status,
+        })
+
+    return JsonResponse({
+        "tasks": data,
+        "total": tasks.count(),
+        "active": tasks.filter(available__gt=0).count(),
+        "completed": tasks.filter(available__lte=0).count(),
+    })
+
+
 @csrf_exempt
 @login_required
 def complete_task(request, task_id):
     if request.method != "POST":
-        return JsonResponse({
-            "error": "POST required"
-        }, status=400)
+        return JsonResponse({"error": "POST required"}, status=400)
 
     if not request.user.is_member:
-        return JsonResponse({
-            "error": "Membership required."
-        }, status=403)
+        return JsonResponse({"error": "Membership required."}, status=403)
 
     task = get_object_or_404(Task, id=task_id)
 
     if task.creator == request.user:
-        return JsonResponse({
-            "error": "You cannot complete your own task"
-        }, status=400)
+        return JsonResponse({"error": "You cannot complete your own task"}, status=400)
 
     if TaskCompletion.objects.filter(user=request.user, task=task).exists():
-        return JsonResponse({
-            "error": "You already completed this task"
-        }, status=400)
+        return JsonResponse({"error": "You already submitted this task"}, status=400)
 
     if task.available <= 0:
-        return JsonResponse({
-            "error": "No slots remaining"
-        }, status=400)
+        return JsonResponse({"error": "No slots remaining"}, status=400)
 
     proof = request.FILES.get("proof")
 
     if not proof:
-        return JsonResponse({
-            "error": "Screenshot proof is required."
-        }, status=400)
+        return JsonResponse({"error": "Screenshot proof is required."}, status=400)
 
     task.available -= 1
     task.save(update_fields=["available"])
@@ -1133,33 +1185,143 @@ def complete_task(request, task_id):
     TaskCompletion.objects.create(
         user=request.user,
         task=task,
-        proof=proof
-    )
-
-    request.user.balance += task.worker_reward
-    request.user.earnings += task.worker_reward
-    request.user.tasks_completed += 1
-
-    request.user.save(update_fields=[
-        "balance",
-        "earnings",
-        "tasks_completed"
-    ])
-
-    RecentActivity.objects.create(
-        username=request.user.username,
-        platform=task.platform,
-        message=f"@{request.user.username} just earned £{task.worker_reward}",
-        amount=task.worker_reward
+        proof=proof,
+        reward_amount=task.worker_reward,
+        status="pending"
     )
 
     return JsonResponse({
-        "message": "Task completed!",
-        "new_balance": str(request.user.balance),
-        "new_earnings": str(request.user.earnings),
-        "tasks_completed": request.user.tasks_completed
+        "success": True,
+        "message": "Task submitted for review. Your balance will update after approval.",
+        "status": "pending"
     })
 
+
+@csrf_exempt
+@login_required
+@transaction.atomic
+def approve_task_completion(request, completion_id):
+    if request.method != "POST":
+        return JsonResponse({"error": "POST required"}, status=400)
+
+    completion = get_object_or_404(TaskCompletion, id=completion_id)
+
+    if request.user != completion.task.creator and not request.user.is_staff:
+        return JsonResponse({"error": "Not allowed"}, status=403)
+
+    if completion.status == "approved":
+        return JsonResponse({"error": "This task has already been approved"}, status=400)
+
+    if completion.status == "rejected":
+        return JsonResponse({"error": "Rejected task cannot be approved"}, status=400)
+
+    reward = completion.reward_amount or completion.task.worker_reward
+
+    completion.status = "approved"
+    completion.reward_amount = reward
+    completion.reviewed_at = timezone.now()
+    completion.save(update_fields=["status", "reward_amount", "reviewed_at"])
+
+    worker = completion.user
+    worker.balance += reward
+    worker.earnings += reward
+    worker.tasks_completed += 1
+    worker.save(update_fields=["balance", "earnings", "tasks_completed"])
+
+    RecentActivity.objects.create(
+        username=worker.username,
+        platform=completion.task.platforms,
+        message=f"@{worker.username} earned £{reward}",
+        amount=reward
+    )
+
+    Notification.objects.create(
+        user=worker,
+        title="Task approved",
+        message=f"Your proof for '{completion.task.title}' was approved. £{reward} has been added to your balance."
+    )
+
+    return JsonResponse({
+        "success": True,
+        "message": "Task approved and worker paid"
+    })
+
+
+@csrf_exempt
+@login_required
+def reject_task_completion(request, completion_id):
+    if request.method != "POST":
+        return JsonResponse({"error": "POST required"}, status=400)
+
+    completion = get_object_or_404(TaskCompletion, id=completion_id)
+
+    if request.user != completion.task.creator and not request.user.is_staff:
+        return JsonResponse({"error": "Not allowed"}, status=403)
+
+    if completion.status == "approved":
+        return JsonResponse({"error": "Approved task cannot be rejected"}, status=400)
+
+    if completion.status == "rejected":
+        return JsonResponse({"error": "This task has already been rejected"}, status=400)
+
+    completion.status = "rejected"
+    completion.reviewed_at = timezone.now()
+    completion.save(update_fields=["status", "reviewed_at"])
+
+    completion.task.available += 1
+    completion.task.save(update_fields=["available"])
+
+    Notification.objects.create(
+        user=completion.user,
+        title="Task rejected",
+        message=f"Your proof for '{completion.task.title}' was rejected. Please make sure your screenshot clearly shows the completed task."
+    )
+
+    return JsonResponse({
+        "success": True,
+        "message": "Task rejected"
+    })
+
+
+@login_required
+def task_submission_reviews(request, task_id):
+    task = get_object_or_404(Task, id=task_id)
+
+    if task.creator != request.user and not request.user.is_staff:
+        return redirect("my_tasks")
+
+    return render(request, "accounts/dashboard/task_submission_reviews.html", {
+        "task": task
+    })
+
+
+@login_required
+def task_submission_reviews_api(request, task_id):
+    task = get_object_or_404(Task, id=task_id)
+
+    if task.creator != request.user and not request.user.is_staff:
+        return JsonResponse({"error": "Not allowed"}, status=403)
+
+    submissions = TaskCompletion.objects.filter(
+        task=task,
+        status="pending"
+    ).select_related("user", "task").order_by("-completed_at")
+
+    data = []
+
+    for submission in submissions:
+        data.append({
+            "id": submission.id,
+            "worker": submission.user.username,
+            "reward": str(submission.reward_amount),
+            "proof": submission.proof.url if submission.proof else "",
+            "submitted_at": submission.completed_at.strftime("%d %b %Y, %I:%M %p"),
+        })
+
+    return JsonResponse({
+        "task": task.title,
+        "submissions": data
+    })
 # ==========================
 # MEMBERSHIP PAYMENT
 # ==========================

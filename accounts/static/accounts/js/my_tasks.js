@@ -9,30 +9,102 @@ document.addEventListener("DOMContentLoaded", () => {
         if (element) element.textContent = value;
     }
 
+    function money(value) {
+        return `£${parseFloat(value || 0).toFixed(2)}`;
+    }
+
     function taskCard(task) {
         const status = task.status || "active";
         const isClosed = status === "completed" || status === "closed";
 
         return `
             <div class="posted-task-card">
-                <div>
+
+                <div class="task-main">
                     <span class="task-badge">${task.task_type || "Task"}</span>
+
                     <h3>${task.title || "Social Task"}</h3>
+
                     <p>${task.description || "No description available."}</p>
 
                     <div class="task-meta">
-                        <span><i class="fa fa-globe"></i> ${task.platform || "Platform"}</span>
-                        <span><i class="fa fa-users"></i> ${task.quantity || 0} actions</span>
-                        <span><i class="fa fa-link"></i> Posted task</span>
+                        <span>
+                            <i class="fa fa-globe"></i>
+                            ${task.platform || "Platform"}
+                        </span>
+
+                        <span>
+                            <i class="fa fa-link"></i>
+                            ${
+                                task.link
+                                    ? `<a href="${task.link}" target="_blank">View Link</a>`
+                                    : "Posted task"
+                            }
+                        </span>
                     </div>
+
+                    <div class="task-stats">
+
+                        <div class="stat-box">
+                            <div class="stat-icon blue">
+                                <i class="fa fa-users"></i>
+                            </div>
+                            <div>
+                                <strong>${task.quantity || 0}</strong>
+                                <span>Total</span>
+                            </div>
+                        </div>
+
+                        <div class="stat-box">
+                            <div class="stat-icon orange">
+                                <i class="fa fa-clock"></i>
+                            </div>
+                            <div>
+                                <strong>${task.pending || 0}</strong>
+                                <span>Pending</span>
+                            </div>
+                        </div>
+
+                        <div class="stat-box">
+                            <div class="stat-icon green">
+                                <i class="fa fa-circle-check"></i>
+                            </div>
+                            <div>
+                                <strong>${task.completed || 0}</strong>
+                                <span>Approved</span>
+                            </div>
+                        </div>
+
+                        <div class="stat-box">
+                            <div class="stat-icon purple">
+                                <i class="fa fa-box"></i>
+                            </div>
+                            <div>
+                                <strong>${task.available || 0}</strong>
+                                <span>Remaining</span>
+                            </div>
+                        </div>
+
+                    </div>
+
+                    <a href="/my-tasks/${task.id}/reviews/" class="review-submissions-btn">
+                        <i class="fa fa-check-circle"></i>
+                        Review Submissions
+                    </a>
                 </div>
 
                 <div class="task-status">
-                    <strong>£${parseFloat(task.total_cost || 0).toFixed(2)}</strong>
+                    <strong>${money(task.total_cost)}</strong>
+
+                    <small>
+                        ${money(task.worker_reward)} per action
+                    </small>
+
                     <span class="status-pill ${isClosed ? "closed" : ""}">
                         ${isClosed ? "Completed" : "Active"}
                     </span>
                 </div>
+
             </div>
         `;
     }
