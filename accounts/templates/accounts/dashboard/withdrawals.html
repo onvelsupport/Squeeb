@@ -1,11 +1,12 @@
 {% extends 'accounts/base.html' %}
 {% load static %}
 
-{% block title %}Withdrawals | SQUEEB{% endblock %}
+{% block title %}
+Withdrawals | SQUEEB
+{% endblock %}
 
 {% block extra_css %}
 <link rel="stylesheet" href="{% static 'accounts/css/withdrawals.css' %}">
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 {% endblock %}
 
 {% block content %}
@@ -18,7 +19,9 @@
             <div>
                 <p class="eyebrow">Withdraw Funds</p>
                 <h1>Hello, <span id="usernameDisplay">User</span></h1>
-                <p>Request a withdrawal from your SQUEEB wallet to your UK bank account.</p>
+                <p>
+                    Request a withdrawal from your SQUEEB wallet to your UK bank account.
+                </p>
             </div>
 
             <div class="balance-card">
@@ -33,20 +36,39 @@
                 <h2>Request Withdrawal</h2>
                 <p class="form-sub">Enter your bank details carefully.</p>
 
-                <label>Amount</label>
-                <input type="number" id="amount" placeholder="e.g. 20" min="1" step="0.01" required>
+                <label for="amount">Amount</label>
+                <input type="number"
+                       id="amount"
+                       placeholder="e.g. 20"
+                       min="1"
+                       step="0.01"
+                       required>
 
-                <label>Account Name</label>
-                <input type="text" id="accountName" placeholder="Your full name" required>
+                <label for="accountName">Account Name</label>
+                <input type="text"
+                       id="accountName"
+                       placeholder="Your full name"
+                       required>
 
-                <label>Bank Name</label>
-                <input type="text" id="bankName" placeholder="Bank name" required>
+                <label for="bankName">Bank Name</label>
+                <input type="text"
+                       id="bankName"
+                       placeholder="Bank name"
+                       required>
 
-                <label>Sort Code</label>
-                <input type="text" id="sortCode" placeholder="12-34-56" maxlength="8" required>
+                <label for="sortCode">Sort Code</label>
+                <input type="text"
+                       id="sortCode"
+                       placeholder="12-34-56"
+                       maxlength="8"
+                       required>
 
-                <label>Account Number</label>
-                <input type="text" id="accountNumber" placeholder="12345678" maxlength="8" required>
+                <label for="accountNumber">Account Number</label>
+                <input type="text"
+                       id="accountNumber"
+                       placeholder="12345678"
+                       maxlength="8"
+                       required>
 
                 <button type="submit" id="withdrawBtn">
                     Submit Withdrawal
