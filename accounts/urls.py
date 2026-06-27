@@ -46,6 +46,12 @@ from .views import (
     bank_details,
     my_tasks,
     my_tasks_api,
+    acceptable_use,
+    privacy_policy,
+    cookie_policy,
+    terms_conditions,
+    refund_policy,
+
 )
 
 urlpatterns = [
@@ -153,10 +159,9 @@ urlpatterns = [
     # ======================
     # LEGAL
     # ======================
-    path("about/", about, name="about"),
-    path("about/", about, name="about_page"),
-
-
-
-
+    path("privacy-policy/", privacy_policy, name="privacy_policy",),
+    path("terms-and-conditions/", terms_conditions, name="terms_conditions",),
+    path("refund-policy/", refund_policy, name="refund_policy",),
+    path("cookie-policy/", cookie_policy, name="cookie_policy",),
+    path("acceptable-use/",acceptable_use, name="acceptable_use",),
 ]

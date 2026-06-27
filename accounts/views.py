@@ -64,6 +64,28 @@ def my_tasks_api(request):
     })
 
 
+
+def privacy_policy(request):
+    return render(request, "accounts/legal/privacy.html")
+
+
+def terms_conditions(request):
+    return render(request, "accounts/legal/terms.html")
+
+
+def refund_policy(request):
+    return render(request, "accounts/legal/refund.html")
+
+
+def cookie_policy(request):
+    return render(request, "accounts/legal/cookies.html")
+
+
+def acceptable_use(request):
+    return render(request, "accounts/legal/acceptable_use.html")
+
+
+
 def recent_activities_api(request):
     activities = RecentActivity.objects.all()[:10]
 
