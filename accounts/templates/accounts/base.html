@@ -55,9 +55,13 @@
         <button class="icon-btn notification-open-btn" id="openNotifications">
             <i class="fa-solid fa-bell"></i>
 
-            {% if notification_count > 0 %}
-                <span class="notification-count">{{ notification_count }}</span>
-            {% endif %}
+            <span
+    id="notificationCount"
+    class="notification-count"
+    {% if notification_count == 0 %}style="display:none;"{% endif %}
+>
+    {{ notification_count }}
+</span>
         </button>
 
         <a href="{% url 'logout' %}" class="logout-btn logout">
