@@ -607,32 +607,37 @@ document.addEventListener("DOMContentLoaded", () => {
     });
 
 
-    // ==========================================================
-    // MOBILE MENU
-    // ==========================================================
+   // ==========================================================
+// MOBILE MENU
+// ==========================================================
 
-    if (mobileMenuBtn && mobileDropdown) {
-        mobileMenuBtn.addEventListener("click", (e) => {
-            e.preventDefault();
-            e.stopPropagation();
+if (mobileMenuBtn && mobileDropdown) {
+    mobileMenuBtn.addEventListener("click", (e) => {
+        e.preventDefault();
+        e.stopPropagation();
 
-            mobileDropdown.classList.toggle("show");
-        });
+        mobileDropdown.classList.toggle("show");
+    });
 
-        mobileDropdown.addEventListener("click", (e) => {
-            e.stopPropagation();
-        });
+    mobileDropdown.addEventListener("click", (e) => {
+        e.stopPropagation();
+    });
 
-        document.addEventListener("click", () => {
+    document.addEventListener("click", (e) => {
+        if (
+            !mobileDropdown.contains(e.target) &&
+            !mobileMenuBtn.contains(e.target)
+        ) {
             mobileDropdown.classList.remove("show");
-        });
+        }
+    });
 
-        window.addEventListener("resize", () => {
-            if (window.innerWidth > 900) {
-                mobileDropdown.classList.remove("show");
-            }
-        });
-    }
+    window.addEventListener("resize", () => {
+        if (window.innerWidth > 900) {
+            mobileDropdown.classList.remove("show");
+        }
+    });
+}
 
 
     // ==========================================================
