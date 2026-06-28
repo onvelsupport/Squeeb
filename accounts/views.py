@@ -198,12 +198,17 @@ def toggle_follow(request, username):
     else:
         is_following = True
 
+        Notification.objects.create(
+            user=profile_user,
+            title="New Follower",
+            message=f"{request.user.username} started following you."
+        )
+
     return JsonResponse({
         "is_following": is_following,
         "followers_count": Follow.objects.filter(following=profile_user).count(),
         "following_count": Follow.objects.filter(follower=profile_user).count(),
     })
-
 
 
 stripe.api_key = settings.STRIPE_SECRET_KEY
