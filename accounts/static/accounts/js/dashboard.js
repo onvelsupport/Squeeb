@@ -174,8 +174,7 @@ searchInput?.addEventListener("input", async () => {
 
 
 
-
-    // ==========================================================
+// ==========================================================
 // NOTIFICATION MENU
 // ==========================================================
 
@@ -183,54 +182,125 @@ const openNotifications = document.getElementById("openNotifications");
 const closeNotifications = document.getElementById("closeNotifications");
 const notificationOverlay = document.getElementById("notificationOverlay");
 const notificationPanel = document.getElementById("notificationPanel");
+const notificationList = document.getElementById("notificationList");
+const notificationCount = document.getElementById("notificationCount");
+
+async function loadNotifications() {
+
+    if (!notificationList) return;
+
+    notificationList.innerHTML = `
+        <p class="empty-text">Loading notifications...</p>
+    `;
+
+    try {
+
+        const response = await fetch("/api/notifications/", {
+            method: "GET",
+            credentials: "include",
+            headers: {
+                "Accept": "application/json"
+            }
+        });
+
+        if (!response.ok) {
+            notificationList.innerHTML = `
+                <p class="empty-text">
+                    Could not load notifications.
+                </p>
+            `;
+            return;
+        }
+
+        const data = await response.json();
+
+        // Update unread badge
+        if (notificationCount) {
+
+            if (data.unread_count > 0) {
+                notificationCount.textContent = data.unread_count;
+                notificationCount.style.display = "inline-flex";
+            } else {
+                notificationCount.style.display = "none";
+            }
+
+        }
+
+        // Empty state
+        if (!data.notifications || data.notifications.length === 0) {
+
+            notificationList.innerHTML = `
+                <p class="empty-text">
+                    No notifications yet.
+                </p>
+            `;
+
+            return;
+        }
+
+        // Render notifications
+        notificationList.innerHTML = data.notifications.map(notification => `
+
+            <div class="notification-item ${notification.is_read ? "" : "unread"}">
+
+                <div class="notification-content">
+
+                    <h4>${notification.title}</h4>
+
+                    <p>${notification.message}</p>
+
+                    <span class="notification-date">
+                        ${notification.created_at}
+                    </span>
+
+                </div>
+
+            </div>
+
+        `).join("");
+
+    }
+
+    catch (error) {
+
+        console.error(error);
+
+        notificationList.innerHTML = `
+            <p class="empty-text">
+                Network error. Please try again.
+            </p>
+        `;
+
+    }
+
+}
 
 function openNotificationPanel(e) {
+
     if (e) e.preventDefault();
 
     notificationOverlay?.classList.add("show");
     notificationPanel?.classList.add("show");
+
     mobileDropdown?.classList.remove("show");
+
+    loadNotifications();
+
 }
 
 function closeNotificationPanel() {
+
     notificationOverlay?.classList.remove("show");
     notificationPanel?.classList.remove("show");
+
 }
 
 openNotifications?.addEventListener("click", openNotificationPanel);
 closeNotifications?.addEventListener("click", closeNotificationPanel);
 notificationOverlay?.addEventListener("click", closeNotificationPanel);
 
-
-
-
-    // ==========================================================
-// MOBILE MENU
-// ==========================================================
-
-if (mobileMenuBtn && mobileDropdown) {
-    mobileMenuBtn.addEventListener("click", (e) => {
-        e.preventDefault();
-        e.stopPropagation();
-
-        mobileDropdown.classList.toggle("show");
-    });
-
-    mobileDropdown.addEventListener("click", (e) => {
-        e.stopPropagation();
-    });
-
-    document.addEventListener("click", () => {
-        mobileDropdown.classList.remove("show");
-    });
-
-    window.addEventListener("resize", () => {
-        if (window.innerWidth > 900) {
-            mobileDropdown.classList.remove("show");
-        }
-    });
-}
-
+// Load unread badge when page loads
+loadNotifications();
 
     // ==========================================================
     // FUND WALLET MODAL

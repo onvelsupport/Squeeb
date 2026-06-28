@@ -61,6 +61,7 @@ from .views import (
     withdrawal_history_api,
     transaction_history,
     transaction_history_api,
+    notifications_api,
 
 )
 
@@ -99,6 +100,10 @@ urlpatterns = [
     path("notifications/", notifications, name="notifications"),
     path("more/edit-profile/", edit_profile, name="edit_profile"),
     path("more/bank-details/", bank_details, name="bank_details"),
+    path(
+    "api/notifications/", notifications_api,
+    name="notifications_api"
+),
 
 
     # ======================

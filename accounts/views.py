@@ -151,6 +151,31 @@ def notifications(request):
     return render(request, "accounts/notifications/notifications.html")
 
 
+@login_required
+def notifications_api(request):
+    notifications = Notification.objects.filter(
+        user=request.user
+    ).order_by("-created_at")[:20]
+
+    data = []
+
+    for notification in notifications:
+        data.append({
+            "id": notification.id,
+            "title": notification.title,
+            "message": notification.message,
+            "is_read": notification.is_read,
+            "created_at": notification.created_at.strftime("%d %b %Y, %I:%M %p"),
+        })
+
+    return JsonResponse({
+        "notifications": data,
+        "unread_count": Notification.objects.filter(
+            user=request.user,
+            is_read=False
+        ).count()
+    })
+
 @csrf_exempt
 @login_required
 def toggle_follow(request, username):
