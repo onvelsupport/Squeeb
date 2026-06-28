@@ -210,7 +210,14 @@ def toggle_follow(request, username):
         "following_count": Follow.objects.filter(follower=profile_user).count(),
     })
 
+def create_notification(user, title, message):
+    Notification.objects.create(
+        user=user,
+        title=title,
+        message=message
+    )
 
+    
 stripe.api_key = settings.STRIPE_SECRET_KEY
 
 
