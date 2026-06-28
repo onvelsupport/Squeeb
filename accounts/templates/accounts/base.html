@@ -52,17 +52,17 @@
     </nav>
 
     <div class="top-actions">
-        <button class="icon-btn notification-open-btn" id="openNotifications">
-            <i class="fa-solid fa-bell"></i>
+    <button class="icon-btn notification-open-btn" id="openNotifications">
+        <i class="fa-solid fa-bell"></i>
 
-            <span
-    id="notificationCount"
-    class="notification-count"
-    {% if notification_count == 0 %}style="display:none;"{% endif %}
->
-    {{ notification_count }}
-</span>
-        </button>
+        <span
+            id="notificationCount"
+            class="notification-count"
+            {% if notification_count == 0 %}style="display:none;"{% endif %}
+        >
+            {{ notification_count }}
+        </span>
+    </button>
 
         <a href="{% url 'logout' %}" class="logout-btn logout">
             <i class="fa fa-power-off"></i>
@@ -87,6 +87,7 @@
 <div class="notification-overlay" id="notificationOverlay"></div>
 
 <aside class="notification-panel" id="notificationPanel">
+
     <div class="notification-panel-header">
         <h2>Notifications</h2>
 
@@ -95,23 +96,17 @@
         </button>
     </div>
 
-    <div class="notification-panel-body">
-        {% if notifications %}
-            {% for notification in notifications %}
-                <div class="notification-item {% if not notification.is_read %}unread{% endif %}">
-                    <h4>{{ notification.title }}</h4>
-                    <p>{{ notification.message }}</p>
-                    <span>{{ notification.created_at|timesince }} ago</span>
-                </div>
-            {% endfor %}
-        {% else %}
-            <div class="empty-notification">
-                <i class="fa-regular fa-bell-slash"></i>
-                <p>No notifications yet</p>
-            </div>
-        {% endif %}
+    <div class="notification-panel-body" id="notificationList">
+
+        <div class="empty-notification">
+            <i class="fa-regular fa-bell-slash"></i>
+            <p>Loading notifications...</p>
+        </div>
+
     </div>
+
 </aside>
+
 
 {% else %}
 
