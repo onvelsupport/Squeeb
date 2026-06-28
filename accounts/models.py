@@ -250,31 +250,3 @@ class ProductMessage(models.Model):
 
     def __str__(self):
         return f"{self.sender} to {self.receiver} - {self.product.title}"
-    
-
-
-
-    class Referral(models.Model):
-    referrer = models.ForeignKey(
-        User,
-        on_delete=models.CASCADE,
-        related_name="referrals_made"
-    )
-
-    referred_user = models.OneToOneField(
-        User,
-        on_delete=models.CASCADE,
-        related_name="referred_by"
-    )
-
-    code = models.CharField(max_length=20)
-
-    reward = models.DecimalField(
-        max_digits=10,
-        decimal_places=2,
-        default=0
-    )
-
-    rewarded = models.BooleanField(default=False)
-
-    created_at = models.DateTimeField(auto_now_add=True)
