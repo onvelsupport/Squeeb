@@ -11,8 +11,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
         if (element) {
             element.textContent = value;
-        } else {
-            console.warn(`Missing element: ${id}`);
         }
     }
 
@@ -23,14 +21,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
     const mobileMenuBtn = document.getElementById("mobileMenuBtn");
     const mobileDropdown = document.getElementById("mobileDropdown");
-
-    const earnLink = document.getElementById("earnLink");
-    const mobileEarnLink = document.getElementById("mobileEarnLink");
-    const earnQuick = document.getElementById("earnQuick");
-
-    const advertiseLink = document.getElementById("advertiseLink");
-    const mobileAdvertiseLink = document.getElementById("mobileAdvertiseLink");
-    const advertiseQuick = document.getElementById("advertiseQuick");
 
 
     // ==========================================================
@@ -111,196 +101,141 @@ document.addEventListener("DOMContentLoaded", () => {
     // ==========================================================
     // SEARCH BAR
     // ==========================================================
+
     const searchInput = document.getElementById("globalSearchInput");
     const searchResults = document.getElementById("searchResults");
 
-searchInput?.addEventListener("input", async () => {
+    searchInput?.addEventListener("input", async () => {
+        const query = searchInput.value.trim();
 
-    const query = searchInput.value.trim();
+        if (!query) {
+            searchResults.style.display = "none";
+            searchResults.innerHTML = "";
+            return;
+        }
 
-    if (!query) {
-        searchResults.style.display = "none";
-        searchResults.innerHTML = "";
-        return;
-    }
+        try {
+            const res = await fetch(`/api/search/?q=${encodeURIComponent(query)}`);
+            const data = await res.json();
 
-    try {
+            searchResults.innerHTML = "";
 
-        const res = await fetch(
-            `/api/search/?q=${encodeURIComponent(query)}`
-        );
+            if (!data.results.length) {
+                searchResults.innerHTML = `
+                    <div class="search-item">No results found</div>
+                `;
 
-        const data = await res.json();
+                searchResults.style.display = "block";
+                return;
+            }
 
-        searchResults.innerHTML = "";
-
-        if (!data.results.length) {
-
-            searchResults.innerHTML =
-                `<div class="search-item">No results found</div>`;
+            data.results.forEach(item => {
+                searchResults.innerHTML += `
+                    <a href="${item.url}" class="search-item">
+                        <strong>${item.name}</strong>
+                        <div class="search-type">${item.type}</div>
+                    </a>
+                `;
+            });
 
             searchResults.style.display = "block";
 
-            return;
+        } catch (err) {
+            console.error("SEARCH ERROR:", err);
         }
-
-        data.results.forEach(item => {
-
-            searchResults.innerHTML += `
-                <a href="${item.url}" class="search-item">
-
-                    <strong>${item.name}</strong>
-
-                    <div class="search-type">
-                        ${item.type}
-                    </div>
-
-                </a>
-            `;
-
-        });
-
-        searchResults.style.display = "block";
-
-    }
-
-    catch(err) {
-
-        console.error(err);
-
-    }
-
-});
+    });
 
 
+    // ==========================================================
+    // NOTIFICATION MENU
+    // ==========================================================
 
-// ==========================================================
-// NOTIFICATION MENU
-// ==========================================================
+    const openNotifications = document.getElementById("openNotifications");
+    const closeNotifications = document.getElementById("closeNotifications");
+    const notificationOverlay = document.getElementById("notificationOverlay");
+    const notificationPanel = document.getElementById("notificationPanel");
+    const notificationList = document.getElementById("notificationList");
+    const notificationCount = document.getElementById("notificationCount");
 
-const openNotifications = document.getElementById("openNotifications");
-const closeNotifications = document.getElementById("closeNotifications");
-const notificationOverlay = document.getElementById("notificationOverlay");
-const notificationPanel = document.getElementById("notificationPanel");
-const notificationList = document.getElementById("notificationList");
-const notificationCount = document.getElementById("notificationCount");
-
-async function loadNotifications() {
-
-    if (!notificationList) return;
-
-    notificationList.innerHTML = `
-        <p class="empty-text">Loading notifications...</p>
-    `;
-
-    try {
-
-        const response = await fetch("/api/notifications/", {
-            method: "GET",
-            credentials: "include",
-            headers: {
-                "Accept": "application/json"
-            }
-        });
-
-        if (!response.ok) {
-            notificationList.innerHTML = `
-                <p class="empty-text">
-                    Could not load notifications.
-                </p>
-            `;
-            return;
-        }
-
-        const data = await response.json();
-
-        // Update unread badge
-        if (notificationCount) {
-
-            if (data.unread_count > 0) {
-                notificationCount.textContent = data.unread_count;
-                notificationCount.style.display = "inline-flex";
-            } else {
-                notificationCount.style.display = "none";
-            }
-
-        }
-
-        // Empty state
-        if (!data.notifications || data.notifications.length === 0) {
-
-            notificationList.innerHTML = `
-                <p class="empty-text">
-                    No notifications yet.
-                </p>
-            `;
-
-            return;
-        }
-
-        // Render notifications
-        notificationList.innerHTML = data.notifications.map(notification => `
-
-            <div class="notification-item ${notification.is_read ? "" : "unread"}">
-
-                <div class="notification-content">
-
-                    <h4>${notification.title}</h4>
-
-                    <p>${notification.message}</p>
-
-                    <span class="notification-date">
-                        ${notification.created_at}
-                    </span>
-
-                </div>
-
-            </div>
-
-        `).join("");
-
-    }
-
-    catch (error) {
-
-        console.error(error);
+    async function loadNotifications() {
+        if (!notificationList) return;
 
         notificationList.innerHTML = `
-            <p class="empty-text">
-                Network error. Please try again.
-            </p>
+            <p class="empty-text">Loading notifications...</p>
         `;
 
+        try {
+            const response = await fetch("/api/notifications/", {
+                method: "GET",
+                credentials: "include",
+                headers: {
+                    "Accept": "application/json"
+                }
+            });
+
+            if (!response.ok) {
+                notificationList.innerHTML = `
+                    <p class="empty-text">Could not load notifications.</p>
+                `;
+                return;
+            }
+
+            const data = await response.json();
+
+            if (notificationCount) {
+                if (data.unread_count > 0) {
+                    notificationCount.textContent = data.unread_count;
+                    notificationCount.style.display = "inline-flex";
+                } else {
+                    notificationCount.style.display = "none";
+                }
+            }
+
+            if (!data.notifications || data.notifications.length === 0) {
+                notificationList.innerHTML = `
+                    <p class="empty-text">No notifications yet.</p>
+                `;
+                return;
+            }
+
+            notificationList.innerHTML = data.notifications.map(notification => `
+                <div class="notification-item ${notification.is_read ? "" : "unread"}">
+                    <div class="notification-content">
+                        <h4>${notification.title}</h4>
+                        <p>${notification.message}</p>
+                        <span class="notification-date">${notification.created_at}</span>
+                    </div>
+                </div>
+            `).join("");
+
+        } catch (error) {
+            console.error("NOTIFICATION ERROR:", error);
+
+            notificationList.innerHTML = `
+                <p class="empty-text">Network error. Please try again.</p>
+            `;
+        }
     }
 
-}
+    function openNotificationPanel(e) {
+        if (e) e.preventDefault();
 
-function openNotificationPanel(e) {
+        notificationOverlay?.classList.add("show");
+        notificationPanel?.classList.add("show");
+        mobileDropdown?.classList.remove("show");
 
-    if (e) e.preventDefault();
+        loadNotifications();
+    }
 
-    notificationOverlay?.classList.add("show");
-    notificationPanel?.classList.add("show");
+    function closeNotificationPanel() {
+        notificationOverlay?.classList.remove("show");
+        notificationPanel?.classList.remove("show");
+    }
 
-    mobileDropdown?.classList.remove("show");
+    openNotifications?.addEventListener("click", openNotificationPanel);
+    closeNotifications?.addEventListener("click", closeNotificationPanel);
+    notificationOverlay?.addEventListener("click", closeNotificationPanel);
 
-    loadNotifications();
-
-}
-
-function closeNotificationPanel() {
-
-    notificationOverlay?.classList.remove("show");
-    notificationPanel?.classList.remove("show");
-
-}
-
-openNotifications?.addEventListener("click", openNotificationPanel);
-closeNotifications?.addEventListener("click", closeNotificationPanel);
-notificationOverlay?.addEventListener("click", closeNotificationPanel);
-
-// Load unread badge when page loads
-loadNotifications();
 
     // ==========================================================
     // FUND WALLET MODAL
@@ -321,7 +256,7 @@ loadNotifications();
 
         fundModal.style.display = "flex";
 
-        if (fundAmountInput) fundAmountInput.focus();
+        fundAmountInput?.focus();
     }
 
     function closeFundModal() {
@@ -344,6 +279,7 @@ loadNotifications();
         }
 
         fundSubmitBtn.disabled = true;
+
         if (fundMsg) fundMsg.textContent = "Redirecting to Stripe...";
 
         try {
@@ -370,9 +306,13 @@ loadNotifications();
                 return;
             }
 
-            if (fundMsg) fundMsg.textContent = "Stripe checkout URL was not returned.";
+            if (fundMsg) {
+                fundMsg.textContent = "Stripe checkout URL was not returned.";
+            }
+
         } catch (err) {
             console.error("FUND ERROR:", err);
+
             if (fundMsg) fundMsg.textContent = "Network error.";
         } finally {
             fundSubmitBtn.disabled = false;
@@ -403,7 +343,7 @@ loadNotifications();
 
         withdrawModal.style.display = "flex";
 
-        if (withdrawAmountInput) withdrawAmountInput.focus();
+        withdrawAmountInput?.focus();
     }
 
     function closeWithdrawModal() {
@@ -441,6 +381,7 @@ loadNotifications();
         }
 
         withdrawSubmitBtn.disabled = true;
+
         if (withdrawMsg) withdrawMsg.textContent = "Processing...";
 
         try {
@@ -475,60 +416,16 @@ loadNotifications();
             loadUser();
 
             setTimeout(closeWithdrawModal, 700);
+
         } catch (err) {
             console.error("WITHDRAW ERROR:", err);
-            if (withdrawMsg) withdrawMsg.textContent = "Network error. Try again.";
+
+            if (withdrawMsg) {
+                withdrawMsg.textContent = "Network error. Try again.";
+            }
         } finally {
             withdrawSubmitBtn.disabled = false;
         }
-    });
-
-
-    // ==========================================================
-    // EARN CHOICE MODAL
-    // ==========================================================
-
-    const earnModal = document.getElementById("earnModal");
-    const earnClose = document.getElementById("earnClose");
-
-    function openEarnModal(e) {
-        if (e) e.preventDefault();
-        if (!earnModal) return;
-
-        earnModal.style.display = "flex";
-        mobileDropdown?.classList.remove("show");
-    }
-
-    earnLink?.addEventListener("click", openEarnModal);
-    mobileEarnLink?.addEventListener("click", openEarnModal);
-    earnQuick?.addEventListener("click", openEarnModal);
-
-    earnClose?.addEventListener("click", () => {
-        if (earnModal) earnModal.style.display = "none";
-    });
-
-
-    // ==========================================================
-    // ADVERTISE CHOICE MODAL
-    // ==========================================================
-
-    const adModal = document.getElementById("adModal");
-    const adClose = document.getElementById("adClose");
-
-    function openAdModal(e) {
-        if (e) e.preventDefault();
-        if (!adModal) return;
-
-        adModal.style.display = "flex";
-        mobileDropdown?.classList.remove("show");
-    }
-
-    advertiseLink?.addEventListener("click", openAdModal);
-    mobileAdvertiseLink?.addEventListener("click", openAdModal);
-    advertiseQuick?.addEventListener("click", openAdModal);
-
-    adClose?.addEventListener("click", () => {
-        if (adModal) adModal.style.display = "none";
     });
 
 
@@ -537,69 +434,6 @@ loadNotifications();
     // ==========================================================
 
     const taskModal = document.getElementById("taskActionModal");
-
-
-    // ==========================================================
-    // CLOSE MODALS WHEN CLICKING OUTSIDE
-    // ==========================================================
-
-    window.addEventListener("click", (e) => {
-        if (earnModal && e.target === earnModal) {
-            earnModal.style.display = "none";
-        }
-
-        if (adModal && e.target === adModal) {
-            adModal.style.display = "none";
-        }
-
-        if (taskModal && e.target === taskModal) {
-            taskModal.style.display = "none";
-        }
-    });
-
-
-    // ==========================================================
-    // MEMBERSHIP ACTIVATION
-    // ==========================================================
-
-    const membershipBtn = document.getElementById("membershipBtn");
-
-    membershipBtn?.addEventListener("click", async () => {
-        membershipBtn.disabled = true;
-        membershipBtn.textContent = "Activating...";
-
-        try {
-            const res = await fetch("/pay-membership/", {
-                method: "POST",
-                credentials: "same-origin",
-                headers: {
-                    "Content-Type": "application/json"
-                }
-            });
-
-            const data = await res.json();
-
-            if (!res.ok) {
-                alert(data.error || "Membership payment failed.");
-                return;
-            }
-
-            alert(data.message || "Membership activated.");
-            loadUser();
-        } catch (err) {
-            console.error("MEMBERSHIP ERROR:", err);
-            alert("Something went wrong.");
-        } finally {
-            membershipBtn.disabled = false;
-            membershipBtn.textContent = "Activate Membership";
-        }
-    });
-
-
-    // ==========================================================
-    // TASK CREATION ELEMENTS
-    // ==========================================================
-
     const closeTaskModal = document.getElementById("taskActionClose");
     const modalTitle = document.getElementById("taskActionTitle");
     const modalPrice = document.getElementById("taskActionPrice");
@@ -611,14 +445,10 @@ loadNotifications();
     const totalDisplay = document.getElementById("taskTotal");
     const taskLink = document.getElementById("taskLink");
     const taskPlatform = document.getElementById("taskPlatform");
+    const submitTaskBtn = document.getElementById("submitTaskBtn");
 
     let currentPrice = 0;
     let taskType = null;
-
-
-    // ==========================================================
-    // OPEN TASK MODAL FROM SELECT BUTTONS
-    // ==========================================================
 
     document.querySelectorAll(".select-btn").forEach((button) => {
         button.addEventListener("click", function () {
@@ -657,11 +487,6 @@ loadNotifications();
         });
     });
 
-
-    // ==========================================================
-    // UPDATE TASK TOTAL PRICE
-    // ==========================================================
-
     quantityInput?.addEventListener("input", function () {
         const quantity = parseFloat(this.value);
 
@@ -670,25 +495,15 @@ loadNotifications();
                 totalDisplay.innerText = "£" + (quantity * currentPrice).toFixed(2);
             }
         } else {
-            if (totalDisplay) totalDisplay.innerText = "£0.00";
+            if (totalDisplay) {
+                totalDisplay.innerText = "£0.00";
+            }
         }
     });
-
-
-    // ==========================================================
-    // CLOSE TASK MODAL
-    // ==========================================================
 
     closeTaskModal?.addEventListener("click", () => {
         if (taskModal) taskModal.style.display = "none";
     });
-
-
-    // ==========================================================
-    // SUBMIT TASK
-    // ==========================================================
-
-    const submitTaskBtn = document.getElementById("submitTaskBtn");
 
     submitTaskBtn?.addEventListener("click", async () => {
         const quantity = parseInt(quantityInput?.value || "0");
@@ -738,9 +553,12 @@ loadNotifications();
 
             setText("balanceAmount", money(data.new_balance));
 
-            if (taskModal) taskModal.style.display = "none";
+            if (taskModal) {
+                taskModal.style.display = "none";
+            }
 
             loadUser();
+
         } catch (err) {
             console.error("TASK CREATE ERROR:", err);
             alert("Something went wrong. Check console.");
@@ -751,9 +569,88 @@ loadNotifications();
 
 
     // ==========================================================
+    // MEMBERSHIP ACTIVATION
+    // ==========================================================
+
+    const membershipBtn = document.getElementById("membershipBtn");
+
+    membershipBtn?.addEventListener("click", async () => {
+        membershipBtn.disabled = true;
+        membershipBtn.textContent = "Activating...";
+
+        try {
+            const res = await fetch("/pay-membership/", {
+                method: "POST",
+                credentials: "same-origin",
+                headers: {
+                    "Content-Type": "application/json"
+                }
+            });
+
+            const data = await res.json();
+
+            if (!res.ok) {
+                alert(data.error || "Membership payment failed.");
+                return;
+            }
+
+            alert(data.message || "Membership activated.");
+            loadUser();
+
+        } catch (err) {
+            console.error("MEMBERSHIP ERROR:", err);
+            alert("Something went wrong.");
+        } finally {
+            membershipBtn.disabled = false;
+            membershipBtn.textContent = "Activate Membership";
+        }
+    });
+
+
+    // ==========================================================
+    // MOBILE MENU
+    // ==========================================================
+
+    if (mobileMenuBtn && mobileDropdown) {
+        mobileMenuBtn.addEventListener("click", (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+
+            mobileDropdown.classList.toggle("show");
+        });
+
+        mobileDropdown.addEventListener("click", (e) => {
+            e.stopPropagation();
+        });
+
+        document.addEventListener("click", () => {
+            mobileDropdown.classList.remove("show");
+        });
+
+        window.addEventListener("resize", () => {
+            if (window.innerWidth > 900) {
+                mobileDropdown.classList.remove("show");
+            }
+        });
+    }
+
+
+    // ==========================================================
+    // CLOSE MODALS WHEN CLICKING OUTSIDE
+    // ==========================================================
+
+    window.addEventListener("click", (e) => {
+        if (taskModal && e.target === taskModal) {
+            taskModal.style.display = "none";
+        }
+    });
+
+
+    // ==========================================================
     // INITIAL PAGE LOAD
     // ==========================================================
 
     loadUser();
+    loadNotifications();
 
 });
