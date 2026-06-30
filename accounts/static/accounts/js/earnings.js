@@ -239,19 +239,24 @@ document.addEventListener("DOMContentLoaded", () => {
             }
 
             data.activities.forEach((activity) => {
-                const platform = (activity.platform || "facebook").toLowerCase();
-                const amount = parseFloat(activity.amount || 0).toFixed(2);
+    const platform = (activity.platform || "task").toLowerCase();
+    const amount = parseFloat(activity.amount || 0).toFixed(2);
 
-                activityList.innerHTML += `
-                    <div class="activity-item">
-                        <img src="/static/accounts/img/${platform}.png" alt="${platform}">
-                        <p>
-                            <strong>@${activity.username || "user"}</strong>
-                            just earned £${amount}
-                        </p>
-                    </div>
-                `;
-            });
+    const image = platform === "referral"
+        ? "logo.png"
+        : `${platform}.png`;
+
+    const message = platform === "referral"
+        ? `<strong>@${activity.username || "user"}</strong> earned £${amount} from a referral`
+        : `<strong>@${activity.username || "user"}</strong> just earned £${amount}`;
+
+    activityList.innerHTML += `
+        <div class="activity-item">
+            <img src="/static/accounts/img/${image}" alt="${platform}">
+            <p>${message}</p>
+        </div>
+    `;
+});
 
         } catch (err) {
             console.error("ACTIVITY LOAD ERROR:", err);
