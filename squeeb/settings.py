@@ -14,7 +14,6 @@ SECRET_KEY = os.getenv("DJANGO_SECRET_KEY") or os.getenv("SECRET_KEY")
 
 
 
-ADMIN_EMAIL = "sammyperazzi@gmail.com"
 DEFAULT_FROM_EMAIL = "SQUEEB <noreply@squeeb.co.uk>"
 # =============================
 # EMAIL SETTINGS - RESEND

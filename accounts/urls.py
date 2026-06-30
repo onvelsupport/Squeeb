@@ -1,4 +1,5 @@
 from django.urls import path
+from django.contrib.auth import views as auth_views
 from .views import (
     homepage,
     about,
@@ -65,6 +66,7 @@ from .views import (
     referrals_api,
     mark_notifications_read,
     referrals_page,
+    
 
 )
 
@@ -209,6 +211,29 @@ path(
     # PASSWORD RESET API
     # ======================
     path("api/forgot-password/", forgot_password_api, name="forgot_password_api"),
+    path(
+    "password-reset-sent/",
+    auth_views.PasswordResetDoneView.as_view(
+        template_name="accounts/auth/password_reset_sent.html"
+    ),
+    name="password_reset_done"
+),
+
+path(
+    "reset/<uidb64>/<token>/",
+    auth_views.PasswordResetConfirmView.as_view(
+        template_name="accounts/auth/password_reset_confirm.html"
+    ),
+    name="password_reset_confirm"
+),
+
+path(
+    "password-reset-complete/",
+    auth_views.PasswordResetCompleteView.as_view(
+        template_name="accounts/auth/password_reset_complete.html"
+    ),
+    name="password_reset_complete"
+),
 
 
     # ======================
