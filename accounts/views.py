@@ -164,6 +164,7 @@ def notifications_api(request):
             "id": notification.id,
             "title": notification.title,
             "message": notification.message,
+            "link": notification.link,
             "is_read": notification.is_read,
             "created_at": notification.created_at.strftime("%d %b %Y, %I:%M %p"),
         })
@@ -201,8 +202,10 @@ def toggle_follow(request, username):
         Notification.objects.create(
             user=profile_user,
             title="New Follower",
-            message=f"{request.user.username} started following you."
+            message=f"{request.user.username} started following you.",
+            link=reverse("public_user_profile", args=[request.user.username])
         )
+        
 
     return JsonResponse({
         "is_following": is_following,

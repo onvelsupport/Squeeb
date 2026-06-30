@@ -226,15 +226,19 @@ document.addEventListener("DOMContentLoaded", () => {
                 return;
             }
 
-            notificationList.innerHTML = data.notifications.map(notification => `
-                <div class="notification-item ${notification.is_read ? "" : "unread"}">
-                    <div class="notification-content">
-                        <h4>${notification.title}</h4>
-                        <p>${notification.message}</p>
-                        <span class="notification-date">${notification.created_at}</span>
-                    </div>
-                </div>
-            `).join("");
+            notificationList.innerHTML = data.notifications.map(notification => {
+    const link = notification.link || "#";
+
+    return `
+        <a href="${link}" class="notification-item ${notification.is_read ? "" : "unread"}">
+            <div class="notification-content">
+                <h4>${notification.title}</h4>
+                <p>${notification.message}</p>
+                <span class="notification-date">${notification.created_at}</span>
+            </div>
+        </a>
+    `;
+}).join("");
 
         } catch (error) {
             console.error("NOTIFICATION ERROR:", error);
