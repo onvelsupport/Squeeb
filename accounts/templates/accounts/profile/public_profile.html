@@ -1,71 +1,19 @@
+{% extends 'accounts/base.html' %}
 {% load static %}
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{{ profile_user.username }} | SQUEEB</title>
 
-    <link rel="stylesheet" href="{% static 'accounts/css/public_profile.css' %}">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-</head>
+{% block title %}
+{{ profile_user.username }} | SQUEEB
+{% endblock %}
 
-<body>
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'accounts/css/public_profile.css' %}">
+{% endblock %}
 
-<header class="dashboard-topbar">
-
-    <a href="{% url 'dashboard' %}" class="brand">
-        <img src="{% static 'accounts/img/logo.png' %}" alt="SQUEEB Logo">
-    </a>
-
-    <div class="dashboard-search">
-        <i class="fa fa-search"></i>
-
-        <input
-            type="text"
-            id="globalSearchInput"
-            placeholder="Search tasks, products, services and users">
-
-        <div class="search-results" id="searchResults"></div>
-    </div>
-
-    <nav class="dashboard-nav">
-        <a href="{% url 'dashboard' %}">Dashboard</a>
-        <a href="{% url 'earnings' %}">Earn</a>
-        <a href="{% url 'marketplace' %}">Marketplace</a>
-        <a href="{% url 'sell' %}">List Items</a>
-    </nav>
-
-    <div class="top-actions">
-        <button class="icon-btn" onclick="window.location.href='{% url 'more_page' %}'">
-            <i class="fa-solid fa-gear"></i>
-        </button>
-
-        <a href="{% url 'logout' %}" class="logout-btn logout">
-            <i class="fa fa-power-off"></i>
-        </a>
-    </div>
-
-    <button class="mobile-menu-btn" id="mobileMenuBtn">
-        <i class="fa fa-bars"></i>
-    </button>
-
-    <div class="mobile-dropdown" id="mobileDropdown">
-        <a href="{% url 'dashboard' %}"><i class="fa fa-home"></i> Dashboard</a>
-        <a href="{% url 'earnings' %}"><i class="fa fa-coins"></i> Earn</a>
-        <a href="{% url 'marketplace' %}"><i class="fa fa-store"></i> Marketplace</a>
-        <a href="{% url 'seller_history' %}"><i class="fa fa-box"></i> Sold Items</a>
-        <a href="{% url 'sell' %}"><i class="fa fa-plus"></i> List Items</a>
-        <a href="{% url 'more_page' %}"><i class="fa fa-ellipsis-h"></i> More</a>
-        <a href="{% url 'logout' %}" class="logout"><i class="fa fa-power-off"></i> Logout</a>
-    </div>
-
-</header>
+{% block content %}
 
 <main class="profile-page">
 
     <section class="profile-hero">
-
         <div class="profile-info">
             <img src="{% static 'accounts/img/avatar.png' %}" class="avatar" alt="Profile">
 
@@ -98,7 +46,7 @@
             <button
                 id="followBtn"
                 data-username="{{ profile_user.username }}"
-                class="follow-btn">
+                class="follow-btn {% if is_following %}connected{% endif %}">
                 {% if is_following %}
                     Connected
                 {% else %}
@@ -106,11 +54,9 @@
                 {% endif %}
             </button>
         {% endif %}
-
     </section>
 
     <section class="profile-content">
-
         <div class="section-heading">
             <div>
                 <h2>Products for Sale</h2>
@@ -123,10 +69,8 @@
         </div>
 
         <div class="product-grid">
-
             {% for p in products %}
                 <article class="product-card">
-
                     <div class="product-image">
                         {% with first_image=p.images.first %}
                             {% if first_image %}
@@ -154,7 +98,6 @@
                             </a>
                         {% endif %}
                     </div>
-
                 </article>
             {% empty %}
                 <div class="empty-state">
@@ -163,13 +106,13 @@
                     <p>This user does not have any active products for sale.</p>
                 </div>
             {% endfor %}
-
         </div>
-
     </section>
 
 </main>
 
+{% endblock %}
+
+{% block extra_js %}
 <script src="{% static 'accounts/js/public_profile.js' %}"></script>
-</body>
-</html>
+{% endblock %}
