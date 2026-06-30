@@ -1,159 +1,9 @@
-*{
-    margin:0;
-    padding:0;
-    box-sizing:border-box;
-}
-
-body{
-    background:#f6f8fc;
-    font-family:Arial, Helvetica, sans-serif;
-    color:#0f172a;
-}
-
-a{
-    text-decoration:none;
-}
-
-/* ================= TOPBAR ================= */
-
-.dashboard-topbar{
-    background:#fff;
-    padding:18px 40px;
-    display:flex;
-    align-items:center;
-    justify-content:space-between;
-    gap:20px;
-    border-bottom:1px solid #e5e7eb;
-    position:sticky;
-    top:0;
-    z-index:100;
-}
-
-.brand img{
-    width:150px;
-}
-
-.dashboard-search{
-    position:relative;
-    flex:1;
-    max-width:450px;
-    background:#f3f4f6;
-    padding:14px 18px;
-    border-radius:14px;
-    display:flex;
-    align-items:center;
-    gap:10px;
-}
-
-.dashboard-search input{
-    border:none;
-    background:none;
-    width:100%;
-    outline:none;
-    font-size:16px;
-}
-
-.search-results{
-    position:absolute;
-    top:calc(100% + 10px);
-    left:0;
-    right:0;
-    background:#fff;
-    border-radius:18px;
-    box-shadow:0 10px 25px rgba(0,0,0,.08);
-    overflow-y:auto;
-    display:none;
-    z-index:1000;
-    max-height:350px;
-}
-
-.search-item{
-    display:block;
-    padding:15px 20px;
-    color:#111827;
-    border-bottom:1px solid #f1f5f9;
-    transition:.2s;
-}
-
-.search-item:hover{
-    background:#eff6ff;
-}
-
-.search-item strong{
-    display:block;
-    margin-bottom:4px;
-}
-
-.search-type{
-    font-size:12px;
-    color:#64748b;
-}
-
-.dashboard-nav{
-    display:flex;
-    align-items:center;
-    gap:25px;
-}
-
-.dashboard-nav a{
-    font-size:14px;
-    font-weight:600;
-    color:#475569;
-    transition:.3s;
-}
-
-.dashboard-nav a:hover,
-.dashboard-nav a.active{
-    color:#2563eb;
-}
-
-.top-actions{
-    display:flex;
-    gap:15px;
-    align-items:center;
-}
-
-.icon-btn,
-.logout-btn{
-    width:45px;
-    height:45px;
-    border-radius:50%;
-    display:flex;
-    align-items:center;
-    justify-content:center;
-}
-
-.icon-btn{
-    border:none;
-    background:#eff6ff;
-    color:#2563eb;
-    position:relative;
-    cursor:pointer;
-}
-
-.logout-btn{
-    background:#fee2e2;
-    color:red;
-}
-
-.mobile-menu-btn{
-    display:none;
-}
-
-.mobile-dropdown{
-    display:none;
-}
-
-/* ================= PAGE ================= */
-
 .profile-page{
     width:92%;
     max-width:1400px;
     margin:auto;
     padding:40px 0;
 }
-
-/* ================= HERO ================= */
 
 .profile-hero{
     background:white;
@@ -196,8 +46,6 @@ a{
     color:#64748b;
 }
 
-/* ================= STATS ================= */
-
 .follow-stats{
     margin-top:30px;
     display:flex;
@@ -218,8 +66,6 @@ a{
     color:#64748b;
 }
 
-/* ================= BUTTONS ================= */
-
 .follow-btn{
     background:#2563eb;
     color:white;
@@ -237,6 +83,10 @@ a{
     transform:translateY(-3px);
 }
 
+.follow-btn.connected{
+    background:#10b981;
+}
+
 .market-btn{
     background:white;
     padding:14px 22px;
@@ -245,8 +95,6 @@ a{
     font-weight:700;
     box-shadow:0 10px 25px rgba(0,0,0,.05);
 }
-
-/* ================= SECTION ================= */
 
 .section-heading{
     display:flex;
@@ -264,8 +112,6 @@ a{
 .section-heading p{
     color:#64748b;
 }
-
-/* ================= PRODUCTS ================= */
 
 .product-grid{
     display:grid;
@@ -335,8 +181,6 @@ a{
     background:#1d4ed8;
 }
 
-/* ================= EMPTY ================= */
-
 .empty-state{
     grid-column:1/-1;
     background:white;
@@ -364,68 +208,6 @@ a{
 
 @media(max-width:900px){
 
-    .dashboard-topbar{
-        padding:14px 16px;
-        gap:10px;
-        flex-wrap:wrap;
-    }
-
-    .brand img{
-        width:115px;
-    }
-
-    .dashboard-search{
-        order:3;
-        max-width:100%;
-        width:100%;
-        flex-basis:100%;
-    }
-
-    .dashboard-nav,
-    .top-actions{
-        display:none;
-    }
-
-    .mobile-menu-btn{
-        display:flex;
-        width:42px;
-        height:42px;
-        align-items:center;
-        justify-content:center;
-        border:none;
-        border-radius:50%;
-        background:#eff6ff;
-        color:#2563eb;
-        font-size:18px;
-        cursor:pointer;
-    }
-
-    .mobile-dropdown{
-        position:absolute;
-        top:72px;
-        right:16px;
-        width:230px;
-        background:white;
-        border-radius:20px;
-        box-shadow:0 20px 45px rgba(0,0,0,.12);
-        overflow:hidden;
-        z-index:999;
-    }
-
-    .mobile-dropdown.show{
-        display:block;
-    }
-
-    .mobile-dropdown a{
-        display:flex;
-        gap:12px;
-        align-items:center;
-        padding:15px 18px;
-        color:#334155;
-        font-weight:600;
-        border-bottom:1px solid #f1f5f9;
-    }
-
     .profile-page{
         width:94%;
         padding:25px 0;
@@ -434,12 +216,14 @@ a{
     .profile-hero{
         flex-direction:column;
         text-align:center;
-        padding:30px 20px;
+        padding:28px 18px;
+        gap:25px;
+        border-radius:24px;
     }
 
     .profile-info{
         flex-direction:column;
-        gap:20px;
+        gap:18px;
     }
 
     .avatar{
@@ -452,9 +236,30 @@ a{
     }
 
     .follow-stats{
-        justify-content:center;
-        gap:25px;
-        flex-wrap:wrap;
+        width:100%;
+        display:grid;
+        grid-template-columns:repeat(3,1fr);
+        gap:10px;
+        margin-top:22px;
+    }
+
+    .follow-stats div{
+        background:#f8fafc;
+        padding:14px 8px;
+        border-radius:16px;
+    }
+
+    .follow-stats strong{
+        font-size:22px;
+    }
+
+    .follow-stats small{
+        font-size:12px;
+    }
+
+    .follow-btn{
+        width:100%;
+        padding:15px;
     }
 
     .section-heading{
@@ -462,7 +267,29 @@ a{
         text-align:center;
     }
 
+    .section-heading h2{
+        font-size:26px;
+    }
+
+    .market-btn{
+        width:100%;
+        text-align:center;
+    }
+
     .product-grid{
         grid-template-columns:1fr;
+        gap:22px;
+    }
+
+    .product-image{
+        height:260px;
+    }
+
+    .product-body{
+        padding:20px;
+    }
+
+    .empty-state{
+        padding:50px 20px;
     }
 }
