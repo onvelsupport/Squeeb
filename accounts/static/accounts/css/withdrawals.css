@@ -264,6 +264,19 @@ body{
     transform: none;
 }
 
+
+.field-hint {
+    display: block;
+    margin: 8px 0 16px;
+    font-size: 13px;
+    color: #6b7280;
+    line-height: 1.5;
+}
+
+.field-hint strong {
+    color: #dc2626;
+}
+
 /* ==========================================================
    WITHDRAWAL STATS
 ========================================================== */
