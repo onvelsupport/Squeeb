@@ -1,29 +1,36 @@
 document.addEventListener('DOMContentLoaded', () => {
 
-    // toggle password visibility
+    const urlParams = new URLSearchParams(window.location.search);
+    const referralFromUrl = urlParams.get("ref");
+
+    const referralInput = document.getElementById("referral");
+
+    if (referralInput && referralFromUrl) {
+        referralInput.value = referralFromUrl;
+    }
+
     const pwToggle = document.getElementById('pwToggle');
     const pwInput = document.getElementById('password');
 
-    pwToggle.addEventListener('click', () => {
+    pwToggle?.addEventListener('click', () => {
         const isPw = pwInput.type === "password";
         pwInput.type = isPw ? "text" : "password";
-        pwToggle.innerHTML = isPw 
-            ? '<i class="fa fa-eye-slash"></i>' 
+        pwToggle.innerHTML = isPw
+            ? '<i class="fa fa-eye-slash"></i>'
             : '<i class="fa fa-eye"></i>';
     });
 
     const pwToggle2 = document.getElementById('pwToggle2');
     const pwInput2 = document.getElementById('confirmPassword');
 
-    pwToggle2.addEventListener('click', () => {
+    pwToggle2?.addEventListener('click', () => {
         const isPw = pwInput2.type === "password";
         pwInput2.type = isPw ? "text" : "password";
-        pwToggle2.innerHTML = isPw 
-            ? '<i class="fa fa-eye-slash"></i>' 
+        pwToggle2.innerHTML = isPw
+            ? '<i class="fa fa-eye-slash"></i>'
             : '<i class="fa fa-eye"></i>';
     });
 
-    // form submit
     document.getElementById('signupForm').addEventListener('submit', async (e) => {
         e.preventDefault();
 
@@ -31,7 +38,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const email = document.getElementById('email').value.trim();
         const password = document.getElementById('password').value;
         const confirmPassword = document.getElementById('confirmPassword').value;
-        const referral = document.getElementById('referral').value.trim();
+        const referralCode = document.getElementById('referral')?.value.trim() || referralFromUrl || "";
 
         if (password !== confirmPassword) {
             alert("Passwords do not match!");
@@ -48,7 +55,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     username,
                     email,
                     password,
-                    referral
+                    referral_code: referralCode
                 })
             });
 
@@ -56,7 +63,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
             if (response.ok) {
                 alert("Account created successfully!");
-                window.location.href = "/login/";   
+                window.location.href = "/login/";
             } else {
                 alert(data.error || "Signup failed");
             }
