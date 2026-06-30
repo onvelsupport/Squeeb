@@ -61,6 +61,19 @@ class User(AbstractUser):
     referrals = models.IntegerField(default=0)
     is_member = models.BooleanField(default=False)
 
+    referral_code = models.CharField(
+        max_length=20,
+        unique=True,
+        blank=True,
+        null=True
+    )
+
+    def save(self, *args, **kwargs):
+        if not self.referral_code:
+            self.referral_code = "SQ" + uuid.uuid4().hex[:8].upper()
+
+        super().save(*args, **kwargs)
+
 
 class Task(models.Model):
     creator = models.ForeignKey(User, on_delete=models.CASCADE, null=True, blank=True)
@@ -252,6 +265,9 @@ class ProductMessage(models.Model):
     def __str__(self):
         return f"{self.sender} to {self.receiver} - {self.product.title}"
     
+
+
+
 class Referral(models.Model):
     referrer = models.ForeignKey(
         User,
@@ -276,9 +292,11 @@ class Referral(models.Model):
     rewarded = models.BooleanField(default=False)
 
     created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"{self.referrer.username} referred {self.referred_user.username}"
     
-    referral_code = models.CharField(
-    max_length=20,
-    unique=True,
-    blank=True
-)
+
+
+def generate_referral_code():
+    return "SQ" + uuid.uuid4().hex[:8].upper()

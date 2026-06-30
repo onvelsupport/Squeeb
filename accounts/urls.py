@@ -62,7 +62,9 @@ from .views import (
     transaction_history,
     transaction_history_api,
     notifications_api,
+    referrals_api,
     mark_notifications_read,
+    referrals_page,
 
 )
 
@@ -108,6 +110,16 @@ urlpatterns = [
 path(
     "api/notifications/read/", mark_notifications_read,
     name="mark_notifications_read",
+),
+
+path(
+    "referrals/", referrals_page,
+    name="referrals_page"
+),
+
+path(
+    "api/referrals/", referrals_api,
+    name="referrals_api"
 ),
 
     # ======================

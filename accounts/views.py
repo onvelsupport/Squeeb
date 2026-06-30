@@ -31,6 +31,7 @@ from .models import (
     RecentActivity,
     TaskCompletion,
     WithdrawalRequest,
+    Referral,
 )
 
 User = get_user_model()
@@ -86,6 +87,45 @@ def my_tasks_api(request):
 def privacy_policy(request):
     return render(request, "accounts/legal/privacy.html")
 
+@login_required
+def referrals_page(request):
+    return render(request, "accounts/dashboard/referrals.html")
+
+@login_required
+def referrals_api(request):
+    referrals = Referral.objects.filter(
+        referrer=request.user
+    ).order_by("-created_at")
+
+    total_referrals = referrals.count()
+    successful_referrals = referrals.filter(rewarded=True).count()
+    pending_referrals = referrals.filter(rewarded=False).count()
+
+    total_earned = sum(ref.reward for ref in referrals if ref.rewarded)
+
+    referral_link = request.build_absolute_uri(
+        f"/signup/?ref={request.user.referral_code}"
+    )
+
+    data = []
+
+    for referral in referrals:
+        data.append({
+            "username": referral.referred_user.username,
+            "rewarded": referral.rewarded,
+            "reward": str(referral.reward),
+            "created_at": referral.created_at.strftime("%d %b %Y"),
+        })
+
+    return JsonResponse({
+        "code": request.user.referral_code,
+        "link": referral_link,
+        "total_referrals": total_referrals,
+        "successful_referrals": successful_referrals,
+        "pending_referrals": pending_referrals,
+        "total_earned": str(total_earned),
+        "referrals": data
+    })
 
 def terms_conditions(request):
     return render(request, "accounts/legal/terms.html")
@@ -355,6 +395,7 @@ def signup(request):
     username = data.get("username")
     email = data.get("email")
     password = data.get("password")
+    referral_code = data.get("referral_code") or request.GET.get("ref")
 
     from django.contrib.auth import get_user_model
     User = get_user_model()
@@ -362,9 +403,43 @@ def signup(request):
     if User.objects.filter(username=username).exists():
         return JsonResponse({"error": "Username already exists"}, status=400)
 
-    User.objects.create_user(username=username, email=email, password=password)
+    if User.objects.filter(email=email).exists():
+        return JsonResponse({"error": "Email already exists"}, status=400)
 
-    return JsonResponse({"message": "User created successfully"})
+    user = User.objects.create_user(
+        username=username,
+        email=email,
+        password=password
+    )
+
+    if referral_code:
+        try:
+            referrer = User.objects.get(referral_code=referral_code)
+
+            if referrer != user:
+                Referral.objects.get_or_create(
+                    referrer=referrer,
+                    referred_user=user,
+                    defaults={
+                        "code": referral_code
+                    }
+                )
+
+                referrer.referrals += 1
+                referrer.save()
+
+                Notification.objects.create(
+                    user=referrer,
+                    title="New Referral",
+                    message=f"{user.username} joined SQUEEB using your referral link."
+                )
+
+        except User.DoesNotExist:
+            pass
+
+    return JsonResponse({
+        "message": "User created successfully"
+    })
 
 
 @csrf_exempt
