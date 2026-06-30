@@ -254,6 +254,15 @@ body{
 }
 
 
+.withdraw-option.disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    pointer-events: none;
+}
+
+.withdraw-option.disabled:hover {
+    transform: none;
+}
 
 /* ==========================================================
    WITHDRAWAL STATS

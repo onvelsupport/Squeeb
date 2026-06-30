@@ -959,10 +959,10 @@ def request_withdrawal(request):
 
     amount = Decimal(amount)
 
-    if amount <= 0:
+    if amount < Decimal("5.00"):
         return JsonResponse({
             "success": False,
-            "message": "Invalid withdrawal amount."
+            "message": "Minimum withdrawal amount is £5."
         }, status=400)
 
     if user.balance < amount:
