@@ -961,7 +961,7 @@ def mark_as_sold(request, product_id):
 # ==========================
 # USER INFO
 # ==========================
-from .models import Follow
+from .models import Follow, TaskCompletion, Referral
 
 @login_required
 def user_info(request):
@@ -974,12 +974,26 @@ def user_info(request):
         follower=request.user
     ).count()
 
+    approved_tasks_count = TaskCompletion.objects.filter(
+        user=request.user,
+        status="approved"
+    ).count()
+
+    referrals_count = Referral.objects.filter(
+        referrer=request.user
+    ).count()
+
     return JsonResponse({
         "username": request.user.username,
-        "balance": request.user.balance,
-        "earnings": request.user.earnings,
+        "balance": str(request.user.balance),
+        "earnings": str(request.user.earnings),
+
         "followers": followers_count,
         "following": following_count,
+
+        "tasks_completed": approved_tasks_count,
+        "referrals": referrals_count,
+
         "is_member": request.user.is_member,
     })
 
