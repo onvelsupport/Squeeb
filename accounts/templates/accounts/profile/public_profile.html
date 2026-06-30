@@ -82,12 +82,12 @@
                 <div class="follow-stats">
                     <div>
                         <strong id="followersCount">{{ followers_count }}</strong>
-                        <small>Followers</small>
+                        <small>Squeebers</small>
                     </div>
 
                     <div>
                         <strong id="followingCount">{{ following_count }}</strong>
-                        <small>Following</small>
+                        <small>Connections</small>
                     </div>
 
                     <div>
@@ -105,9 +105,9 @@
                 data-username="{{ profile_user.username }}"
                 class="follow-btn">
             {% if is_following %}
-                Following
+                Connected
             {% else %}
-                Follow
+                Connect
             {% endif %}
         </button>
         {% endif %}
