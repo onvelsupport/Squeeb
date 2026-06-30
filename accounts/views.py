@@ -1557,6 +1557,7 @@ def pay_membership(request):
         return JsonResponse({"error": "POST required"}, status=400)
 
     membership_fee = Decimal("10.00")
+    referral_reward = Decimal("2.00")
     user = request.user
 
     if user.is_member:
@@ -1568,6 +1569,44 @@ def pay_membership(request):
     user.balance -= membership_fee
     user.is_member = True
     user.save(update_fields=["balance", "is_member"])
+
+    Notification.objects.create(
+        user=user,
+        title="Membership Activated",
+        message="Your SQUEEB membership has been activated successfully."
+    )
+
+    referral = Referral.objects.filter(
+        referred_user=user,
+        rewarded=False
+    ).first()
+
+    if referral:
+        referrer = referral.referrer
+
+        referrer.balance += referral_reward
+        referrer.earnings += referral_reward
+        referrer.save(update_fields=["balance", "earnings"])
+
+        user.balance += referral_reward
+        user.earnings += referral_reward
+        user.save(update_fields=["balance", "earnings"])
+
+        referral.reward = referral_reward
+        referral.rewarded = True
+        referral.save(update_fields=["reward", "rewarded"])
+
+        Notification.objects.create(
+            user=referrer,
+            title="Referral Reward Earned",
+            message=f"You earned £2 because {user.username} activated membership."
+        )
+
+        Notification.objects.create(
+            user=user,
+            title="Referral Bonus Earned",
+            message="You earned £2 for activating membership through a referral."
+        )
 
     return JsonResponse({
         "message": "Membership activated!",
