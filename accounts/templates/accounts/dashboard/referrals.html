@@ -1,0 +1,95 @@
+{% extends 'accounts/base.html' %}
+{% load static %}
+
+{% block title %}
+Referrals | SQUEEB
+{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'accounts/css/referrals.css' %}">
+{% endblock %}
+
+{% block content %}
+
+<main class="referrals-page">
+
+    <section class="referrals-hero">
+        <div>
+            <p class="eyebrow">Referral Programme</p>
+            <h1>Invite friends. Earn rewards.</h1>
+            <p>Share your SQUEEB referral link and track everyone who joins through you.</p>
+        </div>
+
+        <a href="{% url 'more_page' %}" class="back-btn">
+            Back
+        </a>
+    </section>
+
+    <section class="referral-share-card">
+
+        <div class="share-box">
+            <label>Your Referral Code</label>
+
+            <div class="copy-row">
+                <input type="text" id="referralCode" readonly>
+                <button id="copyCodeBtn">Copy</button>
+            </div>
+        </div>
+
+        <div class="share-box">
+            <label>Your Referral Link</label>
+
+            <div class="copy-row">
+                <input type="text" id="referralLink" readonly>
+                <button id="copyLinkBtn">Copy Link</button>
+            </div>
+        </div>
+
+        <p id="copyMsg" class="copy-msg"></p>
+
+    </section>
+
+    <section class="referral-stats">
+
+        <div class="stat-card">
+            <span id="totalReferrals">0</span>
+            <p>Total Referrals</p>
+        </div>
+
+        <div class="stat-card">
+            <span id="pendingReferrals">0</span>
+            <p>Pending</p>
+        </div>
+
+        <div class="stat-card">
+            <span id="successfulReferrals">0</span>
+            <p>Successful</p>
+        </div>
+
+        <div class="stat-card">
+            <span id="totalEarned">£0.00</span>
+            <p>Total Earned</p>
+        </div>
+
+    </section>
+
+    <section class="referral-history">
+
+        <div class="history-header">
+            <h2>Recent Referrals</h2>
+            <p>People who joined using your referral link.</p>
+        </div>
+
+        <div id="referralList" class="referral-list">
+            <p class="loading">Loading referrals...</p>
+        </div>
+
+    </section>
+
+</main>
+
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'accounts/js/referrals.js' %}"></script>
+{% endblock %}
