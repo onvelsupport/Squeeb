@@ -1658,6 +1658,13 @@ def pay_membership(request):
         referral.rewarded = True
         referral.save(update_fields=["reward", "rewarded"])
 
+        RecentActivity.objects.create(
+            username=referrer.username,
+            platform="referral",
+            message=f"@{referrer.username} earned £{referral_reward} from a referral",
+            amount=referral_reward
+)
+
         Notification.objects.create(
             user=referrer,
             title="Referral Reward Earned",
