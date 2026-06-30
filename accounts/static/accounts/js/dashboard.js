@@ -1,5 +1,33 @@
 document.addEventListener("DOMContentLoaded", () => {
 
+
+
+    function getCookie(name) {
+
+    let cookieValue = null;
+
+    if (document.cookie && document.cookie !== "") {
+
+        const cookies = document.cookie.split(";");
+
+        for (let cookie of cookies) {
+
+            cookie = cookie.trim();
+
+            if (cookie.startsWith(name + "=")) {
+
+                cookieValue = decodeURIComponent(
+                    cookie.substring(name.length + 1)
+                );
+
+                break;
+            }
+        }
+    }
+
+    return cookieValue;
+}
+
     // ==========================================================
     // UTILITIES
     // ==========================================================
@@ -217,15 +245,45 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     }
 
-    function openNotificationPanel(e) {
-        if (e) e.preventDefault();
 
-        notificationOverlay?.classList.add("show");
-        notificationPanel?.classList.add("show");
-        mobileDropdown?.classList.remove("show");
 
-        loadNotifications();
+    async function markNotificationsRead() {
+
+    try {
+
+        await fetch("/api/notifications/read/", {
+            method: "POST",
+            credentials: "same-origin",
+            headers: {
+                "X-CSRFToken": getCookie("csrftoken")
+            }
+        });
+
+        if (notificationCount) {
+            notificationCount.style.display = "none";
+            notificationCount.textContent = "";
+        }
+
+        document.querySelectorAll(".notification-item.unread")
+            .forEach(item => item.classList.remove("unread"));
+
+    } catch (err) {
+        console.error("MARK READ ERROR:", err);
     }
+
+}
+
+   function openNotificationPanel(e) {
+    if (e) e.preventDefault();
+
+    notificationOverlay?.classList.add("show");
+    notificationPanel?.classList.add("show");
+    mobileDropdown?.classList.remove("show");
+
+    loadNotifications();
+
+    markNotificationsRead();
+}
 
     function closeNotificationPanel() {
         notificationOverlay?.classList.remove("show");

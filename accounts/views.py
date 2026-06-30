@@ -217,7 +217,22 @@ def create_notification(user, title, message):
         message=message
     )
 
-    
+
+
+from django.views.decorators.http import require_POST
+
+@login_required
+@require_POST
+def mark_notifications_read(request):
+    Notification.objects.filter(
+        user=request.user,
+        is_read=False
+    ).update(is_read=True)
+
+    return JsonResponse({
+        "success": True
+    })
+
 stripe.api_key = settings.STRIPE_SECRET_KEY
 
 

@@ -62,6 +62,7 @@ from .views import (
     transaction_history,
     transaction_history_api,
     notifications_api,
+    mark_notifications_read,
 
 )
 
@@ -104,7 +105,10 @@ urlpatterns = [
     "api/notifications/", notifications_api,
     name="notifications_api"
 ),
-
+path(
+    "api/notifications/read/", mark_notifications_read,
+    name="mark_notifications_read",
+),
 
     # ======================
     # USER PROFILE
