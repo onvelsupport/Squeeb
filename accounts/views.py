@@ -1619,7 +1619,7 @@ def pay_membership(request):
         return JsonResponse({"error": "POST required"}, status=400)
 
     membership_fee = Decimal("10.00")
-    referral_reward = Decimal("2.00")
+    referral_reward = Decimal("5.00")
     user = request.user
 
     if user.is_member:
@@ -1668,13 +1668,13 @@ def pay_membership(request):
         Notification.objects.create(
             user=referrer,
             title="Referral Reward Earned",
-            message=f"You earned £2 because {user.username} activated membership."
+            message=f"You earned £{referral_reward} because {user.username} activated membership."
         )
 
         Notification.objects.create(
             user=user,
             title="Referral Bonus Earned",
-            message="You earned £2 for activating membership through a referral."
+            message=f"You earned £{referral_reward} for activating membership through a referral."
         )
 
     return JsonResponse({
