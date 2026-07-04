@@ -1646,7 +1646,7 @@ def pay_membership(request):
         rewarded=False
     ).first()
 
-        if referral:
+    if referral:
         referrer = referral.referrer
 
         referrer.balance += referral_reward
