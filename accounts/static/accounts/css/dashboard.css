@@ -503,232 +503,245 @@ a{
 }
 
 /* ==========================================================
-   FUND WALLET
+   FUND WALLET MODAL FIX
 ========================================================== */
 
-.fund-modal-card{
-    width:100%;
-    max-width:460px;
-    border-radius:24px;
-    padding:28px;
+#fundModal {
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
 }
 
-.fund-methods{
-    display:flex;
-    flex-direction:column;
-    gap:12px;
-    margin:22px 0;
+#fundModal .fund-modal-card {
+    width: 100%;
+    max-width: 520px;
+    max-height: 88vh;
+    overflow-y: auto;
+    border-radius: 24px;
+    padding: 28px;
+    background: #fff;
 }
 
-.fund-method{
-    width:100%;
-    display:flex;
-    align-items:center;
-    gap:16px;
-    padding:18px;
-    border:1px solid #e5e7eb;
-    border-radius:18px;
-    background:#fff;
-    cursor:pointer;
-    transition:.25s;
+#fundModal .modal-title {
+    font-size: 28px;
+    margin-bottom: 8px;
 }
 
-.fund-method:hover{
-    border-color:#2563eb;
-    transform:translateY(-2px);
+#fundModal .modal-sub {
+    color: #64748b;
+    margin-bottom: 20px;
 }
 
-.fund-method.active{
-    border:2px solid #2563eb;
-    background:#eff6ff;
+/* Method Cards */
+#fundModal .fund-methods {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    margin-bottom: 20px;
 }
 
-.fund-method i{
-    width:48px;
-    height:48px;
-    min-width:48px;
-    border-radius:14px;
-    background:#2563eb;
-    color:#fff;
-    display:flex;
-    align-items:center;
-    justify-content:center;
-    font-size:18px;
+#fundModal .fund-method {
+    min-height: 118px;
+    padding: 18px;
+    border: 1px solid #e2e8f0;
+    border-radius: 20px;
+    background: #fff;
+    text-align: left;
+    cursor: pointer;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 6px;
 }
 
-.fund-method strong{
-    display:block;
-    font-size:15px;
-    color:#0f172a;
-    margin-bottom:4px;
+#fundModal .fund-method.active {
+    border: 2px solid #2563eb;
+    background: #eff6ff;
 }
 
-.fund-method span{
-    color:#64748b;
-    font-size:13px;
+#fundModal .fund-method i {
+    width: 44px;
+    height: 44px;
+    border-radius: 14px;
+    background: #2563eb;
+    color: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
 }
 
-#fundAmountInput{
-    margin-top:6px;
+#fundModal .fund-method strong {
+    color: #0f172a;
+    font-size: 15px;
 }
 
-.fund-summary{
-    background:#f8fafc;
-    border:1px solid #e2e8f0;
-    border-radius:18px;
-    padding:18px;
-    margin:20px 0;
+#fundModal .fund-method span {
+    color: #64748b;
+    font-size: 13px;
+    line-height: 1.4;
 }
 
-.fund-summary p{
-    display:flex;
-    justify-content:space-between;
-    align-items:center;
-    margin:10px 0;
-    color:#64748b;
+/* Input */
+#fundAmountInput {
+    width: 100%;
+    height: 58px;
+    border-radius: 18px;
+    border: 1px solid #d1d5db;
+    padding: 0 18px;
+    font-size: 16px;
+    margin-bottom: 18px;
 }
 
-.fund-summary strong{
-    color:#0f172a;
+/* Summary */
+#fundModal .fund-summary {
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 22px;
+    padding: 22px 28px;
+    margin-bottom: 22px;
 }
 
-.fund-summary .total{
-    border-top:1px solid #e5e7eb;
-    margin-top:14px;
-    padding-top:14px;
-    font-size:17px;
-    font-weight:700;
+#fundModal .fund-summary p {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin: 10px 0;
+    color: #64748b;
+    font-size: 16px;
 }
 
-.bank-details{
-    display:flex;
-    flex-direction:column;
-    gap:14px;
-    margin-bottom:20px;
-    padding:20px;
-    background:#f8fafc;
-    border:1px solid #e2e8f0;
-    border-radius:18px;
+#fundModal .fund-summary strong {
+    color: #0f172a;
+    font-size: 17px;
 }
 
-.bank-header{
-    display:flex;
-    align-items:center;
-    gap:14px;
-    padding-bottom:14px;
-    border-bottom:1px solid #e5e7eb;
+#fundModal .fund-summary .total {
+    border-top: 1px solid #e5e7eb;
+    padding-top: 18px;
+    margin-top: 18px;
+    font-weight: 700;
+    font-size: 18px;
 }
 
-.bank-header i{
-    width:50px;
-    height:50px;
-    border-radius:14px;
-    background:#2563eb;
-    color:#fff;
-    display:flex;
-    align-items:center;
-    justify-content:center;
-    font-size:18px;
+/* Bank Details */
+#fundModal .bank-details {
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 22px;
+    padding: 24px 28px;
+    margin-bottom: 22px;
 }
 
-.bank-header h4{
-    margin:0;
-    color:#0f172a;
+#fundModal .bank-header {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding-bottom: 18px;
+    margin-bottom: 10px;
+    border-bottom: 1px solid #e5e7eb;
 }
 
-.bank-header span{
-    color:#64748b;
-    font-size:13px;
+#fundModal .bank-header i {
+    width: 54px;
+    height: 54px;
+    min-width: 54px;
+    border-radius: 16px;
+    background: #2563eb;
+    color: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 22px;
 }
 
-.bank-row{
-    display:flex;
-    justify-content:space-between;
-    align-items:center;
-    padding:10px 0;
-    border-bottom:1px solid #edf2f7;
+#fundModal .bank-header h4 {
+    margin: 0 0 4px;
+    color: #0f172a;
+    font-size: 18px;
 }
 
-.bank-row:last-of-type{
-    border-bottom:none;
+#fundModal .bank-header span {
+    color: #64748b;
+    font-size: 14px;
+    line-height: 1.4;
 }
 
-.bank-row span{
-    color:#64748b;
-    font-size:14px;
+#fundModal .bank-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 16px;
+    padding: 14px 0;
+    border-bottom: 1px solid #edf2f7;
 }
 
-.bank-row strong{
-    color:#0f172a;
+#fundModal .bank-row:last-of-type {
+    border-bottom: none;
 }
 
-.reference-code{
-    background:#dbeafe;
-    color:#1d4ed8 !important;
-    padding:8px 14px;
-    border-radius:10px;
-    font-family:monospace;
-    font-size:16px;
-    letter-spacing:1px;
+#fundModal .bank-row span {
+    color: #64748b;
+    font-size: 15px;
 }
 
-.bank-note{
-    display:flex;
-    gap:10px;
-    align-items:flex-start;
-    padding:14px;
-    border-radius:14px;
-    background:#eff6ff;
-    color:#1d4ed8;
-    font-size:13px;
-    line-height:1.5;
+#fundModal .bank-row strong {
+    color: #0f172a;
+    font-size: 16px;
+    text-align: right;
 }
 
-.bank-note i{
-    margin-top:2px;
+#fundModal .reference-code {
+    background: #dbeafe;
+    color: #1d4ed8 !important;
+    padding: 8px 14px;
+    border-radius: 12px;
+    font-family: monospace;
+    letter-spacing: 1px;
 }
 
-#fundSubmitBtn{
-    width:100%;
-    height:54px;
-    border-radius:16px;
-    font-size:15px;
-    font-weight:700;
+/* Button / message */
+#fundSubmitBtn {
+    width: 100%;
+    height: 56px;
+    border-radius: 18px;
+    font-weight: 700;
 }
 
-#fundMsg{
-    text-align:center;
-    margin-top:15px;
-    font-size:14px;
-    color:#2563eb;
+#fundMsg {
+    text-align: center;
+    margin-top: 14px;
+    font-size: 14px;
+    line-height: 1.5;
+    color: #2563eb;
 }
 
-@media(max-width:600px){
-
-    .fund-modal-card{
-        padding:22px;
-        max-width:95%;
+/* Mobile */
+@media (max-width: 600px) {
+    #fundModal .fund-modal-card {
+        max-width: 94%;
+        max-height: 86vh;
+        padding: 22px;
     }
 
-    .fund-method{
-        padding:15px;
+    #fundModal .fund-methods {
+        grid-template-columns: 1fr;
     }
 
-    .bank-details{
-        padding:16px;
+    #fundModal .fund-summary,
+    #fundModal .bank-details {
+        padding: 18px;
     }
 
-    .bank-row{
-        flex-direction:column;
-        align-items:flex-start;
-        gap:6px;
+    #fundModal .bank-row {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 6px;
     }
 
-    .reference-code{
-        width:100%;
-        text-align:center;
+    #fundModal .bank-row strong {
+        text-align: left;
     }
-
 }
 /* ==========================================================
    QUICK ACTIONS
