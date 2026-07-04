@@ -443,7 +443,7 @@ def signup(request):
     username = data.get("username")
     email = data.get("email")
     password = data.get("password")
-    referral_code = data.get("referral_code") or request.GET.get("ref")
+    referral_code = (data.get("referral_code") or request.GET.get("ref") or "").strip().upper()
 
     from django.contrib.auth import get_user_model
     User = get_user_model()
@@ -454,36 +454,37 @@ def signup(request):
     if User.objects.filter(email=email).exists():
         return JsonResponse({"error": "Email already exists"}, status=400)
 
+    referrer = None
+
+    if referral_code:
+        try:
+            referrer = User.objects.get(referral_code=referral_code)
+        except User.DoesNotExist:
+            return JsonResponse({"error": "Invalid referral code"}, status=400)
+
     user = User.objects.create_user(
         username=username,
         email=email,
         password=password
     )
 
-    if referral_code:
-        try:
-            referrer = User.objects.get(referral_code=referral_code)
+    if referrer and referrer != user:
+        Referral.objects.get_or_create(
+            referrer=referrer,
+            referred_user=user,
+            defaults={
+                "code": referral_code
+            }
+        )
 
-            if referrer != user:
-                Referral.objects.get_or_create(
-                    referrer=referrer,
-                    referred_user=user,
-                    defaults={
-                        "code": referral_code
-                    }
-                )
+        referrer.referrals += 1
+        referrer.save(update_fields=["referrals"])
 
-                referrer.referrals += 1
-                referrer.save()
-
-                Notification.objects.create(
-                    user=referrer,
-                    title="New Referral",
-                    message=f"{user.username} joined SQUEEB using your referral link."
-                )
-
-        except User.DoesNotExist:
-            pass
+        Notification.objects.create(
+            user=referrer,
+            title="New Referral",
+            message=f"{user.username} joined SQUEEB using your referral link."
+        )
 
     return JsonResponse({
         "message": "User created successfully"
