@@ -1646,7 +1646,7 @@ def pay_membership(request):
         rewarded=False
     ).first()
 
-    if referral:
+        if referral:
         referrer = referral.referrer
 
         referrer.balance += referral_reward
@@ -1666,7 +1666,14 @@ def pay_membership(request):
             platform="referral",
             message=f"@{referrer.username} earned £{referral_reward} from a referral",
             amount=referral_reward
-)
+        )
+
+        RecentActivity.objects.create(
+            username=user.username,
+            platform="referral",
+            message=f"@{user.username} earned £{referral_reward} referral bonus",
+            amount=referral_reward
+        )
 
         Notification.objects.create(
             user=referrer,
