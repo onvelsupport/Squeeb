@@ -204,6 +204,7 @@ a{
 /* ==========================================================
    NOTIFICATION
 ========================================================== */
+
 .notification-open-btn {
     position: relative;
 }
@@ -233,6 +234,11 @@ a{
     z-index: 998;
 }
 
+.notification-overlay.show {
+    opacity: 1;
+    visibility: visible;
+}
+
 .notification-panel {
     position: fixed;
     top: 0;
@@ -249,11 +255,6 @@ a{
     display: flex;
     flex-direction: column;
     overflow: hidden;
-}
-
-.notification-overlay.show {
-    opacity: 1;
-    visibility: visible;
 }
 
 .notification-panel.show {
@@ -275,25 +276,36 @@ a{
     cursor: pointer;
 }
 
-.notification-list {
+/* ===========================
+   SCROLLABLE BODY
+=========================== */
+
+.notification-panel-body {
     flex: 1;
+    min-height: 0;
     overflow-y: auto;
     overflow-x: hidden;
-    padding-right: 6px;
+    padding-right: 8px;
     padding-bottom: 20px;
+
     scrollbar-width: thin;
+    scrollbar-color: #cbd5e1 transparent;
 }
 
-.notification-list::-webkit-scrollbar {
+.notification-panel-body::-webkit-scrollbar {
     width: 6px;
 }
 
-.notification-list::-webkit-scrollbar-thumb {
+.notification-panel-body::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.notification-panel-body::-webkit-scrollbar-thumb {
     background: #cbd5e1;
     border-radius: 999px;
 }
 
-.notification-list::-webkit-scrollbar-thumb:hover {
+.notification-panel-body::-webkit-scrollbar-thumb:hover {
     background: #94a3b8;
 }
 
@@ -305,6 +317,11 @@ a{
     border-radius: 14px;
     border: 1px solid #e5e7eb;
     margin-bottom: 12px;
+    transition: 0.2s;
+}
+
+.notification-item:hover {
+    background: #f9fafb;
 }
 
 .notification-item.unread {
@@ -314,11 +331,13 @@ a{
 
 .notification-item h4 {
     margin-bottom: 6px;
+    font-size: 15px;
 }
 
 .notification-item p {
     font-size: 14px;
     color: #4b5563;
+    margin-bottom: 8px;
 }
 
 .notification-item span {
