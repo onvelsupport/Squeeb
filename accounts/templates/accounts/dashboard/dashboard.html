@@ -346,7 +346,7 @@ Dashboard | SQUEEB
     </main>
 </div>
 
-<!-- ====================== FUND WALLET MODAL ====================== -->
+<!-- ====================== FUND WALLET MODAL ====================== 
 <div class="modal-bg" id="fundModal">
     <div class="modal-card">
         <button class="modal-close" id="fundClose">✖</button>
@@ -366,6 +366,67 @@ Dashboard | SQUEEB
         <p class="modal-msg" id="fundMsg"></p>
     </div>
 </div>
+-->
+
+
+
+
+
+
+
+<!-- ====================== FUND WALLET MODAL (but users have two options) ====================== -->
+<div class="modal-bg" id="fundModal">
+    <div class="modal-card">
+        <button class="modal-close" id="fundClose">✖</button>
+
+        <h2 class="modal-title">Fund Wallet</h2>
+        <p class="modal-sub">Choose how you want to fund your wallet.</p>
+
+        <div class="fund-methods">
+            <button class="fund-method active" data-method="card">
+                <i class="fa fa-credit-card"></i>
+                <strong>Card / Apple Pay</strong>
+                <span>Instant • 2% + £0.25 fee</span>
+            </button>
+
+            <button class="fund-method" data-method="bank">
+                <i class="fa fa-building-columns"></i>
+                <strong>Bank Transfer</strong>
+                <span>Free • Manual confirmation</span>
+            </button>
+        </div>
+
+        <input type="number"
+               id="fundAmountInput"
+               class="modal-input"
+               placeholder="e.g. 50"
+               min="1"
+               step="0.01">
+
+        <div class="fund-summary" id="fundSummary">
+            <p><span>Wallet receives</span> <strong id="walletReceives">£0.00</strong></p>
+            <p><span>Fee</span> <strong id="fundFee">£0.00</strong></p>
+            <p class="total"><span>Total to pay</span> <strong id="totalToPay">£0.00</strong></p>
+        </div>
+
+        <div class="bank-details" id="bankDetails" style="display:none;">
+            <p><strong>Bank Transfer Details</strong></p>
+            <p>Bank Name: REVOLUT</p>
+            <p>Sort Code: 04-29-09</p>
+            <p>Account Number: 10119574</p>
+            <p>Reference: <strong id="bankReference">SQUEEB</strong></p>
+        </div>
+
+        <button class="modal-action" id="fundSubmitBtn">Continue to Payment</button>
+
+        <p class="modal-msg" id="fundMsg"></p>
+    </div>
+</div>
+
+
+
+
+
 
 
 <!-- ====================== CREATE TASK MODAL ====================== -->

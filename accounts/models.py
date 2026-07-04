@@ -213,16 +213,30 @@ class FundingPayment(models.Model):
         ("failed", "Failed"),
     )
 
+    METHOD_CHOICES = (
+        ("card", "Card / Apple Pay"),
+        ("bank", "Bank Transfer"),
+    )
+
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="funding_payments")
+
     amount = models.DecimalField(max_digits=10, decimal_places=2)
+
+    fee = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+    total_charged = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+
+    method = models.CharField(max_length=20, choices=METHOD_CHOICES, default="card")
+    reference = models.CharField(max_length=50, blank=True, null=True)
+
     stripe_session_id = models.CharField(max_length=255, unique=True, blank=True, null=True)
+
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default="pending")
+
     created_at = models.DateTimeField(auto_now_add=True)
     paid_at = models.DateTimeField(blank=True, null=True)
 
     def __str__(self):
-        return f"{self.user.username} - £{self.amount} - {self.status}"
-
+        return f"{self.user.username} - £{self.amount} - {self.method} - {self.status}"
 
 
 

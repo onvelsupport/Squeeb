@@ -580,19 +580,43 @@ def create_funding_checkout(request):
 
     try:
         data = json.loads(request.body.decode("utf-8") or "{}")
+
         amount = Decimal(str(data.get("amount", "0")))
+        method = data.get("method", "card")
+        reference = data.get("reference", "")
+
     except Exception:
         return JsonResponse({"error": "Invalid amount"}, status=400)
 
     if amount < Decimal("1.00"):
         return JsonResponse({"error": "Minimum funding amount is £1.00"}, status=400)
 
+    if method not in ["card", "bank"]:
+        return JsonResponse({"error": "Invalid funding method"}, status=400)
+
+    if method == "card":
+        fee = (amount * Decimal("0.02")) + Decimal("0.25")
+        total_charged = amount + fee
+
+    else:
+        fee = Decimal("0.00")
+        total_charged = amount
+
     try:
         payment = FundingPayment.objects.create(
             user=request.user,
             amount=amount,
+            fee=fee,
+            total_charged=total_charged,
+            method=method,
+            reference=reference,
             status="pending"
         )
+
+        if method == "bank":
+            return JsonResponse({
+                "message": "Bank transfer request created. Please use the reference shown."
+            })
 
         site_url = getattr(settings, "SITE_URL", "https://squeeb.co.uk").rstrip("/")
 
@@ -607,7 +631,7 @@ def create_funding_checkout(request):
                         "product_data": {
                             "name": "Squeeb Wallet Funding",
                         },
-                        "unit_amount": int(amount * 100),
+                        "unit_amount": int(total_charged * 100),
                     },
                     "quantity": 1,
                 }
@@ -616,6 +640,10 @@ def create_funding_checkout(request):
                 "payment_id": str(payment.id),
                 "user_id": str(request.user.id),
                 "purpose": "wallet_funding",
+                "wallet_amount": str(amount),
+                "fee": str(fee),
+                "total_charged": str(total_charged),
+                "method": method,
             },
             success_url=f"{site_url}/dashboard/?funding=success",
             cancel_url=f"{site_url}/dashboard/?funding=cancelled",
@@ -632,7 +660,6 @@ def create_funding_checkout(request):
         return JsonResponse({
             "error": str(e)
         }, status=500)
-
 
 
 @login_required

@@ -502,6 +502,70 @@ a{
     font-size:22px;
 }
 
+
+
+
+
+.fund-methods {
+    display: grid;
+    gap: 12px;
+    margin: 18px 0;
+}
+
+.fund-method {
+    border: 1px solid #ddd;
+    background: #fff;
+    border-radius: 14px;
+    padding: 14px;
+    text-align: left;
+    cursor: pointer;
+}
+
+.fund-method.active {
+    border-color: #111;
+    background: #f5f7ff;
+}
+
+.fund-method i {
+    margin-right: 8px;
+}
+
+.fund-method strong {
+    display: block;
+    margin-bottom: 4px;
+}
+
+.fund-method span {
+    font-size: 13px;
+    color: #666;
+}
+
+.fund-summary {
+    margin: 15px 0;
+    padding: 14px;
+    background: #f7f7f7;
+    border-radius: 12px;
+}
+
+.fund-summary p {
+    display: flex;
+    justify-content: space-between;
+    margin: 6px 0;
+}
+
+.fund-summary .total {
+    border-top: 1px solid #ddd;
+    padding-top: 8px;
+    font-weight: bold;
+}
+
+.bank-details {
+    margin: 15px 0;
+    padding: 14px;
+    background: #f8fafc;
+    border-radius: 12px;
+    font-size: 14px;
+}
 /* ==========================================================
    QUICK ACTIONS
 ========================================================== */

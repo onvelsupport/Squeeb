@@ -299,87 +299,173 @@ document.addEventListener("DOMContentLoaded", () => {
     notificationOverlay?.addEventListener("click", closeNotificationPanel);
 
 
-    // ==========================================================
-    // FUND WALLET MODAL
-    // ==========================================================
 
-    const fundModal = document.getElementById("fundModal");
-    const fundBtn = document.getElementById("fundBtn");
-    const fundClose = document.getElementById("fundClose");
-    const fundAmountInput = document.getElementById("fundAmountInput");
-    const fundSubmitBtn = document.getElementById("fundSubmitBtn");
-    const fundMsg = document.getElementById("fundMsg");
 
-    function openFundModal() {
-        if (!fundModal) return;
+ // ==========================================================
+    // FUND WALLET MODAL (with other options)
+// ==========================================================
 
-        if (fundMsg) fundMsg.textContent = "";
-        if (fundAmountInput) fundAmountInput.value = "";
+const fundModal = document.getElementById("fundModal");
+const fundBtn = document.getElementById("fundBtn");
+const fundClose = document.getElementById("fundClose");
+const fundAmountInput = document.getElementById("fundAmountInput");
+const fundSubmitBtn = document.getElementById("fundSubmitBtn");
+const fundMsg = document.getElementById("fundMsg");
 
-        fundModal.style.display = "flex";
+const fundMethods = document.querySelectorAll(".fund-method");
+const fundFee = document.getElementById("fundFee");
+const walletReceives = document.getElementById("walletReceives");
+const totalToPay = document.getElementById("totalToPay");
+const bankDetails = document.getElementById("bankDetails");
+const bankReference = document.getElementById("bankReference");
 
-        fundAmountInput?.focus();
+let selectedFundingMethod = "card";
+
+function formatMoney(amount) {
+    return `£${Number(amount).toFixed(2)}`;
+}
+
+function updateFundingSummary() {
+    const amount = parseFloat(fundAmountInput?.value) || 0;
+
+    let fee = 0;
+    let total = amount;
+
+    if (selectedFundingMethod === "card") {
+        fee = amount > 0 ? (amount * 0.02) + 0.25 : 0;
+        total = amount + fee;
+
+        if (bankDetails) bankDetails.style.display = "none";
+        if (fundSubmitBtn) fundSubmitBtn.textContent = "Continue to Payment";
+    } else {
+        fee = 0;
+        total = amount;
+
+        if (bankDetails) bankDetails.style.display = "block";
+        if (fundSubmitBtn) fundSubmitBtn.textContent = "I've Sent the Transfer";
     }
 
-    function closeFundModal() {
-        if (fundModal) fundModal.style.display = "none";
+    if (walletReceives) walletReceives.textContent = formatMoney(amount);
+    if (fundFee) fundFee.textContent = formatMoney(fee);
+    if (totalToPay) totalToPay.textContent = formatMoney(total);
+}
+
+function generateBankReference() {
+    if (bankReference) {
+        bankReference.textContent = `SQB-${Date.now().toString().slice(-6)}`;
     }
+}
 
-    fundBtn?.addEventListener("click", openFundModal);
-    fundClose?.addEventListener("click", closeFundModal);
+function openFundModal() {
+    if (!fundModal) return;
 
-    fundModal?.addEventListener("click", (e) => {
-        if (e.target === fundModal) closeFundModal();
+    if (fundMsg) fundMsg.textContent = "";
+    if (fundAmountInput) fundAmountInput.value = "";
+
+    selectedFundingMethod = "card";
+
+    fundMethods.forEach(btn => {
+        btn.classList.toggle("active", btn.dataset.method === "card");
     });
 
-    fundSubmitBtn?.addEventListener("click", async () => {
-        const amount = fundAmountInput?.value;
+    updateFundingSummary();
 
-        if (!amount || Number(amount) <= 0) {
-            if (fundMsg) fundMsg.textContent = "Enter a valid amount.";
+    fundModal.style.display = "flex";
+    fundAmountInput?.focus();
+}
+
+function closeFundModal() {
+    if (fundModal) fundModal.style.display = "none";
+}
+
+fundMethods.forEach(button => {
+    button.addEventListener("click", () => {
+        selectedFundingMethod = button.dataset.method;
+
+        fundMethods.forEach(btn => btn.classList.remove("active"));
+        button.classList.add("active");
+
+        if (selectedFundingMethod === "bank") {
+            generateBankReference();
+        }
+
+        if (fundMsg) fundMsg.textContent = "";
+        updateFundingSummary();
+    });
+});
+
+fundAmountInput?.addEventListener("input", updateFundingSummary);
+
+fundBtn?.addEventListener("click", openFundModal);
+fundClose?.addEventListener("click", closeFundModal);
+
+fundModal?.addEventListener("click", (e) => {
+    if (e.target === fundModal) closeFundModal();
+});
+
+fundSubmitBtn?.addEventListener("click", async () => {
+    const amount = fundAmountInput?.value;
+
+    if (!amount || Number(amount) <= 0) {
+        if (fundMsg) fundMsg.textContent = "Enter a valid amount.";
+        return;
+    }
+
+    fundSubmitBtn.disabled = true;
+
+    if (fundMsg) {
+        fundMsg.textContent =
+            selectedFundingMethod === "card"
+                ? "Redirecting to payment..."
+                : "Creating bank transfer request...";
+    }
+
+    try {
+        const res = await fetch("/api/create-funding-checkout/", {
+            method: "POST",
+            credentials: "same-origin",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+                amount,
+                method: selectedFundingMethod,
+                reference: bankReference?.textContent || ""
+            })
+        });
+
+        const data = await res.json();
+
+        if (!res.ok) {
+            if (fundMsg) {
+                fundMsg.textContent = data.error || "Failed to start funding request.";
+            }
             return;
         }
 
-        fundSubmitBtn.disabled = true;
-
-        if (fundMsg) fundMsg.textContent = "Redirecting to Stripe...";
-
-        try {
-            const res = await fetch("/api/create-funding-checkout/", {
-                method: "POST",
-                credentials: "same-origin",
-                headers: {
-                    "Content-Type": "application/json"
-                },
-                body: JSON.stringify({ amount })
-            });
-
-            const data = await res.json();
-
-            if (!res.ok) {
-                if (fundMsg) {
-                    fundMsg.textContent = data.error || "Failed to start Stripe payment.";
-                }
-                return;
-            }
-
-            if (data.checkout_url) {
-                window.location.href = data.checkout_url;
-                return;
-            }
-
-            if (fundMsg) {
-                fundMsg.textContent = "Stripe checkout URL was not returned.";
-            }
-
-        } catch (err) {
-            console.error("FUND ERROR:", err);
-
-            if (fundMsg) fundMsg.textContent = "Network error.";
-        } finally {
-            fundSubmitBtn.disabled = false;
+        if (selectedFundingMethod === "card" && data.checkout_url) {
+            window.location.href = data.checkout_url;
+            return;
         }
-    });
+
+        if (selectedFundingMethod === "bank") {
+            if (fundMsg) {
+                fundMsg.textContent = data.message || "Bank transfer request created. Use the reference shown above.";
+            }
+            return;
+        }
+
+        if (fundMsg) {
+            fundMsg.textContent = "Payment URL was not returned.";
+        }
+
+    } catch (err) {
+        console.error("FUND ERROR:", err);
+        if (fundMsg) fundMsg.textContent = "Network error.";
+    } finally {
+        fundSubmitBtn.disabled = false;
+    }
+});
 
 
     // ==========================================================
