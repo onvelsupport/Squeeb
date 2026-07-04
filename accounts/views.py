@@ -1332,6 +1332,8 @@ def create_task(request):
         "like": {"cost": Decimal("0.07"), "reward": Decimal("0.05")},
         "comment": {"cost": Decimal("0.60"), "reward": Decimal("0.40")},
         "subscribe": {"cost": Decimal("0.20"), "reward": Decimal("0.10")},
+        "repost": {"cost": Decimal("0.10"), "reward": Decimal("0.07")},
+
     }
 
     task_pricing = pricing.get(task_type)
