@@ -440,7 +440,7 @@ def signup(request):
 
     data = json.loads(request.body.decode("utf-8"))
 
-    username = data.get("username")
+    username = data.get("username", "").strip().lower()
     email = data.get("email")
     password = data.get("password")
     referral_code = (data.get("referral_code") or request.GET.get("ref") or "").strip().upper()
@@ -507,7 +507,7 @@ def login_user(request):
             "message": "Invalid request data"
         }, status=400)
 
-    username = data.get("username", "").strip()
+    username = data.get("username", "").strip().lower()
     password = data.get("password", "").strip()
 
     if not username or not password:
@@ -668,7 +668,7 @@ def api_edit_profile(request):
 
         first_name = data.get("first_name", "").strip()
         last_name = data.get("last_name", "").strip()
-        username = data.get("username", "").strip()
+        username = data.get("username", "").strip().lower()
         email = data.get("email", "").strip()
         phone_number = data.get("phone_number", "").strip()
         city = data.get("city", "").strip()
