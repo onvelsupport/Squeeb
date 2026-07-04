@@ -376,7 +376,7 @@ Dashboard | SQUEEB
 
 <!-- ====================== FUND WALLET MODAL (but users have two options) ====================== -->
 <div class="modal-bg" id="fundModal">
-    <div class="modal-card">
+    <div class="modal-card fund-modal-card">
         <button class="modal-close" id="fundClose">✖</button>
 
         <h2 class="modal-title">Fund Wallet</h2>
@@ -399,7 +399,7 @@ Dashboard | SQUEEB
         <input type="number"
                id="fundAmountInput"
                class="modal-input"
-               placeholder="e.g. 50"
+               placeholder="Enter amount"
                min="1"
                step="0.01">
 
@@ -410,11 +410,45 @@ Dashboard | SQUEEB
         </div>
 
         <div class="bank-details" id="bankDetails" style="display:none;">
-            <p><strong>Bank Transfer Details</strong></p>
-            <p>Bank Name: REVOLUT</p>
-            <p>Sort Code: 04-29-09</p>
-            <p>Account Number: 10119574</p>
-            <p>Reference: <strong id="bankReference">SQUEEB</strong></p>
+            <div class="bank-header">
+                <i class="fa-solid fa-building-columns"></i>
+                <div>
+                    <h4>Bank Transfer Details</h4>
+                    <span>Transfer the exact amount using the details below.</span>
+                </div>
+            </div>
+
+            <div class="bank-row">
+                <span>Account Name</span>
+                <strong>SQUEEB</strong>
+            </div>
+
+            <div class="bank-row">
+                <span>Bank</span>
+                <strong>Revolut</strong>
+            </div>
+
+            <div class="bank-row">
+                <span>Sort Code</span>
+                <strong>04-29-09</strong>
+            </div>
+
+            <div class="bank-row">
+                <span>Account Number</span>
+                <strong>10119574</strong>
+            </div>
+
+            <div class="bank-row">
+                <span>Reference</span>
+                <strong id="bankReference" class="reference-code">SQB-000000</strong>
+            </div>
+
+            <div class="bank-note">
+                <i class="fa-solid fa-circle-info"></i>
+                <span>
+                    Use the account name and reference exactly as shown. Your wallet will be credited after we verify your transfer.
+                </span>
+            </div>
         </div>
 
         <button class="modal-action" id="fundSubmitBtn">Continue to Payment</button>

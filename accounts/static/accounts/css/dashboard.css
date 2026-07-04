@@ -502,139 +502,233 @@ a{
     font-size:22px;
 }
 
+/* ==========================================================
+   FUND WALLET
+========================================================== */
 
-
-
-
-#fundModal .modal-card {
-    width: 92%;
-    max-width: 430px;
-    max-height: 90vh;
-    overflow-y: auto;
-    padding: 28px 22px;
-    border-radius: 24px;
+.fund-modal-card{
+    width:100%;
+    max-width:460px;
+    border-radius:24px;
+    padding:28px;
 }
 
-#fundModal .modal-title {
-    font-size: 28px;
-    line-height: 1.1;
-    margin-bottom: 10px;
+.fund-methods{
+    display:flex;
+    flex-direction:column;
+    gap:12px;
+    margin:22px 0;
 }
 
-#fundModal .modal-sub {
-    font-size: 15px;
-    color: #64748b;
-    line-height: 1.5;
-    margin-bottom: 20px;
+.fund-method{
+    width:100%;
+    display:flex;
+    align-items:center;
+    gap:16px;
+    padding:18px;
+    border:1px solid #e5e7eb;
+    border-radius:18px;
+    background:#fff;
+    cursor:pointer;
+    transition:.25s;
 }
 
-.fund-methods {
-    display: grid;
-    gap: 12px;
-    margin-bottom: 18px;
+.fund-method:hover{
+    border-color:#2563eb;
+    transform:translateY(-2px);
 }
 
-.fund-method {
-    width: 100%;
-    border: 1px solid #e5e7eb;
-    background: #fff;
-    border-radius: 18px;
-    padding: 16px;
-    text-align: left;
-    cursor: pointer;
+.fund-method.active{
+    border:2px solid #2563eb;
+    background:#eff6ff;
 }
 
-.fund-method.active {
-    border: 2px solid #2563eb;
-    background: #f5f7ff;
+.fund-method i{
+    width:48px;
+    height:48px;
+    min-width:48px;
+    border-radius:14px;
+    background:#2563eb;
+    color:#fff;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-size:18px;
 }
 
-.fund-method strong {
-    display: block;
-    font-size: 15px;
-    color: #0f172a;
-    margin-top: 6px;
+.fund-method strong{
+    display:block;
+    font-size:15px;
+    color:#0f172a;
+    margin-bottom:4px;
 }
 
-.fund-method span {
-    display: block;
-    font-size: 13px;
-    color: #64748b;
-    margin-top: 4px;
+.fund-method span{
+    color:#64748b;
+    font-size:13px;
 }
 
-#fundAmountInput {
-    width: 100%;
-    height: 58px;
-    font-size: 18px;
-    border-radius: 18px;
-    margin-bottom: 18px;
+#fundAmountInput{
+    margin-top:6px;
 }
 
-.fund-summary,
-.bank-details {
-    border-radius: 18px;
-    padding: 18px;
-    margin-bottom: 18px;
-    background: #f8fafc;
+.fund-summary{
+    background:#f8fafc;
+    border:1px solid #e2e8f0;
+    border-radius:18px;
+    padding:18px;
+    margin:20px 0;
 }
 
-.fund-summary p {
-    display: flex;
-    justify-content: space-between;
-    gap: 12px;
-    margin: 8px 0;
-    font-size: 15px;
+.fund-summary p{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    margin:10px 0;
+    color:#64748b;
 }
 
-.fund-summary .total {
-    border-top: 1px solid #e5e7eb;
-    padding-top: 12px;
-    margin-top: 12px;
-    font-weight: 700;
+.fund-summary strong{
+    color:#0f172a;
 }
 
-.bank-details {
-    font-size: 14px;
-    line-height: 1.6;
-    word-break: break-word;
+.fund-summary .total{
+    border-top:1px solid #e5e7eb;
+    margin-top:14px;
+    padding-top:14px;
+    font-size:17px;
+    font-weight:700;
 }
 
-#fundSubmitBtn {
-    width: 100%;
-    height: 56px;
-    border-radius: 18px;
-    font-size: 15px;
-    font-weight: 700;
+.bank-details{
+    display:flex;
+    flex-direction:column;
+    gap:14px;
+    margin-bottom:20px;
+    padding:20px;
+    background:#f8fafc;
+    border:1px solid #e2e8f0;
+    border-radius:18px;
 }
 
-#fundMsg {
-    font-size: 14px;
-    line-height: 1.4;
-    margin-top: 14px;
-    text-align: center;
-    color: #2563eb;
+.bank-header{
+    display:flex;
+    align-items:center;
+    gap:14px;
+    padding-bottom:14px;
+    border-bottom:1px solid #e5e7eb;
 }
 
-@media (max-width: 480px) {
-    #fundModal .modal-card {
-        width: 94%;
-        max-height: 86vh;
-        padding: 24px 18px;
+.bank-header i{
+    width:50px;
+    height:50px;
+    border-radius:14px;
+    background:#2563eb;
+    color:#fff;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-size:18px;
+}
+
+.bank-header h4{
+    margin:0;
+    color:#0f172a;
+}
+
+.bank-header span{
+    color:#64748b;
+    font-size:13px;
+}
+
+.bank-row{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    padding:10px 0;
+    border-bottom:1px solid #edf2f7;
+}
+
+.bank-row:last-of-type{
+    border-bottom:none;
+}
+
+.bank-row span{
+    color:#64748b;
+    font-size:14px;
+}
+
+.bank-row strong{
+    color:#0f172a;
+}
+
+.reference-code{
+    background:#dbeafe;
+    color:#1d4ed8 !important;
+    padding:8px 14px;
+    border-radius:10px;
+    font-family:monospace;
+    font-size:16px;
+    letter-spacing:1px;
+}
+
+.bank-note{
+    display:flex;
+    gap:10px;
+    align-items:flex-start;
+    padding:14px;
+    border-radius:14px;
+    background:#eff6ff;
+    color:#1d4ed8;
+    font-size:13px;
+    line-height:1.5;
+}
+
+.bank-note i{
+    margin-top:2px;
+}
+
+#fundSubmitBtn{
+    width:100%;
+    height:54px;
+    border-radius:16px;
+    font-size:15px;
+    font-weight:700;
+}
+
+#fundMsg{
+    text-align:center;
+    margin-top:15px;
+    font-size:14px;
+    color:#2563eb;
+}
+
+@media(max-width:600px){
+
+    .fund-modal-card{
+        padding:22px;
+        max-width:95%;
     }
 
-    #fundModal .modal-title {
-        font-size: 24px;
+    .fund-method{
+        padding:15px;
     }
 
-    .fund-method {
-        padding: 14px;
+    .bank-details{
+        padding:16px;
     }
 
-    .fund-summary,
-    .bank-details {
-        padding: 16px;
+    .bank-row{
+        flex-direction:column;
+        align-items:flex-start;
+        gap:6px;
     }
+
+    .reference-code{
+        width:100%;
+        text-align:center;
+    }
+
 }
 /* ==========================================================
    QUICK ACTIONS
