@@ -1,0 +1,14 @@
+<h2>Verify Bank Transfer</h2>
+
+<p><strong>User:</strong> {{ payment.user.username }}</p>
+<p><strong>Email:</strong> {{ payment.user.email }}</p>
+<p><strong>Amount:</strong> £{{ payment.amount }}</p>
+<p><strong>Reference:</strong> {{ payment.reference }}</p>
+<p><strong>Status:</strong> {{ payment.status }}</p>
+
+<form method="POST">
+    {% csrf_token %}
+    <button type="submit">
+        Confirm Transfer and Credit Wallet
+    </button>
+</form>

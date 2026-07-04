@@ -597,7 +597,6 @@ def create_funding_checkout(request):
     if method == "card":
         fee = (amount * Decimal("0.02")) + Decimal("0.25")
         total_charged = amount + fee
-
     else:
         fee = Decimal("0.00")
         total_charged = amount
@@ -613,11 +612,38 @@ def create_funding_checkout(request):
             status="pending"
         )
 
+        # BANK TRANSFER FLOW
         if method == "bank":
+            payment.status = "awaiting_verification"
+            payment.save(update_fields=["status"])
+
+            verify_url = request.build_absolute_uri(
+                reverse("verify_bank_transfer", args=[payment.id])
+            )
+
+            send_mail(
+                subject="New Squeeb Bank Transfer Awaiting Verification",
+                message=f"""
+A user says they have made a bank transfer.
+
+User: {request.user.username}
+Email: {request.user.email}
+Amount: £{payment.amount}
+Reference: {payment.reference}
+
+Click here to review and confirm:
+{verify_url}
+""",
+                from_email=settings.DEFAULT_FROM_EMAIL,
+                recipient_list=[settings.ADMIN_EMAIL],
+                fail_silently=False,
+            )
+
             return JsonResponse({
-                "message": "Bank transfer request created. Please use the reference shown."
+                "message": "Transfer request sent. Your wallet will be credited once payment is confirmed."
             })
 
+        # CARD / APPLE PAY STRIPE FLOW
         site_url = getattr(settings, "SITE_URL", "https://squeeb.co.uk").rstrip("/")
 
         session = stripe.checkout.Session.create(
@@ -661,6 +687,34 @@ def create_funding_checkout(request):
             "error": str(e)
         }, status=500)
 
+
+
+@login_required
+def verify_bank_transfer(request, payment_id):
+    if not request.user.is_staff:
+        return JsonResponse({"error": "Not allowed"}, status=403)
+
+    payment = get_object_or_404(FundingPayment, id=payment_id)
+
+    if request.method == "POST":
+        if payment.status == "paid":
+            return JsonResponse({"error": "Payment already confirmed"}, status=400)
+
+        user = payment.user
+        user.balance += payment.amount
+        user.save(update_fields=["balance"])
+
+        payment.status = "paid"
+        payment.paid_at = timezone.now()
+        payment.save(update_fields=["status", "paid_at"])
+
+        return JsonResponse({
+            "message": f"Payment confirmed. £{payment.amount} credited to {user.username}."
+        })
+
+    return render(request, "accounts/dashboard/verify_bank_transfer.html", {
+        "payment": payment
+    })
 
 @login_required
 def transaction_history(request):

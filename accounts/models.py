@@ -209,6 +209,7 @@ class TaskCompletion(models.Model):
 class FundingPayment(models.Model):
     STATUS_CHOICES = (
         ("pending", "Pending"),
+        ("awaiting_verification", "Awaiting Verification"),
         ("paid", "Paid"),
         ("failed", "Failed"),
     )

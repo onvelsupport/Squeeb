@@ -66,6 +66,7 @@ from .views import (
     referrals_api,
     mark_notifications_read,
     referrals_page,
+    verify_bank_transfer,
     
 
 )
@@ -206,7 +207,10 @@ path(
     name="transaction_history_api"
 ),
     
-
+path(
+    "admin/verify-bank-transfer/<int:payment_id>/", verify_bank_transfer,
+    name="verify_bank_transfer"
+),
     # ======================
     # PASSWORD RESET API
     # ======================
