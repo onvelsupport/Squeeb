@@ -1,14 +1,168 @@
-<h2>Verify Bank Transfer</h2>
+{% extends 'accounts/base.html' %}
+{% load static %}
 
-<p><strong>User:</strong> {{ payment.user.username }}</p>
-<p><strong>Email:</strong> {{ payment.user.email }}</p>
-<p><strong>Amount:</strong> £{{ payment.amount }}</p>
-<p><strong>Reference:</strong> {{ payment.reference }}</p>
-<p><strong>Status:</strong> {{ payment.status }}</p>
+{% block title %}Verify Bank Transfer | SQUEEB{% endblock %}
 
-<form method="POST">
-    {% csrf_token %}
-    <button type="submit">
-        Confirm Transfer and Credit Wallet
-    </button>
-</form>
+{% block content %}
+
+<style>
+.verify-page {
+    min-height: 80vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 40px 20px;
+    background: #f6f8fc;
+}
+
+.verify-card {
+    width: 100%;
+    max-width: 520px;
+    background: #fff;
+    border-radius: 22px;
+    padding: 30px;
+    box-shadow: 0 20px 50px rgba(15, 23, 42, 0.08);
+}
+
+.verify-icon {
+    width: 64px;
+    height: 64px;
+    border-radius: 18px;
+    background: #ecfdf5;
+    color: #059669;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 26px;
+    margin-bottom: 18px;
+}
+
+.verify-card h2 {
+    margin-bottom: 8px;
+    color: #0f172a;
+}
+
+.verify-sub {
+    color: #64748b;
+    margin-bottom: 24px;
+}
+
+.verify-details {
+    background: #f8fafc;
+    border-radius: 16px;
+    padding: 18px;
+    margin-bottom: 24px;
+}
+
+.verify-row {
+    display: flex;
+    justify-content: space-between;
+    gap: 20px;
+    padding: 12px 0;
+    border-bottom: 1px solid #e5e7eb;
+}
+
+.verify-row:last-child {
+    border-bottom: none;
+}
+
+.verify-row span {
+    color: #64748b;
+}
+
+.verify-row strong {
+    color: #0f172a;
+    text-align: right;
+}
+
+.status-pill {
+    display: inline-flex;
+    padding: 6px 12px;
+    border-radius: 999px;
+    background: #fff7ed;
+    color: #c2410c;
+    font-size: 13px;
+    font-weight: 700;
+    text-transform: capitalize;
+}
+
+.confirm-btn {
+    width: 100%;
+    border: none;
+    border-radius: 14px;
+    padding: 15px;
+    background: #0f172a;
+    color: #fff;
+    font-size: 15px;
+    font-weight: 700;
+    cursor: pointer;
+}
+
+.confirm-btn:hover {
+    background: #1e293b;
+}
+
+.warning-box {
+    margin-top: 16px;
+    padding: 14px;
+    border-radius: 14px;
+    background: #fff7ed;
+    color: #9a3412;
+    font-size: 14px;
+}
+</style>
+
+<div class="verify-page">
+    <div class="verify-card">
+
+        <div class="verify-icon">
+            ✓
+        </div>
+
+        <h2>Verify Bank Transfer</h2>
+        <p class="verify-sub">
+            Confirm this only after the payment has arrived in your bank account.
+        </p>
+
+        <div class="verify-details">
+            <div class="verify-row">
+                <span>User</span>
+                <strong>{{ payment.user.username }}</strong>
+            </div>
+
+            <div class="verify-row">
+                <span>Email</span>
+                <strong>{{ payment.user.email }}</strong>
+            </div>
+
+            <div class="verify-row">
+                <span>Amount</span>
+                <strong>£{{ payment.amount }}</strong>
+            </div>
+
+            <div class="verify-row">
+                <span>Reference</span>
+                <strong>{{ payment.reference }}</strong>
+            </div>
+
+            <div class="verify-row">
+                <span>Status</span>
+                <strong class="status-pill">{{ payment.status }}</strong>
+            </div>
+        </div>
+
+        <form method="POST">
+            {% csrf_token %}
+            <button type="submit" class="confirm-btn">
+                Confirm Transfer & Credit Wallet
+            </button>
+        </form>
+
+        <div class="warning-box">
+            Only click confirm after checking your bank statement.
+        </div>
+
+    </div>
+</div>
+
+{% endblock %}
