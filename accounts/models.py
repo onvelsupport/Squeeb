@@ -92,6 +92,7 @@ class Task(models.Model):
         ("follow", "Follow"),
         ("comment", "Comment"),
         ("subscribe", "Subscribe"),
+        ("repost", "Repost"),
     )
 
     task_type = models.CharField(max_length=20, choices=TASK_TYPES, default="follow")
@@ -114,6 +115,7 @@ class Task(models.Model):
             "like": "like",
             "comment": "comment",
             "subscribe": "subscriber",
+            "repost": "repost",
         }
         return units.get(self.task_type, "task")
 
@@ -140,6 +142,11 @@ class Task(models.Model):
                 "Subscribe to the channel.",
                 "Take a screenshot as proof.",
             ],
+            "repost": [
+                "Click the link below.",
+                "Repost, retweet or share the post.",
+                "Take a screenshot showing the repost.",
+                ],
         }
 
         return instructions_map.get(self.task_type, [self.instructions])
