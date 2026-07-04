@@ -208,7 +208,7 @@ path(
 ),
     
 path(
-    "admin/verify-bank-transfer/<int:payment_id>/", verify_bank_transfer,
+    "verify-bank-transfer/<int:payment_id>/", verify_bank_transfer,
     name="verify_bank_transfer"
 ),
     # ======================
