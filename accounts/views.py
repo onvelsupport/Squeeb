@@ -2,7 +2,8 @@ import json
 from decimal import Decimal
 
 import stripe
-
+from django.core.mail import EmailMultiAlternatives
+from django.template.loader import render_to_string
 from django.conf import settings
 from django.contrib.auth import (
     authenticate,
@@ -580,11 +581,9 @@ def create_funding_checkout(request):
 
     try:
         data = json.loads(request.body.decode("utf-8") or "{}")
-
         amount = Decimal(str(data.get("amount", "0")))
         method = data.get("method", "card")
         reference = data.get("reference", "")
-
     except Exception:
         return JsonResponse({"error": "Invalid amount"}, status=400)
 
@@ -612,7 +611,6 @@ def create_funding_checkout(request):
             status="pending"
         )
 
-        # BANK TRANSFER FLOW
         if method == "bank":
             payment.status = "awaiting_verification"
             payment.save(update_fields=["status"])
@@ -621,29 +619,35 @@ def create_funding_checkout(request):
                 reverse("verify_bank_transfer", args=[payment.id])
             )
 
-            send_mail(
-                subject="New Squeeb Bank Transfer Awaiting Verification",
-                message=f"""
-A user says they have made a bank transfer.
+            subject = "New Bank Transfer Awaiting Verification"
 
-User: {request.user.username}
-Email: {request.user.email}
-Amount: £{payment.amount}
-Reference: {payment.reference}
+            context = {
+                "username": request.user.username,
+                "email": request.user.email,
+                "amount": payment.amount,
+                "reference": payment.reference,
+                "verify_url": verify_url,
+            }
 
-Click here to review and confirm:
-{verify_url}
-""",
-                from_email=settings.DEFAULT_FROM_EMAIL,
-                recipient_list=[settings.ADMIN_EMAIL],
-                fail_silently=False,
+            html_message = render_to_string(
+                "accounts/emails/bank_transfer_verification.html",
+                context
             )
+
+            email = EmailMultiAlternatives(
+                subject=subject,
+                body=f"A new bank transfer from {request.user.username} requires verification.",
+                from_email=settings.DEFAULT_FROM_EMAIL,
+                to=[settings.ADMIN_EMAIL],
+            )
+
+            email.attach_alternative(html_message, "text/html")
+            email.send()
 
             return JsonResponse({
                 "message": "Transfer request sent. Your wallet will be credited once payment is confirmed."
             })
 
-        # CARD / APPLE PAY STRIPE FLOW
         site_url = getattr(settings, "SITE_URL", "https://squeeb.co.uk").rstrip("/")
 
         session = stripe.checkout.Session.create(
@@ -678,14 +682,10 @@ Click here to review and confirm:
         payment.stripe_session_id = session.id
         payment.save(update_fields=["stripe_session_id"])
 
-        return JsonResponse({
-            "checkout_url": session.url
-        })
+        return JsonResponse({"checkout_url": session.url})
 
     except Exception as e:
-        return JsonResponse({
-            "error": str(e)
-        }, status=500)
+        return JsonResponse({"error": str(e)}, status=500)
 
 
 

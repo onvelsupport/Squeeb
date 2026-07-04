@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<style>
+
+body{
+    margin:0;
+    background:#f5f7fb;
+    font-family:Arial,Helvetica,sans-serif;
+}
+
+.wrapper{
+    max-width:620px;
+    margin:40px auto;
+    background:#fff;
+    border-radius:18px;
+    overflow:hidden;
+    box-shadow:0 10px 30px rgba(0,0,0,.08);
+}
+
+.header{
+    background:#2563eb;
+    color:#fff;
+    text-align:center;
+    padding:30px;
+}
+
+.header h1{
+    margin:0;
+    font-size:28px;
+}
+
+.content{
+    padding:35px;
+}
+
+.card{
+    background:#f8fafc;
+    border-radius:14px;
+    padding:20px;
+    margin:25px 0;
+}
+
+.row{
+    display:flex;
+    justify-content:space-between;
+    padding:12px 0;
+    border-bottom:1px solid #e5e7eb;
+}
+
+.row:last-child{
+    border:none;
+}
+
+.label{
+    color:#64748b;
+}
+
+.value{
+    font-weight:700;
+    color:#0f172a;
+}
+
+.button{
+    display:inline-block;
+    margin-top:30px;
+    background:#2563eb;
+    color:#fff !important;
+    text-decoration:none;
+    padding:16px 28px;
+    border-radius:12px;
+    font-weight:bold;
+}
+
+.footer{
+    padding:25px;
+    text-align:center;
+    color:#94a3b8;
+    font-size:13px;
+}
+
+</style>
+</head>
+
+<body>
+
+<div class="wrapper">
+
+<div class="header">
+<h1>💳 New Bank Transfer</h1>
+<p>A customer has reported making a bank transfer.</p>
+</div>
+
+<div class="content">
+
+<div class="card">
+
+<div class="row">
+<span class="label">User</span>
+<span class="value">{{ username }}</span>
+</div>
+
+<div class="row">
+<span class="label">Email</span>
+<span class="value">{{ email }}</span>
+</div>
+
+<div class="row">
+<span class="label">Amount</span>
+<span class="value">£{{ amount }}</span>
+</div>
+
+<div class="row">
+<span class="label">Reference</span>
+<span class="value">{{ reference }}</span>
+</div>
+
+</div>
+
+<div style="text-align:center">
+
+<a href="{{ verify_url }}" class="button">
+Review & Confirm Transfer
+</a>
+
+</div>
+
+</div>
+
+<div class="footer">
+SQUEEB Administration
+</div>
+
+</div>
+
+</body>
+</html>
