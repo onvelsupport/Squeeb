@@ -441,9 +441,14 @@ def signup(request):
     data = json.loads(request.body.decode("utf-8"))
 
     username = data.get("username", "").strip().lower()
-    email = data.get("email")
+    email = data.get("email", "").strip().lower()
+    country = data.get("country", "").strip()
     password = data.get("password")
-    referral_code = (data.get("referral_code") or request.GET.get("ref") or "").strip().upper()
+    referral_code = (
+        data.get("referral_code") or
+        request.GET.get("ref") or
+        ""
+    ).strip().upper()
 
     from django.contrib.auth import get_user_model
     User = get_user_model()
@@ -453,6 +458,9 @@ def signup(request):
 
     if User.objects.filter(email=email).exists():
         return JsonResponse({"error": "Email already exists"}, status=400)
+
+    if not country:
+        return JsonResponse({"error": "Please select your country."}, status=400)
 
     referrer = None
 
@@ -465,7 +473,8 @@ def signup(request):
     user = User.objects.create_user(
         username=username,
         email=email,
-        password=password
+        password=password,
+        country=country
     )
 
     if referrer and referrer != user:

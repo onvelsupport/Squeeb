@@ -61,6 +61,12 @@ class User(AbstractUser):
     referrals = models.IntegerField(default=0)
     is_member = models.BooleanField(default=False)
 
+    country = models.CharField(
+        max_length=100,
+        blank=True,
+        default=""
+    )
+
     referral_code = models.CharField(
         max_length=20,
         unique=True,
@@ -69,6 +75,8 @@ class User(AbstractUser):
     )
 
     def save(self, *args, **kwargs):
+        self.username = self.username.lower()
+
         if not self.referral_code:
             self.referral_code = "SQ" + uuid.uuid4().hex[:8].upper()
 

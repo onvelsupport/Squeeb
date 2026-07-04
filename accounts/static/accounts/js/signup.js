@@ -34,11 +34,17 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('signupForm').addEventListener('submit', async (e) => {
         e.preventDefault();
 
-        const username = document.getElementById('username').value.trim();
+        const username = document.getElementById('username').value.trim().toLowerCase();
         const email = document.getElementById('email').value.trim();
+        const country = document.getElementById("country").value;
         const password = document.getElementById('password').value;
         const confirmPassword = document.getElementById('confirmPassword').value;
         const referralCode = document.getElementById('referral')?.value.trim() || referralFromUrl || "";
+
+        if (!country) {
+            alert("Please select your country.");
+            return;
+        }
 
         if (password !== confirmPassword) {
             alert("Passwords do not match!");
@@ -54,6 +60,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 body: JSON.stringify({
                     username,
                     email,
+                    country,
                     password,
                     referral_code: referralCode
                 })

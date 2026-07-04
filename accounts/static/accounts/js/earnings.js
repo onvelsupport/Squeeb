@@ -213,55 +213,55 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     });
 
-    async function loadRecentActivities() {
-        const activityList = document.getElementById("activityList");
-        if (!activityList) return;
+async function loadRecentActivities() {
+    const activityList = document.getElementById("activityList");
+    if (!activityList) return;
 
-        try {
-            const res = await fetch("/api/recent-activities/", {
-                method: "GET",
-                credentials: "include",
-                headers: { "Accept": "application/json" }
-            });
+    try {
+        const res = await fetch("/api/recent-activities/", {
+            method: "GET",
+            credentials: "include",
+            headers: { "Accept": "application/json" }
+        });
 
-            if (!res.ok) return;
+        if (!res.ok) return;
 
-            const data = await res.json();
-            activityList.innerHTML = "";
+        const data = await res.json();
+        activityList.innerHTML = "";
 
-            if (!data.activities || data.activities.length === 0) {
-                activityList.innerHTML = `
-                    <div class="activity-item">
-                        <p>No recent activity yet.</p>
-                    </div>
-                `;
-                return;
-            }
-
-            data.activities.forEach((activity) => {
-    const platform = (activity.platform || "task").toLowerCase();
-    const amount = parseFloat(activity.amount || 0).toFixed(2);
-
-    const image = platform === "referral"
-        ? "logo.png"
-        : `${platform}.png`;
-
-    const message = platform === "referral"
-        ? `<strong>@${activity.username || "user"}</strong> earned £${amount} from a referral`
-        : `<strong>@${activity.username || "user"}</strong> just earned £${amount}`;
-
-    activityList.innerHTML += `
-        <div class="activity-item">
-            <img src="/static/accounts/img/${image}" alt="${platform}">
-            <p>${message}</p>
-        </div>
-    `;
-});
-
-        } catch (err) {
-            console.error("ACTIVITY LOAD ERROR:", err);
+        if (!data.activities || data.activities.length === 0) {
+            activityList.innerHTML = `
+                <div class="activity-item">
+                    <p>No recent activity yet.</p>
+                </div>
+            `;
+            return;
         }
+
+        data.activities.forEach((activity) => {
+            const platform = (activity.platform || "task").toLowerCase();
+
+            const image =
+                platform === "referral"
+                    ? "logo.png"
+                    : `${platform}.png`;
+
+            const message =
+                activity.message ||
+                `@${activity.username || "user"} just earned £${parseFloat(activity.amount || 0).toFixed(2)}`;
+
+            activityList.innerHTML += `
+                <div class="activity-item">
+                    <img src="/static/accounts/img/${image}" alt="${platform}">
+                    <p>${message}</p>
+                </div>
+            `;
+        });
+
+    } catch (err) {
+        console.error("ACTIVITY LOAD ERROR:", err);
     }
+}
 
     document.addEventListener("click", async (e) => {
         const button = e.target.closest(".select-task-btn");
