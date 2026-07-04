@@ -23,7 +23,7 @@ class WithdrawalRequest(models.Model):
     account_number = models.CharField(max_length=20, blank=True, null=True)
     paypal_email = models.EmailField(blank=True, null=True)
 
-    status = models.CharField(max_length=40, choices=STATUS_CHOICES, default="pending")
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default="pending")
     approval_token = models.UUIDField(default=uuid.uuid4, editable=False)
 
     created_at = models.DateTimeField(auto_now_add=True)
@@ -231,7 +231,7 @@ class FundingPayment(models.Model):
 
     stripe_session_id = models.CharField(max_length=255, unique=True, blank=True, null=True)
 
-    status = models.CharField(max_length=40, choices=STATUS_CHOICES, default="pending")
+    status = models.CharField(max_length=30, choices=STATUS_CHOICES, default="pending")
 
     created_at = models.DateTimeField(auto_now_add=True)
     paid_at = models.DateTimeField(blank=True, null=True)
