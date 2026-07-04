@@ -495,6 +495,13 @@ def signup(request):
             message=f"{user.username} joined SQUEEB using your referral link."
         )
 
+        RecentActivity.objects.create(
+            username=user.username,
+            platform="referral",
+            message=f"@{user.username} joined SQUEEB using a referral link",
+            amount=0
+        )
+
     return JsonResponse({
         "message": "User created successfully"
     })
