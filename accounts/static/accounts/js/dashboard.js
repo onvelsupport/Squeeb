@@ -530,20 +530,48 @@ document.addEventListener("DOMContentLoaded", () => {
             if (platformGroup) platformGroup.style.display = "block";
 
             if (taskType === "subscribe") {
-                if (quantityLabel) quantityLabel.innerText = "Number of Subscribers You Want";
-                if (platformGroup) platformGroup.style.display = "none";
-                if (taskPlatform) taskPlatform.value = "YouTube";
-                if (taskLink) taskLink.placeholder = "Enter your YouTube channel link";
-            } else if (taskType === "like") {
-                if (quantityLabel) quantityLabel.innerText = "Number of Likes You Want";
-                if (taskLink) taskLink.placeholder = "Enter your post link";
-            } else if (taskType === "comment") {
-                if (quantityLabel) quantityLabel.innerText = "Number of Comments You Want";
-                if (taskLink) taskLink.placeholder = "Enter your post link";
-            } else {
-                if (quantityLabel) quantityLabel.innerText = "Number of Followers You Want";
-                if (taskLink) taskLink.placeholder = "Enter your page/profile link";
-            }
+
+    if (quantityLabel) quantityLabel.innerText = "Number of Subscribers You Want";
+
+    if (platformGroup) platformGroup.style.display = "none";
+
+    if (taskPlatform) taskPlatform.value = "YouTube";
+
+    if (taskLink) taskLink.placeholder = "Enter your YouTube channel link";
+
+} else if (taskType === "follow") {
+
+    if (quantityLabel) quantityLabel.innerText = "Number of Followers You Want";
+
+    if (platformGroup) platformGroup.style.display = "block";
+
+    if (taskLink) taskLink.placeholder = "Enter your page/profile link";
+
+} else if (taskType === "like") {
+
+    if (quantityLabel) quantityLabel.innerText = "Number of Likes You Want";
+
+    if (platformGroup) platformGroup.style.display = "block";
+
+    if (taskLink) taskLink.placeholder = "Enter your post link";
+
+} else if (taskType === "comment") {
+
+    if (quantityLabel) quantityLabel.innerText = "Number of Comments You Want";
+
+    if (platformGroup) platformGroup.style.display = "block";
+
+    if (taskLink) taskLink.placeholder = "Enter your post link";
+
+} else if (taskType === "repost") {
+
+    if (quantityLabel) quantityLabel.innerText = "Number of Reposts You Want";
+
+    if (platformGroup) platformGroup.style.display = "block";
+
+    if (taskLink) taskLink.placeholder = "Enter your post link";
+
+}
 
             taskModal.style.display = "flex";
         });
