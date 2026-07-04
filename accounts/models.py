@@ -231,7 +231,7 @@ class FundingPayment(models.Model):
 
     stripe_session_id = models.CharField(max_length=255, unique=True, blank=True, null=True)
 
-    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default="pending")
+    status = models.CharField(max_length=30, choices=STATUS_CHOICES, default="pending")
 
     created_at = models.DateTimeField(auto_now_add=True)
     paid_at = models.DateTimeField(blank=True, null=True)
