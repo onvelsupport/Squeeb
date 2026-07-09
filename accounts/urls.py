@@ -67,6 +67,11 @@ from .views import (
     mark_notifications_read,
     referrals_page,
     verify_bank_transfer,
+    create_campaign,
+    admin_create_campaign,
+    squeeb_admin_dashboard,
+    admin_campaigns,
+    admin_create_campaign_page,
     
 
 )
@@ -188,6 +193,20 @@ path(
     name="task_submission_reviews_api"
 ),
 
+path(
+    "api/create-campaign/", create_campaign,
+    name="create_campaign",
+),
+
+path(
+    "api/admin/create-campaign/", admin_create_campaign,
+    name="admin_create_campaign"
+),
+
+
+path("squeeb-admin/", squeeb_admin_dashboard, name="squeeb_admin_dashboard"),
+path("squeeb-admin/campaigns/", admin_campaigns, name="admin_campaigns"),
+path("squeeb-admin/campaigns/create/", admin_create_campaign_page, name="admin_create_campaign_page"),
     # ======================
     # FUNDING
     # ======================

@@ -20,6 +20,165 @@ from django.urls import reverse
 from django.utils import timezone
 from django.views.decorators.csrf import csrf_exempt
 
+
+
+from django.contrib.admin.views.decorators import staff_member_required
+from django.http import JsonResponse
+from django.views.decorators.http import require_POST
+from django.views.decorators.csrf import csrf_exempt
+from .models import AdminCampaign
+from datetime import datetime
+
+@staff_member_required
+@require_POST
+@csrf_exempt
+def create_campaign(request):
+    title = request.POST.get("title")
+    description = request.POST.get("description")
+    reward = request.POST.get("reward")
+    platform = request.POST.get("platform")
+    max_participants = request.POST.get("max_participants")
+    start_date = request.POST.get("start_date")
+    end_date = request.POST.get("end_date")
+    status = request.POST.get("status")
+    image = request.FILES.get("image")
+
+    campaign = AdminCampaign.objects.create(
+        title=title,
+        description=description,
+        reward=reward,
+        platform=platform,
+        max_participants=max_participants,
+        start_date=start_date,
+        end_date=end_date,
+        status=status,
+        image=image,
+        created_by=request.user,
+    )
+
+    return JsonResponse({
+        "success": True,
+        "campaign_id": campaign.id,
+    })
+
+
+from functools import wraps
+from django.shortcuts import redirect
+from django.contrib.auth.decorators import login_required
+
+
+def squeeb_admin_required(view_func):
+    @wraps(view_func)
+    @login_required
+    def wrapper(request, *args, **kwargs):
+        if not request.user.is_staff:
+            return redirect("dashboard")
+        return view_func(request, *args, **kwargs)
+    return wrapper
+
+
+from django.http import JsonResponse
+from django.views.decorators.http import require_POST
+from .models import AdminCampaign
+
+
+@squeeb_admin_required
+@require_POST
+def admin_create_campaign(request):
+    title = request.POST.get("title", "").strip()
+    description = request.POST.get("description", "").strip()
+    reward = request.POST.get("reward")
+    platform = request.POST.get("platform")
+    max_participants = request.POST.get("max_participants")
+    start_date = request.POST.get("start_date")
+    end_date = request.POST.get("end_date")
+    status = request.POST.get("status", "draft")
+    image = request.FILES.get("image")
+
+    if not title or not description or not reward or not platform or not max_participants:
+        return JsonResponse({"error": "Please fill in all required fields."}, status=400)
+
+    campaign = AdminCampaign.objects.create(
+        title=title,
+        description=description,
+        reward=reward,
+        platform=platform,
+        max_participants=max_participants,
+        start_date=start_date,
+        end_date=end_date,
+        status=status,
+        image=image,
+        created_by=request.user,
+    )
+
+    return JsonResponse({
+        "success": True,
+        "message": "Campaign created successfully.",
+        "campaign_id": campaign.id,
+    })
+
+from functools import wraps
+from django.shortcuts import render, redirect
+from django.contrib.auth.decorators import login_required
+from django.contrib import messages
+from .models import AdminCampaign
+
+
+def squeeb_admin_required(view_func):
+    @wraps(view_func)
+    @login_required
+    def wrapper(request, *args, **kwargs):
+        if not request.user.is_staff:
+            return redirect("dashboard")
+        return view_func(request, *args, **kwargs)
+    return wrapper
+
+
+@squeeb_admin_required
+def squeeb_admin_dashboard(request):
+    campaigns_count = AdminCampaign.objects.count()
+    active_campaigns = AdminCampaign.objects.filter(status="active").count()
+
+    return render(request, "accounts/admin/admin_dashboard.html", {
+        "campaigns_count": campaigns_count,
+        "active_campaigns": active_campaigns,
+    })
+
+
+@squeeb_admin_required
+def admin_campaigns(request):
+    campaigns = AdminCampaign.objects.all().order_by("-created_at")
+
+    return render(request, "accounts/admin/campaigns.html", {
+        "campaigns": campaigns,
+    })
+
+
+@squeeb_admin_required
+def admin_create_campaign_page(request):
+    if request.method == "POST":
+        AdminCampaign.objects.create(
+            title=request.POST.get("title"),
+            description=request.POST.get("description"),
+            reward=request.POST.get("reward"),
+            platform=request.POST.get("platform"),
+            max_participants=request.POST.get("max_participants"),
+            start_date=request.POST.get("start_date"),
+            end_date=request.POST.get("end_date"),
+            status=request.POST.get("status"),
+            image=request.FILES.get("image"),
+            created_by=request.user,
+        )
+
+        messages.success(request, "Campaign created successfully.")
+        return redirect("admin_campaigns")
+
+    return render(request, "accounts/admin/create_campaign.html")
+
+
+    
+
+
 from accounts.models import Task
 
 from .models import (

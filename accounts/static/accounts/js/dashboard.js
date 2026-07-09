@@ -743,6 +743,131 @@ fundSubmitBtn?.addEventListener("click", async () => {
         }
     });
 
+// ==========================================================
+// ADMIN CAMPAIGN MODAL
+// ==========================================================
+
+const campaignModal = document.getElementById("campaignModal");
+const openCampaignBtn = document.getElementById("openCampaignModal");
+const campaignClose = document.getElementById("campaignClose");
+const createCampaignBtn = document.getElementById("createCampaignBtn");
+
+const campaignTitle = document.getElementById("campaignTitle");
+const campaignDescription = document.getElementById("campaignDescription");
+const campaignReward = document.getElementById("campaignReward");
+const campaignPlatform = document.getElementById("campaignPlatform");
+const campaignParticipants = document.getElementById("campaignParticipants");
+const campaignStartDate = document.getElementById("campaignStartDate");
+const campaignEndDate = document.getElementById("campaignEndDate");
+const campaignStatus = document.getElementById("campaignStatus");
+const campaignImage = document.getElementById("campaignImage");
+const campaignBudget = document.getElementById("campaignBudget");
+
+
+function updateCampaignBudget() {
+
+    const reward = parseFloat(campaignReward.value) || 0;
+    const participants = parseInt(campaignParticipants.value) || 0;
+
+    campaignBudget.textContent =
+        "£" + (reward * participants).toFixed(2);
+}
+
+campaignReward?.addEventListener("input", updateCampaignBudget);
+campaignParticipants?.addEventListener("input", updateCampaignBudget);
+
+
+openCampaignBtn?.addEventListener("click", () => {
+    campaignModal.style.display = "flex";
+});
+
+
+campaignClose?.addEventListener("click", () => {
+    campaignModal.style.display = "none";
+});
+
+
+window.addEventListener("click", (e) => {
+    if (e.target === campaignModal) {
+        campaignModal.style.display = "none";
+    }
+});
+
+
+createCampaignBtn?.addEventListener("click", async () => {
+
+    const form = new FormData();
+
+    form.append("title", campaignTitle.value);
+    form.append("description", campaignDescription.value);
+    form.append("reward", campaignReward.value);
+    form.append("platform", campaignPlatform.value);
+    form.append("max_participants", campaignParticipants.value);
+    form.append("start_date", campaignStartDate.value);
+    form.append("end_date", campaignEndDate.value);
+    form.append("status", campaignStatus.value);
+
+    if (campaignImage.files.length) {
+        form.append("image", campaignImage.files[0]);
+    }
+
+    createCampaignBtn.disabled = true;
+    createCampaignBtn.textContent = "Creating...";
+
+    try {
+
+        const response = await fetch("/api/admin/create-campaign/", {
+
+            method: "POST",
+
+            credentials: "same-origin",
+
+            headers: {
+                "X-CSRFToken": getCookie("csrftoken")
+            },
+
+            body: form
+
+        });
+
+        const data = await response.json();
+
+        if (!response.ok) {
+            alert(data.error || "Unable to create campaign.");
+            return;
+        }
+
+        alert("Campaign created successfully!");
+
+        campaignModal.style.display = "none";
+
+        campaignTitle.value = "";
+        campaignDescription.value = "";
+        campaignReward.value = "";
+        campaignParticipants.value = "";
+        campaignPlatform.value = "";
+        campaignStartDate.value = "";
+        campaignEndDate.value = "";
+        campaignStatus.value = "draft";
+        campaignImage.value = "";
+
+        campaignBudget.textContent = "£0.00";
+
+    } catch (err) {
+
+        console.error(err);
+
+        alert("Network error.");
+
+    } finally {
+
+        createCampaignBtn.disabled = false;
+        createCampaignBtn.textContent = "Create Campaign";
+
+    }
+
+});
+
 
     // ==========================================================
     // MEMBERSHIP ACTIVATION

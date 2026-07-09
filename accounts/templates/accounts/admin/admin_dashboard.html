@@ -1,0 +1,44 @@
+{% extends 'accounts/base.html' %}
+{% load static %}
+
+{% block title %}SQUEEB Admin{% endblock %}
+
+{% block content %}
+<div class="dashboard-page">
+    <main class="dashboard-main">
+
+        <section class="hero-section">
+            <div>
+                <p class="eyebrow">SQUEEB Admin</p>
+                <h1>Admin Dashboard</h1>
+                <p class="hero-text">Manage campaigns, users, submissions, and platform activity.</p>
+            </div>
+        </section>
+
+        <section class="dashboard-grid">
+            <div class="stats-card">
+                <p>Total Campaigns</p>
+                <h3>{{ campaigns_count }}</h3>
+                <span>All admin-created campaigns.</span>
+            </div>
+
+            <div class="stats-card">
+                <p>Active Campaigns</p>
+                <h3>{{ active_campaigns }}</h3>
+                <span>Currently visible to users.</span>
+            </div>
+        </section>
+
+        <section class="quick-actions">
+            <div class="quick-grid">
+                <a href="{% url 'admin_campaigns' %}" class="quick-card">
+                    <i class="fa fa-bullhorn"></i>
+                    <h3>Campaigns</h3>
+                    <p>Create and manage SQUEEB campaigns.</p>
+                </a>
+            </div>
+        </section>
+
+    </main>
+</div>
+{% endblock %}

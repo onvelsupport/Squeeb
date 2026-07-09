@@ -160,6 +160,131 @@ class Task(models.Model):
         return instructions_map.get(self.task_type, [self.instructions])
 
 
+class AdminCampaign(models.Model):
+    PLATFORM_CHOICES = [
+        ("tiktok", "TikTok"),
+        ("instagram", "Instagram"),
+        ("facebook", "Facebook"),
+        ("youtube", "YouTube"),
+        ("x", "X (Twitter)"),
+    ]
+
+    STATUS_CHOICES = [
+        ("draft", "Draft"),
+        ("active", "Active"),
+        ("paused", "Paused"),
+        ("completed", "Completed"),
+    ]
+
+    title = models.CharField(max_length=200)
+    description = models.TextField()
+
+    image = models.ImageField(
+        upload_to="campaigns/",
+        blank=True,
+        null=True
+    )
+
+    reward = models.DecimalField(
+        max_digits=10,
+        decimal_places=2
+    )
+
+    platform = models.CharField(
+        max_length=30,
+        choices=PLATFORM_CHOICES
+    )
+
+    max_participants = models.PositiveIntegerField()
+
+    participants = models.PositiveIntegerField(default=0)
+
+    status = models.CharField(
+        max_length=20,
+        choices=STATUS_CHOICES,
+        default="draft"
+    )
+
+    start_date = models.DateField()
+
+    end_date = models.DateField()
+
+    created_by = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        related_name="admin_campaigns"
+    )
+
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ["-created_at"]
+
+    def __str__(self):
+        return self.title
+
+    @property
+    def slots_remaining(self):
+        return max(0, self.max_participants - self.participants)
+
+    @property
+    def is_full(self):
+        return self.participants >= self.max_participants
+
+
+class CampaignSubmission(models.Model):
+    STATUS_CHOICES = [
+        ("pending", "Pending"),
+        ("approved", "Approved"),
+        ("rejected", "Rejected"),
+    ]
+
+    campaign = models.ForeignKey(
+        AdminCampaign,
+        on_delete=models.CASCADE,
+        related_name="submissions"
+    )
+
+    user = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        related_name="campaign_submissions"
+    )
+
+    username = models.CharField(max_length=100)
+
+    video_link = models.URLField()
+
+    screenshot = models.ImageField(
+        upload_to="campaign_proofs/"
+    )
+
+    note = models.TextField(blank=True)
+
+    status = models.CharField(
+        max_length=20,
+        choices=STATUS_CHOICES,
+        default="pending"
+    )
+
+    rejection_reason = models.TextField(
+        blank=True
+    )
+
+    reviewed_at = models.DateTimeField(
+        null=True,
+        blank=True
+    )
+
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        unique_together = ("campaign", "user")
+        ordering = ["-created_at"]
+
+    def __str__(self):
+        return f"{self.user.username} - {self.campaign.title} ({self.status})"
+
 
 class RecentActivity(models.Model):
     username = models.CharField(max_length=150)

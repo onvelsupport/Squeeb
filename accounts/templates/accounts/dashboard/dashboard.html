@@ -117,11 +117,20 @@ Dashboard | SQUEEB
                     <p>Buy, sell, and resell products.</p>
                 </a>
 
-                <a href="{% url 'more_page' %}" class="quick-card">
+                <a href="{% url 'referrals_page' %}" class="quick-card">
                     <i class="fa fa-user"></i>
-                    <h3>Profile</h3>
-                    <p>Manage your account, settings, and personal information.</p>
+                    <h3>Referrals</h3>
+                    <p>Manage and track your referrals.</p>
                 </a>
+
+
+                {% if request.user.is_staff %}
+                <a href="{% url 'squeeb_admin_dashboard' %}" class="quick-card admin-card">
+                <i class="fa fa-shield-halved"></i>
+                <h3>SQUEEB Admin</h3>
+                <p>Manage campaigns, users, withdrawals and platform activity.</p>
+                </a>
+                {% endif %}
             </div>
         </section> 
 
@@ -462,14 +471,12 @@ Dashboard | SQUEEB
 
 
 
-
 <!-- ====================== CREATE TASK MODAL ====================== -->
 <div class="modal-bg" id="taskActionModal" style="display:none;">
     <div class="task-action-container">
 
         <button class="modal-close" id="taskActionClose">✖</button>
 
-        <!-- Task Modal Header -->
         <div class="task-action-header">
             <div class="task-icon-wrap">
                 <img src="{% static 'accounts/img/follow.png' %}" id="taskActionIcon" alt="Task">
@@ -486,7 +493,6 @@ Dashboard | SQUEEB
 
         <hr>
 
-        <!-- Platform Selection -->
         <div class="form-group" id="platformGroup">
             <label>Select Platform</label>
             <select id="taskPlatform">
@@ -499,19 +505,16 @@ Dashboard | SQUEEB
             </select>
         </div>
 
-        <!-- Quantity Input -->
         <div class="form-group">
             <label id="quantityLabel">Number of Actions You Want</label>
             <input type="number" id="taskQuantity" placeholder="Enter quantity" min="1">
         </div>
 
-        <!-- Link Input -->
         <div class="form-group">
             <label>Your Social Media Page or Post Link</label>
             <input type="url" id="taskLink" placeholder="https://example.com">
         </div>
 
-        <!-- Total and Submit -->
         <div class="task-total-bar">
             <div>
                 <span>You will pay:</span>
@@ -526,4 +529,93 @@ Dashboard | SQUEEB
     </div>
 </div>
 
+
+<!-- ====================== CREATE CAMPAIGN MODAL ====================== -->
+<div class="modal-bg" id="campaignModal" style="display:none;">
+    <div class="task-action-container">
+
+        <button class="modal-close" id="campaignClose">✖</button>
+
+        <div class="task-action-header">
+            <div class="task-icon-wrap">
+                <i class="fa-solid fa-bullhorn" style="font-size:40px;color:#6c63ff;"></i>
+            </div>
+
+            <div>
+                <h2>Create SQUEEB Campaign</h2>
+                <p class="task-price">Create a campaign that only users can complete.</p>
+            </div>
+        </div>
+
+        <hr>
+
+        <div class="form-group">
+            <label>Campaign Title</label>
+            <input type="text" id="campaignTitle" placeholder="Create a TikTok about SQUEEB">
+        </div>
+
+        <div class="form-group">
+            <label>Platform</label>
+            <select id="campaignPlatform">
+                <option value="">Select Platform</option>
+                <option value="tiktok">TikTok</option>
+                <option value="instagram">Instagram</option>
+                <option value="facebook">Facebook</option>
+                <option value="youtube">YouTube</option>
+                <option value="x">X (Twitter)</option>
+            </select>
+        </div>
+
+        <div class="form-group">
+            <label>Reward Per User (£)</label>
+            <input type="number" id="campaignReward" step="0.01" min="0" placeholder="5.00">
+        </div>
+
+        <div class="form-group">
+            <label>Maximum Participants</label>
+            <input type="number" id="campaignParticipants" min="1" placeholder="100">
+        </div>
+
+        <div class="form-group">
+            <label>Start Date</label>
+            <input type="date" id="campaignStartDate">
+        </div>
+
+        <div class="form-group">
+            <label>End Date</label>
+            <input type="date" id="campaignEndDate">
+        </div>
+
+        <div class="form-group">
+            <label>Status</label>
+            <select id="campaignStatus">
+                <option value="draft">Draft</option>
+                <option value="active">Active</option>
+                <option value="paused">Paused</option>
+            </select>
+        </div>
+
+        <div class="form-group">
+            <label>Campaign Image</label>
+            <input type="file" id="campaignImage" accept="image/*">
+        </div>
+
+        <div class="form-group">
+            <label>Instructions</label>
+            <textarea id="campaignDescription" rows="6" placeholder="Explain exactly what users should do..."></textarea>
+        </div>
+
+        <div class="task-total-bar">
+            <div>
+                <span>Total Budget</span>
+                <h3 id="campaignBudget">£0.00</h3>
+            </div>
+
+            <button id="createCampaignBtn" class="submit-task-btn">
+                Create Campaign
+            </button>
+        </div>
+
+    </div>
+</div>
 {% endblock %}

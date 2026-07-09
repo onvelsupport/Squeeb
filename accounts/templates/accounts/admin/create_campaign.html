@@ -1,0 +1,87 @@
+{% extends 'accounts/base.html' %}
+{% load static %}
+
+{% block title %}Create Campaign | SQUEEB{% endblock %}
+
+{% block content %}
+<div class="dashboard-page">
+    <main class="dashboard-main">
+
+        <section class="hero-section">
+            <div>
+                <p class="eyebrow">SQUEEB Admin</p>
+                <h1>Create Campaign</h1>
+                <p class="hero-text">Create a promotional campaign that only users can complete.</p>
+            </div>
+        </section>
+
+        <section class="tasks-section">
+            <form method="POST" enctype="multipart/form-data" class="task-action-container">
+                {% csrf_token %}
+
+                <div class="form-group">
+                    <label>Campaign Title</label>
+                    <input type="text" name="title" required placeholder="Create a TikTok about SQUEEB">
+                </div>
+
+                <div class="form-group">
+                    <label>Platform</label>
+                    <select name="platform" required>
+                        <option value="">Select Platform</option>
+                        <option value="tiktok">TikTok</option>
+                        <option value="instagram">Instagram</option>
+                        <option value="facebook">Facebook</option>
+                        <option value="youtube">YouTube</option>
+                        <option value="x">X (Twitter)</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label>Reward Per User (£)</label>
+                    <input type="number" name="reward" step="0.01" min="0" required>
+                </div>
+
+                <div class="form-group">
+                    <label>Maximum Participants</label>
+                    <input type="number" name="max_participants" min="1" required>
+                </div>
+
+                <div class="form-group">
+                    <label>Start Date</label>
+                    <input type="date" name="start_date" required>
+                </div>
+
+                <div class="form-group">
+                    <label>End Date</label>
+                    <input type="date" name="end_date" required>
+                </div>
+
+                <div class="form-group">
+                    <label>Status</label>
+                    <select name="status" required>
+                        <option value="draft">Draft</option>
+                        <option value="active">Active</option>
+                        <option value="paused">Paused</option>
+                        <option value="completed">Completed</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label>Campaign Image</label>
+                    <input type="file" name="image" accept="image/*">
+                </div>
+
+                <div class="form-group">
+                    <label>Instructions</label>
+                    <textarea name="description" rows="7" required placeholder="Explain what users should do..."></textarea>
+                </div>
+
+                <button type="submit" class="submit-task-btn">
+                    Create Campaign
+                </button>
+            </form>
+        </section>
+
+    </main>
+</div>
+{% endblock %}

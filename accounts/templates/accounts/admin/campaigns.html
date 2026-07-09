@@ -1,0 +1,56 @@
+{% extends 'accounts/base.html' %}
+{% load static %}
+
+{% block title %}Admin Campaigns | SQUEEB{% endblock %}
+
+{% block content %}
+<div class="dashboard-page">
+    <main class="dashboard-main">
+
+        <section class="hero-section">
+            <div>
+                <p class="eyebrow">SQUEEB Admin</p>
+                <h1>Campaigns</h1>
+                <p class="hero-text">Create and manage SQUEEB-only campaigns.</p>
+            </div>
+
+            <a href="{% url 'admin_create_campaign_page' %}" class="pay-btn">
+                + New Campaign
+            </a>
+        </section>
+
+        <section class="tasks-section">
+            <div class="task-list">
+
+                {% for campaign in campaigns %}
+                <div class="task-card">
+                    <div class="task-icon">
+                        {% if campaign.image %}
+                            <img src="{{ campaign.image.url }}" alt="{{ campaign.title }}">
+                        {% else %}
+                            <i class="fa fa-bullhorn"></i>
+                        {% endif %}
+                    </div>
+
+                    <div class="task-info">
+                        <span class="task-label">{{ campaign.platform|title }}</span>
+                        <h3>{{ campaign.title }}</h3>
+                        <p>{{ campaign.description|truncatewords:25 }}</p>
+                    </div>
+
+                    <div class="task-action">
+                        <strong>£{{ campaign.reward }}</strong>
+                        <span>{{ campaign.participants }} / {{ campaign.max_participants }}</span>
+                        <span>{{ campaign.status|title }}</span>
+                    </div>
+                </div>
+                {% empty %}
+                <p>No campaigns created yet.</p>
+                {% endfor %}
+
+            </div>
+        </section>
+
+    </main>
+</div>
+{% endblock %}
