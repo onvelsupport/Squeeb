@@ -1,187 +1,52 @@
+# ==========================================================
+# STANDARD LIBRARY IMPORTS
+# ==========================================================
+
 import json
 from decimal import Decimal
+from functools import wraps
+
+
+# ==========================================================
+# THIRD-PARTY IMPORTS
+# ==========================================================
 
 import stripe
-from django.core.mail import EmailMultiAlternatives
-from django.template.loader import render_to_string
+
+
+# ==========================================================
+# DJANGO IMPORTS
+# ==========================================================
+
 from django.conf import settings
+from django.contrib import messages
+
 from django.contrib.auth import (
     authenticate,
     get_user_model,
     login as django_login,
     logout,
 )
+
 from django.contrib.auth.decorators import login_required
 from django.core.mail import EmailMultiAlternatives, send_mail
 from django.db import transaction
 from django.http import HttpResponse, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
+from django.template.loader import render_to_string
 from django.urls import reverse
 from django.utils import timezone
 from django.views.decorators.csrf import csrf_exempt
-
-
-
-from django.contrib.admin.views.decorators import staff_member_required
-from django.http import JsonResponse
 from django.views.decorators.http import require_POST
-from django.views.decorators.csrf import csrf_exempt
-from .models import AdminCampaign
-from datetime import datetime
-
-@staff_member_required
-@require_POST
-@csrf_exempt
-def create_campaign(request):
-    title = request.POST.get("title")
-    description = request.POST.get("description")
-    reward = request.POST.get("reward")
-    platform = request.POST.get("platform")
-    max_participants = request.POST.get("max_participants")
-    start_date = request.POST.get("start_date")
-    end_date = request.POST.get("end_date")
-    status = request.POST.get("status")
-    image = request.FILES.get("image")
-
-    campaign = AdminCampaign.objects.create(
-        title=title,
-        description=description,
-        reward=reward,
-        platform=platform,
-        max_participants=max_participants,
-        start_date=start_date,
-        end_date=end_date,
-        status=status,
-        image=image,
-        created_by=request.user,
-    )
-
-    return JsonResponse({
-        "success": True,
-        "campaign_id": campaign.id,
-    })
 
 
-from functools import wraps
-from django.shortcuts import redirect
-from django.contrib.auth.decorators import login_required
-
-
-def squeeb_admin_required(view_func):
-    @wraps(view_func)
-    @login_required
-    def wrapper(request, *args, **kwargs):
-        if not request.user.is_staff:
-            return redirect("dashboard")
-        return view_func(request, *args, **kwargs)
-    return wrapper
-
-
-from django.http import JsonResponse
-from django.views.decorators.http import require_POST
-from .models import AdminCampaign
-
-
-@squeeb_admin_required
-@require_POST
-def admin_create_campaign(request):
-    title = request.POST.get("title", "").strip()
-    description = request.POST.get("description", "").strip()
-    reward = request.POST.get("reward")
-    platform = request.POST.get("platform")
-    max_participants = request.POST.get("max_participants")
-    start_date = request.POST.get("start_date")
-    end_date = request.POST.get("end_date")
-    status = request.POST.get("status", "draft")
-    image = request.FILES.get("image")
-
-    if not title or not description or not reward or not platform or not max_participants:
-        return JsonResponse({"error": "Please fill in all required fields."}, status=400)
-
-    campaign = AdminCampaign.objects.create(
-        title=title,
-        description=description,
-        reward=reward,
-        platform=platform,
-        max_participants=max_participants,
-        start_date=start_date,
-        end_date=end_date,
-        status=status,
-        image=image,
-        created_by=request.user,
-    )
-
-    return JsonResponse({
-        "success": True,
-        "message": "Campaign created successfully.",
-        "campaign_id": campaign.id,
-    })
-
-from functools import wraps
-from django.shortcuts import render, redirect
-from django.contrib.auth.decorators import login_required
-from django.contrib import messages
-from .models import AdminCampaign
-
-
-def squeeb_admin_required(view_func):
-    @wraps(view_func)
-    @login_required
-    def wrapper(request, *args, **kwargs):
-        if not request.user.is_staff:
-            return redirect("dashboard")
-        return view_func(request, *args, **kwargs)
-    return wrapper
-
-
-@squeeb_admin_required
-def squeeb_admin_dashboard(request):
-    campaigns_count = AdminCampaign.objects.count()
-    active_campaigns = AdminCampaign.objects.filter(status="active").count()
-
-    return render(request, "accounts/admin/admin_dashboard.html", {
-        "campaigns_count": campaigns_count,
-        "active_campaigns": active_campaigns,
-    })
-
-
-@squeeb_admin_required
-def admin_campaigns(request):
-    campaigns = AdminCampaign.objects.all().order_by("-created_at")
-
-    return render(request, "accounts/admin/campaigns.html", {
-        "campaigns": campaigns,
-    })
-
-
-@squeeb_admin_required
-def admin_create_campaign_page(request):
-    if request.method == "POST":
-        AdminCampaign.objects.create(
-            title=request.POST.get("title"),
-            description=request.POST.get("description"),
-            reward=request.POST.get("reward"),
-            platform=request.POST.get("platform"),
-            max_participants=request.POST.get("max_participants"),
-            start_date=request.POST.get("start_date"),
-            end_date=request.POST.get("end_date"),
-            status=request.POST.get("status"),
-            image=request.FILES.get("image"),
-            created_by=request.user,
-        )
-
-        messages.success(request, "Campaign created successfully.")
-        return redirect("admin_campaigns")
-
-    return render(request, "accounts/admin/create_campaign.html")
-
-
-
-
-
-from accounts.models import Task
+# ==========================================================
+# LOCAL MODEL IMPORTS
+# ==========================================================
 
 from .models import (
+    AdminCampaign,
+    CampaignSubmission,
     Follow,
     FundingPayment,
     Notification,
@@ -189,12 +54,630 @@ from .models import (
     ProductImage,
     ProductMessage,
     RecentActivity,
+    Referral,
+    Task,
     TaskCompletion,
     WithdrawalRequest,
-    Referral,
 )
 
+
 User = get_user_model()
+
+
+# ==========================================================
+# CUSTOM SQUEEB ADMIN PROTECTION
+# ==========================================================
+
+def squeeb_admin_required(view_func):
+    """
+    Restricts access to authenticated staff users.
+
+    Normal users and advertisers are redirected back to the
+    standard SQUEEB dashboard.
+    """
+
+    @wraps(view_func)
+    @login_required
+    def wrapper(request, *args, **kwargs):
+        if not request.user.is_staff:
+            return redirect("dashboard")
+
+        return view_func(request, *args, **kwargs)
+
+    return wrapper
+
+
+# ==========================================================
+# SQUEEB ADMIN DASHBOARD
+# ==========================================================
+
+@squeeb_admin_required
+def squeeb_admin_dashboard(request):
+    """
+    Displays summary information for the custom SQUEEB
+    administration dashboard.
+    """
+
+    campaigns_count = AdminCampaign.objects.count()
+
+    active_campaigns = AdminCampaign.objects.filter(
+        status="active"
+    ).count()
+
+    pending_submissions = CampaignSubmission.objects.filter(
+        status="pending"
+    ).count()
+
+    return render(
+        request,
+        "accounts/admin/admin_dashboard.html",
+        {
+            "campaigns_count": campaigns_count,
+            "active_campaigns": active_campaigns,
+            "pending_submissions": pending_submissions,
+        },
+    )
+
+
+# ==========================================================
+# ADMIN CAMPAIGN LIST
+# ==========================================================
+
+@squeeb_admin_required
+def admin_campaigns(request):
+    """
+    Shows all campaigns created through the SQUEEB admin area.
+    """
+
+    campaigns = AdminCampaign.objects.select_related(
+        "created_by"
+    ).order_by("-created_at")
+
+    return render(
+        request,
+        "accounts/admin/campaigns.html",
+        {
+            "campaigns": campaigns,
+        },
+    )
+
+
+# ==========================================================
+# ADMIN CREATE CAMPAIGN PAGE
+# ==========================================================
+
+@squeeb_admin_required
+def admin_create_campaign_page(request):
+    """
+    Displays the campaign creation form and creates a campaign
+    when the form is submitted.
+    """
+
+    if request.method == "POST":
+        title = request.POST.get("title", "").strip()
+        description = request.POST.get("description", "").strip()
+        reward = request.POST.get("reward", "").strip()
+        platform = request.POST.get("platform", "").strip()
+        max_participants = request.POST.get(
+            "max_participants",
+            "",
+        ).strip()
+        start_date = request.POST.get("start_date", "").strip()
+        end_date = request.POST.get("end_date", "").strip()
+        status = request.POST.get("status", "draft").strip()
+        image = request.FILES.get("image")
+
+        # Validate required fields.
+        if not all([
+            title,
+            description,
+            reward,
+            platform,
+            max_participants,
+            start_date,
+            end_date,
+        ]):
+            messages.error(
+                request,
+                "Please complete all required fields.",
+            )
+
+            return render(
+                request,
+                "accounts/admin/create_campaign.html",
+            )
+
+        try:
+            reward = Decimal(reward)
+            max_participants = int(max_participants)
+
+        except (ValueError, TypeError):
+            messages.error(
+                request,
+                "Enter a valid reward and participant limit.",
+            )
+
+            return render(
+                request,
+                "accounts/admin/create_campaign.html",
+            )
+
+        if reward <= Decimal("0.00"):
+            messages.error(
+                request,
+                "Campaign reward must be greater than £0.",
+            )
+
+            return render(
+                request,
+                "accounts/admin/create_campaign.html",
+            )
+
+        if max_participants <= 0:
+            messages.error(
+                request,
+                "Maximum participants must be at least 1.",
+            )
+
+            return render(
+                request,
+                "accounts/admin/create_campaign.html",
+            )
+
+        if end_date < start_date:
+            messages.error(
+                request,
+                "The end date cannot be before the start date.",
+            )
+
+            return render(
+                request,
+                "accounts/admin/create_campaign.html",
+            )
+
+        AdminCampaign.objects.create(
+            title=title,
+            description=description,
+            reward=reward,
+            platform=platform,
+            max_participants=max_participants,
+            start_date=start_date,
+            end_date=end_date,
+            status=status,
+            image=image,
+            created_by=request.user,
+        )
+
+        messages.success(
+            request,
+            "Campaign created successfully.",
+        )
+
+        return redirect("admin_campaigns")
+
+    return render(
+        request,
+        "accounts/admin/create_campaign.html",
+    )
+
+
+# ==========================================================
+# ADMIN CREATE CAMPAIGN API
+# ==========================================================
+
+@squeeb_admin_required
+@require_POST
+def admin_create_campaign(request):
+    """
+    Creates a campaign through an AJAX or JavaScript request.
+
+    This endpoint is protected by the custom SQUEEB admin
+    permission check.
+    """
+
+    title = request.POST.get("title", "").strip()
+    description = request.POST.get("description", "").strip()
+    reward = request.POST.get("reward", "").strip()
+    platform = request.POST.get("platform", "").strip()
+
+    max_participants = request.POST.get(
+        "max_participants",
+        "",
+    ).strip()
+
+    start_date = request.POST.get("start_date", "").strip()
+    end_date = request.POST.get("end_date", "").strip()
+    status = request.POST.get("status", "draft").strip()
+    image = request.FILES.get("image")
+
+    if not all([
+        title,
+        description,
+        reward,
+        platform,
+        max_participants,
+        start_date,
+        end_date,
+    ]):
+        return JsonResponse(
+            {
+                "error": "Please fill in all required fields.",
+            },
+            status=400,
+        )
+
+    try:
+        reward = Decimal(reward)
+        max_participants = int(max_participants)
+
+    except (ValueError, TypeError):
+        return JsonResponse(
+            {
+                "error": (
+                    "Reward and maximum participants "
+                    "must contain valid numbers."
+                ),
+            },
+            status=400,
+        )
+
+    if reward <= Decimal("0.00"):
+        return JsonResponse(
+            {
+                "error": "Campaign reward must be greater than £0.",
+            },
+            status=400,
+        )
+
+    if max_participants <= 0:
+        return JsonResponse(
+            {
+                "error": "Maximum participants must be at least 1.",
+            },
+            status=400,
+        )
+
+    if end_date < start_date:
+        return JsonResponse(
+            {
+                "error": (
+                    "The campaign end date cannot be before "
+                    "the start date."
+                ),
+            },
+            status=400,
+        )
+
+    campaign = AdminCampaign.objects.create(
+        title=title,
+        description=description,
+        reward=reward,
+        platform=platform,
+        max_participants=max_participants,
+        start_date=start_date,
+        end_date=end_date,
+        status=status,
+        image=image,
+        created_by=request.user,
+    )
+
+    return JsonResponse(
+        {
+            "success": True,
+            "message": "Campaign created successfully.",
+            "campaign_id": campaign.id,
+        },
+        status=201,
+    )
+
+
+# ==========================================================
+# AVAILABLE TASKS AND ADMIN CAMPAIGNS API
+# ==========================================================
+
+@login_required
+def get_tasks(request):
+    """
+    Returns SQUEEB campaigns and normal advertiser tasks in one
+    response.
+
+    Admin campaigns appear first because campaign_data is added
+    before task_data.
+    """
+
+    if not request.user.is_member:
+        return JsonResponse(
+            {
+                "error": (
+                    "Membership required to access tasks."
+                ),
+            },
+            status=403,
+        )
+
+    today = timezone.now().date()
+
+    # Campaigns that the current user has already submitted
+    # should no longer appear in the available task list.
+    submitted_campaign_ids = CampaignSubmission.objects.filter(
+        user=request.user,
+    ).values_list(
+        "campaign_id",
+        flat=True,
+    )
+
+    campaigns = AdminCampaign.objects.filter(
+        status="active",
+        start_date__lte=today,
+        end_date__gte=today,
+    ).exclude(
+        id__in=submitted_campaign_ids,
+    ).order_by(
+        "-created_at",
+    )
+
+    campaign_data = []
+
+    for campaign in campaigns:
+        slots_remaining = max(
+            0,
+            campaign.max_participants - campaign.participants,
+        )
+
+        # Do not show campaigns that have no available slots.
+        if slots_remaining <= 0:
+            continue
+
+        campaign_data.append({
+            "id": campaign.id,
+            "title": campaign.title,
+            "payout": str(campaign.reward),
+            "available": slots_remaining,
+            "icon": (
+                campaign.image.url
+                if campaign.image
+                else ""
+            ),
+            "instructions": campaign.description,
+            "short_desc": campaign.description,
+            "platforms": campaign.get_platform_display(),
+            "task_type": "campaign",
+            "featured": True,
+        })
+
+    # Get normal advertiser-created tasks.
+    tasks = Task.objects.filter(
+        available__gt=0,
+    ).exclude(
+        creator=request.user,
+    )
+
+    completed_task_ids = TaskCompletion.objects.filter(
+        user=request.user,
+    ).values_list(
+        "task_id",
+        flat=True,
+    )
+
+    tasks = tasks.exclude(
+        id__in=completed_task_ids,
+    ).order_by(
+        "-created_at",
+    )
+
+    task_data = []
+
+    for task in tasks:
+        task_data.append({
+            "id": task.id,
+            "title": task.title,
+            "payout": str(task.worker_reward),
+            "available": task.available,
+            "icon": task.icon,
+            "instructions": task.instructions,
+            "short_desc": task.short_desc,
+            "platforms": task.platforms,
+            "task_type": task.task_type,
+            "featured": False,
+        })
+
+    return JsonResponse({
+        "tasks": campaign_data + task_data,
+    })
+
+
+# ==========================================================
+# GET SINGLE ADMIN CAMPAIGN
+# ==========================================================
+
+@login_required
+def get_campaign(request, campaign_id):
+    """
+    Returns the full details of one active SQUEEB campaign.
+    """
+
+    if not request.user.is_member:
+        return JsonResponse(
+            {
+                "error": "Membership required.",
+            },
+            status=403,
+        )
+
+    today = timezone.now().date()
+
+    campaign = get_object_or_404(
+        AdminCampaign,
+        id=campaign_id,
+        status="active",
+        start_date__lte=today,
+        end_date__gte=today,
+    )
+
+    if CampaignSubmission.objects.filter(
+        campaign=campaign,
+        user=request.user,
+    ).exists():
+        return JsonResponse(
+            {
+                "error": (
+                    "You have already submitted this campaign."
+                ),
+            },
+            status=400,
+        )
+
+    slots_remaining = max(
+        0,
+        campaign.max_participants - campaign.participants,
+    )
+
+    if slots_remaining <= 0:
+        return JsonResponse(
+            {
+                "error": "This campaign is full.",
+            },
+            status=400,
+        )
+
+    return JsonResponse({
+        "id": campaign.id,
+        "title": campaign.title,
+        "payout": str(campaign.reward),
+        "available": slots_remaining,
+        "platform": campaign.get_platform_display(),
+        "task_type": "SQUEEB Campaign",
+        "instructions": campaign.description,
+        "link": "",
+        "featured": True,
+    })
+
+
+# ==========================================================
+# SUBMIT ADMIN CAMPAIGN PROOF
+# ==========================================================
+
+@csrf_exempt
+@login_required
+@transaction.atomic
+def submit_campaign(request, campaign_id):
+    """
+    Allows a member to submit proof for a SQUEEB campaign.
+
+    The submission remains pending until a SQUEEB admin approves
+    or rejects it.
+    """
+
+    if request.method != "POST":
+        return JsonResponse(
+            {
+                "error": "POST request required.",
+            },
+            status=405,
+        )
+
+    if not request.user.is_member:
+        return JsonResponse(
+            {
+                "error": "Membership required.",
+            },
+            status=403,
+        )
+
+    today = timezone.now().date()
+
+    campaign = get_object_or_404(
+        AdminCampaign.objects.select_for_update(),
+        id=campaign_id,
+        status="active",
+        start_date__lte=today,
+        end_date__gte=today,
+    )
+
+    if CampaignSubmission.objects.filter(
+        campaign=campaign,
+        user=request.user,
+    ).exists():
+        return JsonResponse(
+            {
+                "error": (
+                    "You have already submitted this campaign."
+                ),
+            },
+            status=400,
+        )
+
+    # Pending submissions reserve campaign spaces so the campaign
+    # cannot receive more submissions than its participant limit.
+    reserved_slots = CampaignSubmission.objects.filter(
+        campaign=campaign,
+        status__in=["pending", "approved"],
+    ).count()
+
+    if reserved_slots >= campaign.max_participants:
+        return JsonResponse(
+            {
+                "error": "No campaign slots remaining.",
+            },
+            status=400,
+        )
+
+    video_link = request.POST.get(
+        "video_link",
+        "",
+    ).strip()
+
+    screenshot = request.FILES.get("proof")
+
+    if not video_link:
+        return JsonResponse(
+            {
+                "error": (
+                    "Your published social media video link "
+                    "is required."
+                ),
+            },
+            status=400,
+        )
+
+    if not screenshot:
+        return JsonResponse(
+            {
+                "error": "Screenshot proof is required.",
+            },
+            status=400,
+        )
+
+    submission = CampaignSubmission.objects.create(
+        campaign=campaign,
+        user=request.user,
+        username=request.user.username,
+        video_link=video_link,
+        screenshot=screenshot,
+        status="pending",
+    )
+
+    Notification.objects.create(
+        user=request.user,
+        title="Campaign submitted",
+        message=(
+            f"Your submission for '{campaign.title}' "
+            "has been sent for review."
+        ),
+    )
+
+    return JsonResponse(
+        {
+            "success": True,
+            "submission_id": submission.id,
+            "status": submission.status,
+            "message": (
+                "Campaign submitted for review. "
+                "Your balance will be updated after approval."
+            ),
+        },
+        status=201,
+    )
 
 def root_redirect(request):
     if request.user.is_authenticated:

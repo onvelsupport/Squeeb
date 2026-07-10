@@ -13,12 +13,17 @@ document.addEventListener("DOMContentLoaded", () => {
     const submissionTabs = document.querySelectorAll(".submission-tab");
 
     let selectedTaskId = null;
+    let selectedTaskType = "task";
+
     let allSubmissions = [];
     let activeSubmissionFilter = "all";
 
     function setText(id, value) {
         const element = document.getElementById(id);
-        if (element) element.textContent = value;
+
+        if (element) {
+            element.textContent = value;
+        }
     }
 
     function statusLabel(status) {
@@ -33,12 +38,24 @@ document.addEventListener("DOMContentLoaded", () => {
         return "fa-clock";
     }
 
+    function escapeHtml(value) {
+        const div = document.createElement("div");
+        div.textContent = value || "";
+        return div.innerHTML;
+    }
+
+    // ==========================================================
+    // USER INFORMATION
+    // ==========================================================
+
     async function loadUser() {
         try {
             const res = await fetch("/api/user-info/", {
                 method: "GET",
                 credentials: "include",
-                headers: { "Accept": "application/json" }
+                headers: {
+                    "Accept": "application/json"
+                }
             });
 
             if (res.status === 401 || res.status === 403 || res.redirected) {
@@ -46,24 +63,38 @@ document.addEventListener("DOMContentLoaded", () => {
                 return;
             }
 
-            if (!res.ok) return;
+            if (!res.ok) {
+                console.error("USER INFO ERROR:", res.status);
+                return;
+            }
 
             const data = await res.json();
 
             setText("usernameDisplay", data.username || "User");
-            setText("usernameTag", "@" + (data.username || "user"));
+            setText("usernameTag", `@${data.username || "user"}`);
             setText("balanceAmount", money(data.balance));
             setText("earningsTotal", money(data.earnings));
             setText("tasksCompleted", data.tasks_completed || 0);
             setText("referrals", data.referrals || 0);
 
             if (data.is_member) {
-                if (membershipSection) membershipSection.style.display = "none";
-                if (taskSection) taskSection.style.display = "block";
+                if (membershipSection) {
+                    membershipSection.style.display = "none";
+                }
+
+                if (taskSection) {
+                    taskSection.style.display = "block";
+                }
+
                 loadTasks();
             } else {
-                if (membershipSection) membershipSection.style.display = "flex";
-                if (taskSection) taskSection.style.display = "none";
+                if (membershipSection) {
+                    membershipSection.style.display = "flex";
+                }
+
+                if (taskSection) {
+                    taskSection.style.display = "none";
+                }
             }
 
         } catch (err) {
@@ -71,20 +102,45 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     }
 
+    // ==========================================================
+    // AVAILABLE TASKS AND CAMPAIGNS
+    // ==========================================================
+
     async function loadTasks() {
         const taskList = document.getElementById("taskList");
+
         if (!taskList) return;
+
+        taskList.innerHTML = `
+            <div class="empty-task">
+                <i class="fa fa-spinner fa-spin"></i>
+                <h3>Loading opportunities</h3>
+                <p>Please wait while we load available tasks.</p>
+            </div>
+        `;
 
         try {
             const res = await fetch("/api/tasks/", {
                 method: "GET",
                 credentials: "include",
-                headers: { "Accept": "application/json" }
+                headers: {
+                    "Accept": "application/json"
+                }
             });
 
-            if (!res.ok) return;
-
             const data = await res.json();
+
+            if (!res.ok) {
+                taskList.innerHTML = `
+                    <div class="empty-task">
+                        <i class="fa fa-circle-exclamation"></i>
+                        <h3>Unable to load tasks</h3>
+                        <p>${escapeHtml(data.error || "Please try again.")}</p>
+                    </div>
+                `;
+                return;
+            }
+
             taskList.innerHTML = "";
 
             if (!data.tasks || data.tasks.length === 0) {
@@ -99,37 +155,296 @@ document.addEventListener("DOMContentLoaded", () => {
             }
 
             data.tasks.forEach((task) => {
-    const isCampaign = task.featured === true;
+                const isCampaign = task.featured === true;
 
-    taskList.innerHTML += `
-        <div class="earn-task-card ${isCampaign ? "featured-campaign" : ""}">
-            <div>
-                <span class="task-badge">
-                    ${isCampaign ? "🔥 SQUEEB Campaign" : (task.platforms || "Task")}
-                </span>
+                const platform = escapeHtml(task.platforms || "Task");
+                const title = escapeHtml(task.title || "Untitled Task");
 
-                <h3>${task.title || "Untitled Task"}</h3>
+                const description = escapeHtml(
+                    task.short_desc ||
+                    task.instructions ||
+                    "Complete this task and upload proof."
+                );
 
-                <p>${task.short_desc || task.instructions || "Complete this task and upload proof."}</p>
+                taskList.innerHTML += `
+                    <div class="earn-task-card ${isCampaign ? "featured-campaign" : ""}">
+                        <div>
+                            <span class="task-badge">
+                                ${
+                                    isCampaign
+                                        ? '<i class="fa fa-fire"></i> SQUEEB Campaign'
+                                        : platform
+                                }
+                            </span>
 
-                <strong class="task-reward">
-                    ${money(task.payout)} ${isCampaign ? "reward" : `per ${task.task_type || "task"}`}
-                </strong>
-            </div>
+                            <h3>${title}</h3>
 
-            <button class="select-task-btn"
-                    data-id="${task.id}"
-                    data-featured="${isCampaign}">
-                ${isCampaign ? "Participate" : "Select Task"}
-            </button>
-        </div>
-    `;
-});
+                            <p>${description}</p>
+
+                            <strong class="task-reward">
+                                ${
+                                    isCampaign
+                                        ? `${money(task.payout)} reward`
+                                        : `${money(task.payout)} per ${escapeHtml(task.task_type || "task")}`
+                                }
+                            </strong>
+
+                            ${
+                                isCampaign
+                                    ? `<span class="campaign-slots">
+                                           ${parseInt(task.available || 0)} slots remaining
+                                       </span>`
+                                    : ""
+                            }
+                        </div>
+
+                        <button
+                            type="button"
+                            class="select-task-btn"
+                            data-id="${task.id}"
+                            data-featured="${isCampaign}"
+                        >
+                            ${isCampaign ? "Participate" : "Select Task"}
+                        </button>
+                    </div>
+                `;
+            });
 
         } catch (err) {
             console.error("TASK LOAD ERROR:", err);
+
+            taskList.innerHTML = `
+                <div class="empty-task">
+                    <i class="fa fa-wifi"></i>
+                    <h3>Network error</h3>
+                    <p>Please check your connection and try again.</p>
+                </div>
+            `;
         }
     }
+
+    // ==========================================================
+    // OPEN TASK OR CAMPAIGN MODAL
+    // ==========================================================
+
+    document.addEventListener("click", async (e) => {
+        const button = e.target.closest(".select-task-btn");
+
+        if (!button) return;
+
+        selectedTaskId = button.dataset.id;
+
+        selectedTaskType =
+            button.dataset.featured === "true"
+                ? "campaign"
+                : "task";
+
+        const endpoint =
+            selectedTaskType === "campaign"
+                ? `/api/campaign/${selectedTaskId}/`
+                : `/api/task/${selectedTaskId}/`;
+
+        button.disabled = true;
+
+        const originalButtonText = button.textContent;
+        button.textContent = "Loading...";
+
+        try {
+            const res = await fetch(endpoint, {
+                method: "GET",
+                credentials: "include",
+                headers: {
+                    "Accept": "application/json"
+                }
+            });
+
+            const data = await res.json();
+
+            if (!res.ok) {
+                alert(data.error || "Unable to open this opportunity.");
+                return;
+            }
+
+            setText("modalTaskTitle", data.title || "Task");
+            setText("modalPlatform", data.platform || "");
+            setText("modalType", data.task_type || "");
+            setText("modalTaskReward", `Earn ${money(data.payout)}`);
+
+            const instructionsBox = document.getElementById(
+                "modalTaskInstructions"
+            );
+
+            if (instructionsBox) {
+                if (Array.isArray(data.instructions)) {
+                    instructionsBox.innerHTML = `
+                        <ul>
+                            ${data.instructions
+                                .map((step) => `<li>${escapeHtml(step)}</li>`)
+                                .join("")}
+                        </ul>
+                    `;
+                } else {
+                    instructionsBox.innerHTML = `
+                        <ul>
+                            <li>
+                                ${escapeHtml(
+                                    data.instructions ||
+                                    "Complete the task and upload proof."
+                                )}
+                            </li>
+                        </ul>
+                    `;
+                }
+            }
+
+            const linkEl = document.getElementById("modalTaskLink");
+
+            if (linkEl) {
+                if (data.link) {
+                    linkEl.href = data.link;
+                    linkEl.style.display = "inline-flex";
+                } else {
+                    linkEl.removeAttribute("href");
+                    linkEl.style.display = "none";
+                }
+            }
+
+            const campaignVideoGroup = document.getElementById(
+                "campaignVideoGroup"
+            );
+
+            const campaignVideoLink = document.getElementById(
+                "campaignVideoLink"
+            );
+
+            if (campaignVideoGroup) {
+                campaignVideoGroup.style.display =
+                    selectedTaskType === "campaign"
+                        ? "block"
+                        : "none";
+            }
+
+            if (campaignVideoLink) {
+                campaignVideoLink.value = "";
+            }
+
+            const proofInput = document.getElementById("proofInput");
+
+            if (proofInput) {
+                proofInput.value = "";
+            }
+
+            if (submitProofBtn) {
+                submitProofBtn.textContent =
+                    selectedTaskType === "campaign"
+                        ? "Submit Campaign Proof"
+                        : "Submit Proof";
+            }
+
+            if (taskModal) {
+                taskModal.style.display = "flex";
+            }
+
+        } catch (err) {
+            console.error("OPPORTUNITY LOAD ERROR:", err);
+            alert("Network error. Please try again.");
+
+        } finally {
+            button.disabled = false;
+            button.textContent = originalButtonText;
+        }
+    });
+
+    // ==========================================================
+    // SUBMIT TASK OR CAMPAIGN PROOF
+    // ==========================================================
+
+    submitProofBtn?.addEventListener("click", async () => {
+        const fileInput = document.getElementById("proofInput");
+        const file = fileInput?.files[0];
+
+        if (!selectedTaskId) {
+            alert("No task or campaign selected.");
+            return;
+        }
+
+        if (!file) {
+            alert("Please upload screenshot proof.");
+            return;
+        }
+
+        const formData = new FormData();
+        formData.append("proof", file);
+
+        if (selectedTaskType === "campaign") {
+            const campaignVideoLink = document
+                .getElementById("campaignVideoLink")
+                ?.value.trim();
+
+            if (!campaignVideoLink) {
+                alert("Please enter your published social media video link.");
+                return;
+            }
+
+            formData.append("video_link", campaignVideoLink);
+        }
+
+        const endpoint =
+            selectedTaskType === "campaign"
+                ? `/api/campaign/${selectedTaskId}/submit/`
+                : `/api/complete-task/${selectedTaskId}/`;
+
+        submitProofBtn.disabled = true;
+        submitProofBtn.textContent = "Submitting...";
+
+        try {
+            const res = await fetch(endpoint, {
+                method: "POST",
+                credentials: "include",
+                body: formData
+            });
+
+            const data = await res.json();
+
+            if (!res.ok) {
+                alert(
+                    data.error ||
+                    data.message ||
+                    "Proof submission failed."
+                );
+                return;
+            }
+
+            alert(
+                data.message ||
+                "Your submission has been sent for review."
+            );
+
+            if (taskModal) {
+                taskModal.style.display = "none";
+            }
+
+            selectedTaskId = null;
+            selectedTaskType = "task";
+
+            loadUser();
+            loadTasks();
+            loadSubmissions();
+            loadRecentActivities();
+
+        } catch (err) {
+            console.error("PROOF SUBMIT ERROR:", err);
+            alert("Network error. Please try again.");
+
+        } finally {
+            submitProofBtn.disabled = false;
+            submitProofBtn.textContent = "Submit Proof";
+        }
+    });
+
+    // ==========================================================
+    // USER SUBMISSIONS
+    // ==========================================================
 
     async function loadSubmissions() {
         if (!submissionList) return;
@@ -138,13 +453,17 @@ document.addEventListener("DOMContentLoaded", () => {
             const res = await fetch("/api/my-task-submissions/", {
                 method: "GET",
                 credentials: "include",
-                headers: { "Accept": "application/json" }
+                headers: {
+                    "Accept": "application/json"
+                }
             });
 
             if (!res.ok) return;
 
             const data = await res.json();
+
             allSubmissions = data.submissions || [];
+
             renderSubmissions();
 
         } catch (err) {
@@ -159,7 +478,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
         if (activeSubmissionFilter !== "all") {
             submissions = allSubmissions.filter(
-                item => item.status === activeSubmissionFilter
+                (item) => item.status === activeSubmissionFilter
             );
         }
 
@@ -167,45 +486,73 @@ document.addEventListener("DOMContentLoaded", () => {
             submissionList.innerHTML = `
                 <div class="empty-task">
                     <i class="fa fa-clock"></i>
-                    <h3>No ${activeSubmissionFilter === "all" ? "" : activeSubmissionFilter} submissions</h3>
+
+                    <h3>
+                        No ${
+                            activeSubmissionFilter === "all"
+                                ? ""
+                                : activeSubmissionFilter
+                        } submissions
+                    </h3>
+
                     <p>Your submitted tasks will appear here.</p>
                 </div>
             `;
+
             return;
         }
 
-        submissionList.innerHTML = submissions.map(item => `
+        submissionList.innerHTML = submissions.map((item) => `
             <div class="submission-card">
                 <div>
-                    <span class="submission-status ${item.status}">
+                    <span class="submission-status ${escapeHtml(item.status)}">
                         <i class="fa ${statusIcon(item.status)}"></i>
                         ${statusLabel(item.status)}
                     </span>
 
-                    <h3>${item.task_title}</h3>
+                    <h3>${escapeHtml(item.task_title)}</h3>
 
                     <p>
                         <i class="fa fa-globe"></i>
-                        ${item.platform || "Platform"}
+                        ${escapeHtml(item.platform || "Platform")}
                     </p>
 
                     <p>
                         <i class="fa fa-calendar"></i>
-                        Submitted: ${item.submitted_at}
+                        Submitted: ${escapeHtml(item.submitted_at)}
                     </p>
 
                     ${
                         item.reviewed_at
-                            ? `<p><i class="fa fa-check"></i> Reviewed: ${item.reviewed_at}</p>`
-                            : `<p><i class="fa fa-hourglass-half"></i> Waiting for task creator approval</p>`
+                            ? `
+                                <p>
+                                    <i class="fa fa-check"></i>
+                                    Reviewed: ${escapeHtml(item.reviewed_at)}
+                                </p>
+                              `
+                            : `
+                                <p>
+                                    <i class="fa fa-hourglass-half"></i>
+                                    Waiting for approval
+                                </p>
+                              `
                     }
                 </div>
 
                 <div class="submission-money">
                     <strong>${money(item.reward)}</strong>
+
                     ${
                         item.proof
-                            ? `<a href="${item.proof}" target="_blank">View Proof</a>`
+                            ? `
+                                <a
+                                    href="${item.proof}"
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                >
+                                    View Proof
+                                </a>
+                              `
                             : ""
                     }
                 </div>
@@ -215,175 +562,88 @@ document.addEventListener("DOMContentLoaded", () => {
 
     submissionTabs.forEach((tab) => {
         tab.addEventListener("click", () => {
-            submissionTabs.forEach(btn => btn.classList.remove("active"));
+            submissionTabs.forEach((btn) => {
+                btn.classList.remove("active");
+            });
+
             tab.classList.add("active");
             activeSubmissionFilter = tab.dataset.status;
+
             renderSubmissions();
         });
     });
 
-async function loadRecentActivities() {
-    const activityList = document.getElementById("activityList");
-    if (!activityList) return;
+    // ==========================================================
+    // RECENT ACTIVITIES
+    // ==========================================================
 
-    try {
-        const res = await fetch("/api/recent-activities/", {
-            method: "GET",
-            credentials: "include",
-            headers: { "Accept": "application/json" }
-        });
+    async function loadRecentActivities() {
+        const activityList = document.getElementById("activityList");
 
-        if (!res.ok) return;
-
-        const data = await res.json();
-        activityList.innerHTML = "";
-
-        if (!data.activities || data.activities.length === 0) {
-            activityList.innerHTML = `
-                <div class="activity-item">
-                    <p>No recent activity yet.</p>
-                </div>
-            `;
-            return;
-        }
-
-        data.activities.forEach((activity) => {
-            const platform = (activity.platform || "task").toLowerCase();
-
-            const image =
-                platform === "referral"
-                    ? "logo.png"
-                    : `${platform}.png`;
-
-            const message =
-                activity.message ||
-                `@${activity.username || "user"} just earned £${parseFloat(activity.amount || 0).toFixed(2)}`;
-
-            activityList.innerHTML += `
-                <div class="activity-item">
-                    <img src="/static/accounts/img/${image}" alt="${platform}">
-                    <p>${message}</p>
-                </div>
-            `;
-        });
-
-    } catch (err) {
-        console.error("ACTIVITY LOAD ERROR:", err);
-    }
-}
-
-    document.addEventListener("click", async (e) => {
-        const button = e.target.closest(".select-task-btn");
-        if (!button) return;
-
-        selectedTaskId = button.dataset.id;
+        if (!activityList) return;
 
         try {
-            const res = await fetch(`/api/task/${selectedTaskId}/`, {
+            const res = await fetch("/api/recent-activities/", {
                 method: "GET",
                 credentials: "include",
-                headers: { "Accept": "application/json" }
+                headers: {
+                    "Accept": "application/json"
+                }
             });
 
             if (!res.ok) return;
 
-            const task = await res.json();
-
-            setText("modalTaskTitle", task.title || "Task");
-            setText("modalPlatform", task.platform || "");
-            setText("modalType", task.task_type || "");
-            setText("modalTaskReward", `Earn ${money(task.payout)}`);
-
-            const instructionsBox = document.getElementById("modalTaskInstructions");
-
-            if (instructionsBox) {
-                if (Array.isArray(task.instructions)) {
-                    instructionsBox.innerHTML = `
-                        <ul>
-                            ${task.instructions.map((step) => `<li>${step}</li>`).join("")}
-                        </ul>
-                    `;
-                } else {
-                    instructionsBox.innerHTML = `
-                        <ul>
-                            <li>${task.instructions || "Complete the task and upload proof."}</li>
-                        </ul>
-                    `;
-                }
-            }
-
-            const linkEl = document.getElementById("modalTaskLink");
-
-            if (linkEl) {
-                if (task.link) {
-                    linkEl.href = task.link;
-                    linkEl.style.display = "inline-block";
-                } else {
-                    linkEl.style.display = "none";
-                }
-            }
-
-            const proofInput = document.getElementById("proofInput");
-            if (proofInput) proofInput.value = "";
-
-            if (taskModal) taskModal.style.display = "flex";
-
-        } catch (err) {
-            console.error("MODAL LOAD ERROR:", err);
-        }
-    });
-
-    submitProofBtn?.addEventListener("click", async () => {
-        const fileInput = document.getElementById("proofInput");
-        const file = fileInput?.files[0];
-
-        if (!selectedTaskId) {
-            alert("No task selected.");
-            return;
-        }
-
-        if (!file) {
-            alert("Please upload screenshot proof.");
-            return;
-        }
-
-        const formData = new FormData();
-        formData.append("proof", file);
-
-        submitProofBtn.disabled = true;
-        submitProofBtn.textContent = "Submitting...";
-
-        try {
-            const res = await fetch(`/api/complete-task/${selectedTaskId}/`, {
-                method: "POST",
-                credentials: "include",
-                body: formData
-            });
-
             const data = await res.json();
 
-            if (!res.ok) {
-                alert(data.error || "Proof submission failed.");
+            activityList.innerHTML = "";
+
+            if (!data.activities || data.activities.length === 0) {
+                activityList.innerHTML = `
+                    <div class="activity-item">
+                        <p>No recent activity yet.</p>
+                    </div>
+                `;
+
                 return;
             }
 
-            alert(data.message || "Task submitted for review.");
+            data.activities.forEach((activity) => {
+                const platform = (
+                    activity.platform ||
+                    "task"
+                ).toLowerCase();
 
-            if (taskModal) taskModal.style.display = "none";
+                const image =
+                    platform === "referral"
+                        ? "logo.png"
+                        : `${platform}.png`;
 
-            loadUser();
-            loadTasks();
-            loadSubmissions();
-            loadRecentActivities();
+                const message =
+                    activity.message ||
+                    `@${activity.username || "user"} just earned £${parseFloat(
+                        activity.amount || 0
+                    ).toFixed(2)}`;
+
+                activityList.innerHTML += `
+                    <div class="activity-item">
+                        <img
+                            src="/static/accounts/img/${image}"
+                            alt="${escapeHtml(platform)}"
+                        >
+
+                        <p>${escapeHtml(message)}</p>
+                    </div>
+                `;
+            });
 
         } catch (err) {
-            console.error("PROOF SUBMIT ERROR:", err);
-            alert("Network error.");
-        } finally {
-            submitProofBtn.disabled = false;
-            submitProofBtn.textContent = "Submit Proof";
+            console.error("ACTIVITY LOAD ERROR:", err);
         }
-    });
+    }
+
+    // ==========================================================
+    // MEMBERSHIP
+    // ==========================================================
 
     payMembershipBtn?.addEventListener("click", async () => {
         payMembershipBtn.disabled = true;
@@ -393,7 +653,9 @@ async function loadRecentActivities() {
             const res = await fetch("/pay-membership/", {
                 method: "POST",
                 credentials: "include",
-                headers: { "Content-Type": "application/json" }
+                headers: {
+                    "Content-Type": "application/json"
+                }
             });
 
             const data = await res.json();
@@ -405,8 +667,13 @@ async function loadRecentActivities() {
 
             alert(data.message || "Membership activated.");
 
-            if (membershipSection) membershipSection.style.display = "none";
-            if (taskSection) taskSection.style.display = "block";
+            if (membershipSection) {
+                membershipSection.style.display = "none";
+            }
+
+            if (taskSection) {
+                taskSection.style.display = "block";
+            }
 
             loadUser();
             loadTasks();
@@ -414,21 +681,45 @@ async function loadRecentActivities() {
         } catch (err) {
             console.error("MEMBERSHIP ERROR:", err);
             alert("Network error.");
+
         } finally {
             payMembershipBtn.disabled = false;
             payMembershipBtn.textContent = "Activate Membership";
         }
     });
 
-    cancelTaskBtn?.addEventListener("click", () => {
-        if (taskModal) taskModal.style.display = "none";
-    });
+    // ==========================================================
+    // CLOSE MODAL
+    // ==========================================================
+
+    function closeTaskModal() {
+        if (taskModal) {
+            taskModal.style.display = "none";
+        }
+
+        selectedTaskId = null;
+        selectedTaskType = "task";
+
+        const campaignVideoGroup = document.getElementById(
+            "campaignVideoGroup"
+        );
+
+        if (campaignVideoGroup) {
+            campaignVideoGroup.style.display = "none";
+        }
+    }
+
+    cancelTaskBtn?.addEventListener("click", closeTaskModal);
 
     window.addEventListener("click", (e) => {
         if (taskModal && e.target === taskModal) {
-            taskModal.style.display = "none";
+            closeTaskModal();
         }
     });
+
+    // ==========================================================
+    // INITIAL LOAD
+    // ==========================================================
 
     loadUser();
     loadSubmissions();
