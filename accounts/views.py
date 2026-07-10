@@ -142,6 +142,7 @@ def admin_campaigns(request):
     )
 
 
+
 # ==========================================================
 # ADMIN CREATE CAMPAIGN PAGE
 # ==========================================================
@@ -2140,25 +2141,90 @@ def create_task(request):
 
 @login_required
 def my_task_submissions_api(request):
-    submissions = TaskCompletion.objects.filter(
+    """
+    Returns both normal task submissions and SQUEEB campaign
+    submissions in one combined list.
+    """
+
+    combined_submissions = []
+
+    # ======================================================
+    # NORMAL TASK SUBMISSIONS
+    # ======================================================
+
+    task_submissions = TaskCompletion.objects.filter(
         user=request.user
     ).select_related("task").order_by("-completed_at")
 
-    data = []
-
-    for submission in submissions:
-        data.append({
+    for submission in task_submissions:
+        combined_submissions.append({
             "id": submission.id,
+            "submission_type": "task",
             "task_title": submission.task.title,
             "platform": submission.task.platforms,
             "reward": str(submission.reward_amount),
             "status": submission.status,
             "proof": submission.proof.url if submission.proof else "",
-            "submitted_at": submission.completed_at.strftime("%d %b %Y, %I:%M %p"),
-            "reviewed_at": submission.reviewed_at.strftime("%d %b %Y, %I:%M %p") if submission.reviewed_at else "",
+            "video_link": "",
+            "rejection_reason": "",
+            "submitted_at": submission.completed_at.strftime(
+                "%d %b %Y, %I:%M %p"
+            ),
+            "reviewed_at": (
+                submission.reviewed_at.strftime("%d %b %Y, %I:%M %p")
+                if submission.reviewed_at
+                else ""
+            ),
+            "sort_date": submission.completed_at.timestamp(),
         })
 
-    return JsonResponse({"submissions": data})
+    # ======================================================
+    # SQUEEB CAMPAIGN SUBMISSIONS
+    # ======================================================
+
+    campaign_submissions = CampaignSubmission.objects.filter(
+        user=request.user
+    ).select_related("campaign").order_by("-created_at")
+
+    for submission in campaign_submissions:
+        combined_submissions.append({
+            "id": submission.id,
+            "submission_type": "campaign",
+            "task_title": submission.campaign.title,
+            "platform": submission.campaign.get_platform_display(),
+            "reward": str(submission.campaign.reward),
+            "status": submission.status,
+            "proof": (
+                submission.screenshot.url
+                if submission.screenshot
+                else ""
+            ),
+            "video_link": submission.video_link,
+            "rejection_reason": submission.rejection_reason or "",
+            "submitted_at": submission.created_at.strftime(
+                "%d %b %Y, %I:%M %p"
+            ),
+            "reviewed_at": (
+                submission.reviewed_at.strftime("%d %b %Y, %I:%M %p")
+                if submission.reviewed_at
+                else ""
+            ),
+            "sort_date": submission.created_at.timestamp(),
+        })
+
+    # Show newest submissions first.
+    combined_submissions.sort(
+        key=lambda item: item["sort_date"],
+        reverse=True,
+    )
+
+    # Remove internal sorting value before returning JSON.
+    for submission in combined_submissions:
+        submission.pop("sort_date", None)
+
+    return JsonResponse({
+        "submissions": combined_submissions,
+    })
 
 
 @login_required

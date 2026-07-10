@@ -964,6 +964,120 @@ a{
         width: 100%;
     }
 }
+
+/* ====================== COMBINED SUBMISSIONS ====================== */
+
+.submission-heading-row {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 10px;
+
+    margin-bottom: 12px;
+}
+
+.submission-type-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+
+    padding: 6px 11px;
+    border-radius: 999px;
+
+    font-size: 12px;
+    font-weight: 800;
+}
+
+.submission-type-badge.task {
+    background: #e0f2fe;
+    color: #075985;
+}
+
+.submission-type-badge.campaign {
+    background: #ede9fe;
+    color: #5b21b6;
+}
+
+.campaign-submission-card {
+    border: 1px solid #c4b5fd;
+    background: linear-gradient(135deg, #ffffff, #faf8ff);
+}
+
+.submission-links {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+
+    margin-top: 16px;
+}
+
+.submission-links a {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+
+    padding: 9px 12px;
+
+    border: 1px solid #dbe2ea;
+    border-radius: 10px;
+
+    background: #ffffff;
+    color: #2563eb;
+
+    font-size: 13px;
+    font-weight: 700;
+    text-decoration: none;
+}
+
+.submission-links a:hover {
+    background: #f8fafc;
+}
+
+.submission-rejection-reason {
+    margin-top: 14px;
+    padding: 12px 14px;
+
+    border: 1px solid #fecaca;
+    border-radius: 12px;
+
+    background: #fff1f2;
+    color: #991b1b;
+}
+
+.submission-rejection-reason strong {
+    display: block;
+    margin-bottom: 5px;
+}
+
+.submission-rejection-reason p {
+    margin: 0;
+}
+
+.submission-money span,
+.submission-money small {
+    display: block;
+}
+
+.submission-money span {
+    color: #64748b;
+    font-size: 12px;
+}
+
+.submission-money small {
+    margin-top: 5px;
+    color: #64748b;
+}
+
+@media (max-width: 650px) {
+    .submission-card {
+        align-items: stretch;
+        flex-direction: column;
+    }
+
+    .submission-money {
+        text-align: left;
+    }
+}
 /* ================= SEARCH DROPDOWN ================= */
 
 .search-results{

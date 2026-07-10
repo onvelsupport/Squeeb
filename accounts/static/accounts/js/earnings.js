@@ -472,45 +472,57 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     function renderSubmissions() {
-        if (!submissionList) return;
+    if (!submissionList) return;
 
-        let submissions = allSubmissions;
+    let submissions = allSubmissions;
 
-        if (activeSubmissionFilter !== "all") {
-            submissions = allSubmissions.filter(
-                (item) => item.status === activeSubmissionFilter
-            );
-        }
+    if (activeSubmissionFilter !== "all") {
+        submissions = allSubmissions.filter(
+            (item) => item.status === activeSubmissionFilter
+        );
+    }
 
-        if (!submissions.length) {
-            submissionList.innerHTML = `
-                <div class="empty-task">
-                    <i class="fa fa-clock"></i>
+    if (!submissions.length) {
+        submissionList.innerHTML = `
+            <div class="empty-task">
+                <i class="fa fa-clock"></i>
 
-                    <h3>
-                        No ${
-                            activeSubmissionFilter === "all"
-                                ? ""
-                                : activeSubmissionFilter
-                        } submissions
-                    </h3>
+                <h3>
+                    No ${
+                        activeSubmissionFilter === "all"
+                            ? ""
+                            : activeSubmissionFilter
+                    } submissions
+                </h3>
 
-                    <p>Your submitted tasks will appear here.</p>
-                </div>
-            `;
+                <p>Your submitted tasks and campaigns will appear here.</p>
+            </div>
+        `;
+        return;
+    }
 
-            return;
-        }
+    submissionList.innerHTML = submissions.map((item) => {
+        const isCampaign = item.submission_type === "campaign";
 
-        submissionList.innerHTML = submissions.map((item) => `
-            <div class="submission-card">
+        return `
+            <div class="submission-card ${isCampaign ? "campaign-submission-card" : ""}">
                 <div>
-                    <span class="submission-status ${escapeHtml(item.status)}">
-                        <i class="fa ${statusIcon(item.status)}"></i>
-                        ${statusLabel(item.status)}
-                    </span>
+                    <div class="submission-heading-row">
+                        <span class="submission-type-badge ${isCampaign ? "campaign" : "task"}">
+                            ${
+                                isCampaign
+                                    ? '<i class="fa fa-bullhorn"></i> SQUEEB Campaign'
+                                    : '<i class="fa fa-list-check"></i> Task'
+                            }
+                        </span>
 
-                    <h3>${escapeHtml(item.task_title)}</h3>
+                        <span class="submission-status ${escapeHtml(item.status)}">
+                            <i class="fa ${statusIcon(item.status)}"></i>
+                            ${statusLabel(item.status)}
+                        </span>
+                    </div>
+
+                    <h3>${escapeHtml(item.task_title || "Submission")}</h3>
 
                     <p>
                         <i class="fa fa-globe"></i>
@@ -519,7 +531,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
                     <p>
                         <i class="fa fa-calendar"></i>
-                        Submitted: ${escapeHtml(item.submitted_at)}
+                        Submitted: ${escapeHtml(item.submitted_at || "")}
                     </p>
 
                     ${
@@ -529,36 +541,77 @@ document.addEventListener("DOMContentLoaded", () => {
                                     <i class="fa fa-check"></i>
                                     Reviewed: ${escapeHtml(item.reviewed_at)}
                                 </p>
-                              `
+                            `
                             : `
                                 <p>
                                     <i class="fa fa-hourglass-half"></i>
                                     Waiting for approval
                                 </p>
-                              `
+                            `
                     }
+
+                    ${
+                        item.rejection_reason
+                            ? `
+                                <div class="submission-rejection-reason">
+                                    <strong>Rejection reason</strong>
+                                    <p>${escapeHtml(item.rejection_reason)}</p>
+                                </div>
+                            `
+                            : ""
+                    }
+
+                    <div class="submission-links">
+                        ${
+                            item.proof
+                                ? `
+                                    <a
+                                        href="${item.proof}"
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                    >
+                                        <i class="fa fa-image"></i>
+                                        View Screenshot
+                                    </a>
+                                `
+                                : ""
+                        }
+
+                        ${
+                            isCampaign && item.video_link
+                                ? `
+                                    <a
+                                        href="${item.video_link}"
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                    >
+                                        <i class="fa fa-video"></i>
+                                        View Published Video
+                                    </a>
+                                `
+                                : ""
+                        }
+                    </div>
                 </div>
 
                 <div class="submission-money">
+                    <span>Reward</span>
                     <strong>${money(item.reward)}</strong>
 
                     ${
-                        item.proof
-                            ? `
-                                <a
-                                    href="${item.proof}"
-                                    target="_blank"
-                                    rel="noopener noreferrer"
-                                >
-                                    View Proof
-                                </a>
-                              `
-                            : ""
+                        item.status === "approved"
+                            ? `<small>Paid to wallet</small>`
+                            : item.status === "pending"
+                                ? `<small>Pending approval</small>`
+                                : `<small>Not paid</small>`
                     }
                 </div>
             </div>
-        `).join("");
-    }
+        `;
+    }).join("");
+}
+
+
 
     submissionTabs.forEach((tab) => {
         tab.addEventListener("click", () => {
