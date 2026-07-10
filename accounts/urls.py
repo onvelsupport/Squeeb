@@ -73,6 +73,9 @@ from .views import (
     verify_bank_transfer,
     withdrawal_history_api,
     withdrawals,
+    admin_campaign_submissions,
+    approve_campaign_submission,
+    reject_campaign_submission,
 )
 
 
@@ -383,6 +386,24 @@ urlpatterns = [
         admin_create_campaign,
         name="admin_create_campaign",
     ),
+
+    path(
+    "squeeb-admin/campaign-submissions/",
+    admin_campaign_submissions,
+    name="admin_campaign_submissions",
+),
+
+path(
+    "squeeb-admin/campaign-submissions/<int:submission_id>/approve/",
+    approve_campaign_submission,
+    name="approve_campaign_submission",
+),
+
+path(
+    "squeeb-admin/campaign-submissions/<int:submission_id>/reject/",
+    reject_campaign_submission,
+    name="reject_campaign_submission",
+),
 
     # ==========================================================
     # USER CAMPAIGN APIs

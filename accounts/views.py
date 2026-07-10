@@ -142,6 +142,208 @@ def admin_campaigns(request):
     )
 
 
+# ==========================================================
+# ADMIN CAMPAIGN SUBMISSION LIST
+# ==========================================================
+
+@squeeb_admin_required
+def admin_campaign_submissions(request):
+    """
+    Shows all campaign submissions in the custom SQUEEB admin.
+    """
+
+    status_filter = request.GET.get("status", "pending")
+
+    submissions = CampaignSubmission.objects.select_related(
+        "campaign",
+        "user",
+    ).order_by("-created_at")
+
+    if status_filter in ["pending", "approved", "rejected"]:
+        submissions = submissions.filter(status=status_filter)
+
+    return render(
+        request,
+        "accounts/admin/campaign_submissions.html",
+        {
+            "submissions": submissions,
+            "status_filter": status_filter,
+        },
+    )
+
+
+# ==========================================================
+# APPROVE CAMPAIGN SUBMISSION
+# ==========================================================
+
+@squeeb_admin_required
+@require_POST
+@transaction.atomic
+def approve_campaign_submission(request, submission_id):
+    """
+    Approves a campaign submission and pays the user.
+
+    The select_for_update calls help prevent the same
+    submission being paid twice.
+    """
+
+    submission = get_object_or_404(
+        CampaignSubmission.objects.select_for_update().select_related(
+            "campaign",
+            "user",
+        ),
+        id=submission_id,
+    )
+
+    if submission.status == "approved":
+        messages.info(
+            request,
+            "This submission has already been approved.",
+        )
+        return redirect("admin_campaign_submissions")
+
+    if submission.status == "rejected":
+        messages.error(
+            request,
+            "A rejected submission cannot be approved.",
+        )
+        return redirect("admin_campaign_submissions")
+
+    campaign = AdminCampaign.objects.select_for_update().get(
+        id=submission.campaign_id
+    )
+
+    if campaign.participants >= campaign.max_participants:
+        messages.error(
+            request,
+            "This campaign has already reached its participant limit.",
+        )
+        return redirect("admin_campaign_submissions")
+
+    reward = campaign.reward
+    user = submission.user
+
+    submission.status = "approved"
+    submission.reviewed_at = timezone.now()
+    submission.rejection_reason = ""
+    submission.save(
+        update_fields=[
+            "status",
+            "reviewed_at",
+            "rejection_reason",
+        ]
+    )
+
+    campaign.participants += 1
+    campaign.save(update_fields=["participants"])
+
+    user.balance += reward
+    user.earnings += reward
+    user.tasks_completed += 1
+    user.save(
+        update_fields=[
+            "balance",
+            "earnings",
+            "tasks_completed",
+        ]
+    )
+
+    Notification.objects.create(
+        user=user,
+        title="Campaign approved",
+        message=(
+            f"Your submission for '{campaign.title}' was approved. "
+            f"£{reward} has been added to your wallet."
+        ),
+    )
+
+    RecentActivity.objects.create(
+        username=user.username,
+        platform=campaign.platform,
+        message=(
+            f"@{user.username} earned £{reward} "
+            f"from a SQUEEB campaign"
+        ),
+        amount=reward,
+    )
+
+    messages.success(
+        request,
+        f"Submission approved and £{reward} paid to {user.username}.",
+    )
+
+    return redirect("admin_campaign_submissions")
+
+
+# ==========================================================
+# REJECT CAMPAIGN SUBMISSION
+# ==========================================================
+
+@squeeb_admin_required
+@require_POST
+def reject_campaign_submission(request, submission_id):
+    """
+    Rejects a pending campaign submission and saves the reason.
+    """
+
+    submission = get_object_or_404(
+        CampaignSubmission,
+        id=submission_id,
+    )
+
+    if submission.status == "approved":
+        messages.error(
+            request,
+            "An approved submission cannot be rejected.",
+        )
+        return redirect("admin_campaign_submissions")
+
+    if submission.status == "rejected":
+        messages.info(
+            request,
+            "This submission has already been rejected.",
+        )
+        return redirect("admin_campaign_submissions")
+
+    rejection_reason = request.POST.get(
+        "rejection_reason",
+        "",
+    ).strip()
+
+    if not rejection_reason:
+        messages.error(
+            request,
+            "Enter a rejection reason.",
+        )
+        return redirect("admin_campaign_submissions")
+
+    submission.status = "rejected"
+    submission.reviewed_at = timezone.now()
+    submission.rejection_reason = rejection_reason
+    submission.save(
+        update_fields=[
+            "status",
+            "reviewed_at",
+            "rejection_reason",
+        ]
+    )
+
+    Notification.objects.create(
+        user=submission.user,
+        title="Campaign rejected",
+        message=(
+            f"Your submission for '{submission.campaign.title}' "
+            f"was rejected. Reason: {rejection_reason}"
+        ),
+    )
+
+    messages.success(
+        request,
+        "Submission rejected.",
+    )
+
+    return redirect("admin_campaign_submissions")
+
 
 # ==========================================================
 # ADMIN CREATE CAMPAIGN PAGE

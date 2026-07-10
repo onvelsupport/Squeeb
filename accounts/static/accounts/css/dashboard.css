@@ -306,6 +306,245 @@ a{
     text-align: center;
     color: #6b7280;
 }
+
+
+/* ====================== CAMPAIGN SUBMISSION ADMIN ====================== */
+
+.admin-filter-tabs {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin: 24px 0;
+}
+
+.admin-filter-tabs a {
+    padding: 10px 16px;
+    border: 1px solid #dbe2ea;
+    border-radius: 999px;
+    background: #ffffff;
+    color: #475569;
+    font-size: 14px;
+    font-weight: 700;
+    text-decoration: none;
+}
+
+.admin-filter-tabs a.active {
+    border-color: #2563eb;
+    background: #2563eb;
+    color: #ffffff;
+}
+
+.admin-submission-list {
+    display: grid;
+    gap: 20px;
+}
+
+.admin-submission-card {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 320px;
+    gap: 24px;
+
+    padding: 24px;
+
+    background: #ffffff;
+    border: 1px solid #e5e7eb;
+    border-radius: 20px;
+    box-shadow: 0 12px 35px rgba(15, 23, 42, 0.06);
+}
+
+.admin-submission-heading {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 16px;
+}
+
+.admin-submission-heading h3 {
+    margin: 10px 0 0;
+    color: #111827;
+    font-size: 21px;
+}
+
+.admin-submission-meta {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px 18px;
+
+    margin-top: 20px;
+}
+
+.admin-submission-meta p {
+    margin: 0;
+    color: #475569;
+}
+
+.admin-proof-links {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+
+    margin-top: 20px;
+}
+
+.admin-proof-links a {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+
+    padding: 11px 14px;
+
+    border: 1px solid #dbe2ea;
+    border-radius: 11px;
+
+    background: #f8fafc;
+    color: #2563eb;
+
+    font-size: 14px;
+    font-weight: 700;
+    text-decoration: none;
+}
+
+.admin-review-actions {
+    padding-left: 24px;
+    border-left: 1px solid #e5e7eb;
+}
+
+.admin-review-actions form {
+    margin: 0;
+}
+
+.approve-btn,
+.reject-btn {
+    width: 100%;
+    padding: 12px 16px;
+
+    border: none;
+    border-radius: 11px;
+
+    color: #ffffff;
+    font-size: 14px;
+    font-weight: 800;
+    cursor: pointer;
+}
+
+.approve-btn {
+    background: #16a34a;
+}
+
+.approve-btn:hover {
+    background: #15803d;
+}
+
+.reject-form {
+    margin-top: 20px !important;
+}
+
+.reject-form label {
+    display: block;
+    margin-bottom: 8px;
+    color: #1f2937;
+    font-weight: 700;
+}
+
+.reject-form textarea {
+    width: 100%;
+    box-sizing: border-box;
+
+    margin-bottom: 10px;
+    padding: 12px;
+
+    border: 1px solid #d1d5db;
+    border-radius: 10px;
+
+    resize: vertical;
+}
+
+.reject-btn {
+    background: #dc2626;
+}
+
+.reject-btn:hover {
+    background: #b91c1c;
+}
+
+.admin-rejection-box {
+    margin-top: 18px;
+    padding: 14px;
+
+    border: 1px solid #fecaca;
+    border-radius: 12px;
+
+    background: #fff1f2;
+    color: #991b1b;
+}
+
+.admin-rejection-box p {
+    margin: 5px 0 0;
+}
+
+.admin-message-list {
+    display: grid;
+    gap: 10px;
+    margin: 20px 0;
+}
+
+.admin-message {
+    padding: 13px 16px;
+    border-radius: 11px;
+    background: #eff6ff;
+    color: #1d4ed8;
+    font-weight: 700;
+}
+
+.admin-message.success {
+    background: #dcfce7;
+    color: #166534;
+}
+
+.admin-message.error {
+    background: #fee2e2;
+    color: #991b1b;
+}
+
+.admin-empty {
+    padding: 50px 24px;
+    text-align: center;
+
+    background: #ffffff;
+    border: 1px solid #e5e7eb;
+    border-radius: 20px;
+
+    color: #64748b;
+}
+
+.admin-empty i {
+    margin-bottom: 14px;
+    font-size: 35px;
+}
+
+@media (max-width: 900px) {
+    .admin-submission-card {
+        grid-template-columns: 1fr;
+    }
+
+    .admin-review-actions {
+        padding-top: 20px;
+        padding-left: 0;
+
+        border-top: 1px solid #e5e7eb;
+        border-left: none;
+    }
+}
+
+@media (max-width: 650px) {
+    .admin-submission-meta {
+        grid-template-columns: 1fr;
+    }
+
+    .admin-submission-heading {
+        flex-direction: column;
+    }
+}
 /* ==========================================================
    NOTIFICATION
 ========================================================== */
