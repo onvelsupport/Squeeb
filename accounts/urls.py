@@ -405,6 +405,22 @@ path(
     name="reject_campaign_submission",
 ),
 
+# ==========================================================
+# COMPATIBILITY URL ALIASES
+# Keep these while older templates still reference them.
+# ==========================================================
+
+path("about/", about, name="about_page"),
+path("support/", support_page, name="support_page"),
+path("login/", login_page, name="login_page"),
+path("signup/", signup_page, name="signup_page"),
+
+path(
+    "forgot-password/",
+    forgot_password_page,
+    name="forgot_password_page",
+),
+
     # ==========================================================
     # USER CAMPAIGN APIs
     # ==========================================================
