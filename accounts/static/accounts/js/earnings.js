@@ -99,23 +99,32 @@ document.addEventListener("DOMContentLoaded", () => {
             }
 
             data.tasks.forEach((task) => {
-                taskList.innerHTML += `
-                    <div class="earn-task-card">
-                        <div>
-                            <span class="task-badge">${task.platforms || "Task"}</span>
-                            <h3>${task.title || "Untitled Task"}</h3>
-                            <p>${task.short_desc || task.instructions || "Complete this task and upload proof."}</p>
-                            <strong class="task-reward">
-                                ${money(task.payout)} per ${task.task_type || "task"}
-                            </strong>
-                        </div>
+    const isCampaign = task.featured === true;
 
-                        <button class="select-task-btn" data-id="${task.id}">
-                            Select Task
-                        </button>
-                    </div>
-                `;
-            });
+    taskList.innerHTML += `
+        <div class="earn-task-card ${isCampaign ? "featured-campaign" : ""}">
+            <div>
+                <span class="task-badge">
+                    ${isCampaign ? "🔥 SQUEEB Campaign" : (task.platforms || "Task")}
+                </span>
+
+                <h3>${task.title || "Untitled Task"}</h3>
+
+                <p>${task.short_desc || task.instructions || "Complete this task and upload proof."}</p>
+
+                <strong class="task-reward">
+                    ${money(task.payout)} ${isCampaign ? "reward" : `per ${task.task_type || "task"}`}
+                </strong>
+            </div>
+
+            <button class="select-task-btn"
+                    data-id="${task.id}"
+                    data-featured="${isCampaign}">
+                ${isCampaign ? "Participate" : "Select Task"}
+            </button>
+        </div>
+    `;
+});
 
         } catch (err) {
             console.error("TASK LOAD ERROR:", err);

@@ -664,6 +664,16 @@ a{
     font-weight:bold;
 }
 
+.featured-campaign {
+    border: 2px solid #6c63ff;
+    background: linear-gradient(135deg, #ffffff, #f6f4ff);
+}
+
+.featured-campaign .task-badge {
+    background: #ede9fe;
+    color: #5b21b6;
+}
+
 /* ================= SEARCH DROPDOWN ================= */
 
 .search-results{

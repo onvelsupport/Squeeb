@@ -176,7 +176,7 @@ def admin_create_campaign_page(request):
     return render(request, "accounts/admin/create_campaign.html")
 
 
-    
+
 
 
 from accounts.models import Task
@@ -1517,6 +1517,32 @@ def get_tasks(request):
     if not request.user.is_member:
         return JsonResponse({"error": "Membership required to access tasks."}, status=403)
 
+    today = timezone.now().date()
+
+    campaigns = AdminCampaign.objects.filter(
+        status="active",
+        start_date__lte=today,
+        end_date__gte=today,
+    ).exclude(
+        submissions__user=request.user
+    )
+
+    campaign_data = []
+
+    for campaign in campaigns:
+        campaign_data.append({
+            "id": campaign.id,
+            "title": campaign.title,
+            "payout": str(campaign.reward),
+            "available": campaign.slots_remaining,
+            "icon": campaign.image.url if campaign.image else "",
+            "instructions": campaign.description,
+            "short_desc": campaign.description,
+            "platforms": campaign.platform,
+            "task_type": "campaign",
+            "featured": True,
+        })
+
     tasks = Task.objects.filter(available__gt=0)
     tasks = tasks.exclude(creator=request.user)
 
@@ -1526,8 +1552,10 @@ def get_tasks(request):
 
     tasks = tasks.exclude(id__in=completed_task_ids)
 
-    data = [
-        {
+    task_data = []
+
+    for task in tasks:
+        task_data.append({
             "id": task.id,
             "title": task.title,
             "payout": str(task.worker_reward),
@@ -1537,12 +1565,12 @@ def get_tasks(request):
             "short_desc": task.short_desc,
             "platforms": task.platforms,
             "task_type": task.task_type,
-        }
-        for task in tasks
-    ]
+            "featured": False,
+        })
 
-    return JsonResponse({"tasks": data})
-
+    return JsonResponse({
+        "tasks": campaign_data + task_data
+    })
 
 @login_required
 def get_single_task(request, task_id):
@@ -1954,6 +1982,25 @@ def pay_membership(request):
 def more_page(request):
     return render(request, "accounts/dashboard/more.html")
 
+from django.utils import timezone
+from .models import Task, AdminCampaign
+
+
 @login_required
 def earnings(request):
-    return render(request, "accounts/dashboard/earnings.html")
+    today = timezone.now().date()
+
+    campaigns = AdminCampaign.objects.filter(
+        status="active",
+        start_date__lte=today,
+        end_date__gte=today,
+    ).order_by("-created_at")
+
+    tasks = Task.objects.filter(
+        available__gt=0
+    ).order_by("-created_at")
+
+    return render(request, "accounts/dashboard/earnings.html", {
+        "campaigns": campaigns,
+        "tasks": tasks,
+    })
