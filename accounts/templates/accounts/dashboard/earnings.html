@@ -139,28 +139,95 @@ Earnings | SQUEEB
 
 <div class="task-modal-bg" id="taskModal">
     <div class="task-modal">
-        <button class="modal-close" id="cancelTaskBtn">✖</button>
 
-        <h2 id="modalTaskTitle">Task Title</h2>
+        <div class="task-modal-header">
+            <div>
+                <p class="task-modal-eyebrow">Earning Opportunity</p>
+                <h2 id="modalTaskTitle">Task Title</h2>
+            </div>
 
-        <div class="task-meta">
-            <p><strong>Platform:</strong> <span id="modalPlatform"></span></p>
-            <p><strong>Task Type:</strong> <span id="modalType"></span></p>
+            <button
+                type="button"
+                class="modal-close"
+                id="cancelTaskBtn"
+                aria-label="Close modal"
+            >
+                ✖
+            </button>
         </div>
 
-        <div id="modalTaskInstructions" class="task-instructions"></div>
+        <div class="task-modal-body">
 
-        <a id="modalTaskLink" href="#" target="_blank" class="task-link">
-            Open Task Link
-        </a>
+            <div class="task-meta">
+                <p>
+                    <strong>Platform:</strong>
+                    <span id="modalPlatform"></span>
+                </p>
 
-        <h3 id="modalTaskReward"></h3>
+                <p>
+                    <strong>Task Type:</strong>
+                    <span id="modalType"></span>
+                </p>
+            </div>
 
-        <input type="file" id="proofInput" accept="image/*">
+            <div
+                id="modalTaskInstructions"
+                class="task-instructions"
+            ></div>
 
-        <button id="submitProofBtn" class="submit-proof-btn">
-            Submit Proof
-        </button>
+            <a
+                id="modalTaskLink"
+                href="#"
+                target="_blank"
+                rel="noopener noreferrer"
+                class="task-link"
+            >
+                Open Task Link
+            </a>
+
+            <div
+                class="form-group"
+                id="campaignVideoGroup"
+                style="display:none;"
+            >
+                <label for="campaignVideoLink">
+                    Published Video Link
+                </label>
+
+                <input
+                    type="url"
+                    id="campaignVideoLink"
+                    placeholder="https://www.tiktok.com/..."
+                >
+            </div>
+
+            <div class="proof-upload-group">
+                <label for="proofInput">Upload Screenshot Proof</label>
+
+                <input
+                    type="file"
+                    id="proofInput"
+                    accept="image/*"
+                >
+            </div>
+
+        </div>
+
+        <div class="task-modal-footer">
+            <div>
+                <span>Reward</span>
+                <h3 id="modalTaskReward">Earn £0.00</h3>
+            </div>
+
+            <button
+                type="button"
+                id="submitProofBtn"
+                class="submit-proof-btn"
+            >
+                Submit Proof
+            </button>
+        </div>
+
     </div>
 </div>
 
