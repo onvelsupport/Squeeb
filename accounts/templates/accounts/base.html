@@ -4,19 +4,29 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport"
-          content="width=device-width, initial-scale=1.0">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
 
     <title>{% block title %}Squeeb{% endblock %}</title>
 
-    <link rel="stylesheet"
-          href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <link
+        rel="stylesheet"
+        href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"
+    >
 
-    <link rel="stylesheet"
-          href="{% static 'accounts/css/base.css' %}">
+    <link
+        rel="stylesheet"
+        href="{% static 'accounts/css/base.css' %}"
+    >
 
     {% if user.is_authenticated %}
-        <link rel="stylesheet" href="{% static 'accounts/css/dashboard.css' %}">
+        <link
+            rel="stylesheet"
+            href="{% static 'accounts/css/dashboard.css' %}"
+        >
     {% endif %}
 
     {% block extra_css %}
@@ -27,147 +37,225 @@
 
 {% if user.is_authenticated %}
 
-<header class="dashboard-topbar">
+    <!-- ====================== AUTHENTICATED HEADER ====================== -->
 
-    <a href="{% url 'dashboard' %}" class="brand">
-        <img src="{% static 'accounts/img/logo.png' %}" alt="SQUEEB Logo">
-    </a>
+    <header class="dashboard-topbar">
 
-    <div class="dashboard-search">
-        <i class="fa fa-search"></i>
-
-        <input
-            type="text"
-            id="globalSearchInput"
-            placeholder="Search tasks, products, services and users">
-
-        <div class="search-results" id="searchResults"></div>
-    </div>
-
-    <nav class="dashboard-nav">
-        <a href="{% url 'dashboard' %}">Dashboard</a>
-        <a href="{% url 'earnings' %}">Earn</a>
-        <a href="{% url 'dashboard' %}">Advertise</a>
-        <a href="{% url 'marketplace' %}">Marketplace</a>
-    </nav>
-
-    <div class="top-actions">
-    <button class="icon-btn notification-open-btn" id="openNotifications">
-        <i class="fa-solid fa-bell"></i>
-
-        <span
-            id="notificationCount"
-            class="notification-count"
-            {% if notification_count == 0 %}style="display:none;"{% endif %}
-        >
-            {{ notification_count }}
-        </span>
-    </button>
-
-        <a href="{% url 'logout' %}" class="logout-btn logout">
-            <i class="fa fa-power-off"></i>
+        <a href="{% url 'dashboard' %}" class="brand">
+            <img
+                src="{% static 'accounts/img/logo.png' %}"
+                alt="SQUEEB Logo"
+            >
         </a>
-    </div>
 
-    <button class="mobile-menu-btn" id="mobileMenuBtn">
-        <i class="fa fa-bars"></i>
-    </button>
+        <div class="dashboard-search">
+            <i class="fa fa-search"></i>
 
-    <div class="mobile-dropdown" id="mobileDropdown">
-        <a href="{% url 'dashboard' %}"><i class="fa fa-home"></i> Dashboard</a>
-        <a href="{% url 'earnings' %}"><i class="fa fa-coins"></i> Earn</a>
-        <a href="{% url 'dashboard' %}"><i class="fa fa-bullhorn"></i> Advertise</a>
-        <a href="{% url 'marketplace' %}"><i class="fa fa-store"></i> Marketplace</a>
-        <a href="{% url 'more_page' %}"><i class="fa fa-ellipsis-h"></i> More</a>
-        <a href="{% url 'logout' %}" class="logout"><i class="fa fa-power-off"></i> Logout</a>
-    </div>
+            <input
+                type="text"
+                id="globalSearchInput"
+                placeholder="Search tasks, products, services and users"
+                autocomplete="off"
+            >
 
-</header>
-
-<div class="notification-overlay" id="notificationOverlay"></div>
-
-<aside class="notification-panel" id="notificationPanel">
-
-    <div class="notification-panel-header">
-        <h2>Notifications</h2>
-
-        <button id="closeNotifications">
-            <i class="fa-solid fa-xmark"></i>
-        </button>
-    </div>
-
-    <div class="notification-panel-body" id="notificationList">
-
-        <div class="empty-notification">
-            <i class="fa-regular fa-bell-slash"></i>
-            <p>Loading notifications...</p>
+            <div
+                class="search-results"
+                id="searchResults"
+            ></div>
         </div>
 
-    </div>
+        <nav class="dashboard-nav">
+            <a href="{% url 'dashboard' %}">Dashboard</a>
+            <a href="{% url 'earnings' %}">Earn</a>
+            <a href="{% url 'dashboard' %}">Advertise</a>
+            <a href="{% url 'marketplace' %}">Marketplace</a>
 
-</aside>
+            {% if request.user.is_staff %}
+                <a href="{% url 'squeeb_admin_dashboard' %}">
+                    Admin
+                </a>
+            {% endif %}
+        </nav>
 
+        <div class="top-actions">
+
+            <button
+                type="button"
+                class="icon-btn notification-open-btn"
+                id="openNotifications"
+                aria-label="Open notifications"
+            >
+                <i class="fa-solid fa-bell"></i>
+
+                <span
+                    id="notificationCount"
+                    class="notification-count"
+                    {% if not notification_count %}style="display:none;"{% endif %}
+                >
+                    {{ notification_count|default:0 }}
+                </span>
+            </button>
+
+            <a
+                href="{% url 'logout' %}"
+                class="logout-btn logout"
+                aria-label="Logout"
+            >
+                <i class="fa fa-power-off"></i>
+            </a>
+
+        </div>
+
+        <button
+            type="button"
+            class="mobile-menu-btn"
+            id="mobileMenuBtn"
+            aria-label="Open menu"
+        >
+            <i class="fa fa-bars"></i>
+        </button>
+
+        <div class="mobile-dropdown" id="mobileDropdown">
+
+            <a href="{% url 'dashboard' %}">
+                <i class="fa fa-home"></i>
+                Dashboard
+            </a>
+
+            <a href="{% url 'earnings' %}">
+                <i class="fa fa-coins"></i>
+                Earn
+            </a>
+
+            <a href="{% url 'dashboard' %}">
+                <i class="fa fa-bullhorn"></i>
+                Advertise
+            </a>
+
+            <a href="{% url 'marketplace' %}">
+                <i class="fa fa-store"></i>
+                Marketplace
+            </a>
+
+            <a href="{% url 'more_page' %}">
+                <i class="fa fa-ellipsis-h"></i>
+                More
+            </a>
+
+            {% if request.user.is_staff %}
+                <a href="{% url 'squeeb_admin_dashboard' %}">
+                    <i class="fa-solid fa-shield-halved"></i>
+                    SQUEEB Admin
+                </a>
+            {% endif %}
+
+            <a href="{% url 'logout' %}" class="logout">
+                <i class="fa fa-power-off"></i>
+                Logout
+            </a>
+
+        </div>
+
+    </header>
+
+    <!-- ====================== NOTIFICATION PANEL ====================== -->
+
+    <div
+        class="notification-overlay"
+        id="notificationOverlay"
+    ></div>
+
+    <aside
+        class="notification-panel"
+        id="notificationPanel"
+    >
+
+        <div class="notification-panel-header">
+            <h2>Notifications</h2>
+
+            <button
+                type="button"
+                id="closeNotifications"
+                aria-label="Close notifications"
+            >
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+        </div>
+
+        <div
+            class="notification-panel-body"
+            id="notificationList"
+        >
+            <div class="empty-notification">
+                <i class="fa-regular fa-bell-slash"></i>
+                <p>Loading notifications...</p>
+            </div>
+        </div>
+
+    </aside>
 
 {% else %}
 
-<header class="site-header">
-    <nav class="navbar">
+    <!-- ====================== PUBLIC HEADER ====================== -->
 
-        <a href="{% url 'home' %}" class="brand">
-            <img src="{% static 'accounts/img/logo.png' %}" alt="Squeeb logo">
-        </a>
+    <header class="site-header">
+        <nav class="navbar">
 
-        <button class="menu-btn" id="menuBtn" aria-label="Open menu">
-            <i class="fa-solid fa-bars"></i>
-        </button>
+            <a href="{% url 'home' %}" class="brand">
+                <img
+                    src="{% static 'accounts/img/logo.png' %}"
+                    alt="Squeeb logo"
+                >
+            </a>
 
-        <div class="nav-menu" id="navMenu">
+            <button
+                type="button"
+                class="menu-btn"
+                id="menuBtn"
+                aria-label="Open menu"
+            >
+                <i class="fa-solid fa-bars"></i>
+            </button>
 
-            <div class="nav-links">
-                <a href="{% url 'home' %}">Home</a>
-                <a href="{% url 'marketplace' %}">Marketplace</a>
-                <a href="{% url 'about' %}">About</a>
-                <a href="{% url 'earnings' %}">Earnings</a>
-                <a href="{% url 'support' %}">Support</a>
+            <div class="nav-menu" id="navMenu">
+
+                <div class="nav-links">
+                    <a href="{% url 'home' %}">Home</a>
+                    <a href="{% url 'marketplace' %}">Marketplace</a>
+                    <a href="{% url 'about' %}">About</a>
+                    <a href="{% url 'earnings' %}">Earnings</a>
+                    <a href="{% url 'support' %}">Support</a>
+                </div>
+
+                <div class="nav-actions">
+                    <a
+                        href="{% url 'login' %}"
+                        class="login-link"
+                    >
+                        Login
+                    </a>
+
+                    <a
+                        href="{% url 'signup' %}"
+                        class="signup-btn"
+                    >
+                        Create Account
+                    </a>
+                </div>
+
             </div>
 
-            <div class="nav-actions">
-                <a href="{% url 'login' %}" class="login-link">Login</a>
-                <a href="{% url 'signup_page' %}" class="signup-btn">
-                    Create Account
-                </a>
-            </div>
-
-        </div>
-
-    </nav>
-</header>
+        </nav>
+    </header>
 
 {% endif %}
+
+<!-- ====================== PAGE CONTENT ====================== -->
 
 <main>
     {% block content %}
     {% endblock %}
 </main>
-
-{% block extra_js %}
-{% endblock %}
-
-{% if user.is_authenticated %}
-    <script src="{% static 'accounts/js/dashboard.js' %}"></script>
-{% else %}
-    <script>
-        const menuBtn = document.getElementById("menuBtn");
-        const navMenu = document.getElementById("navMenu");
-
-        if (menuBtn && navMenu) {
-            menuBtn.addEventListener("click", function () {
-                navMenu.classList.toggle("active");
-            });
-        }
-    </script>
-{% endif %}
-
 
 <!-- ====================== FOOTER ====================== -->
 
@@ -177,8 +265,16 @@
 
         <div class="footer-brand">
 
-            <a href="{% if user.is_authenticated %}{% url 'dashboard' %}{% else %}{% url 'home' %}{% endif %}">
-                <img src="{% static 'accounts/img/logo2.png' %}" alt="Squeeb">
+            {% if user.is_authenticated %}
+                <a href="{% url 'dashboard' %}">
+            {% else %}
+                <a href="{% url 'home' %}">
+            {% endif %}
+
+                <img
+                    src="{% static 'accounts/img/logo2.png' %}"
+                    alt="Squeeb"
+                >
             </a>
 
             <p>
@@ -186,103 +282,151 @@
             </p>
 
             <div class="social-links">
-                <a href="#"><i class="fab fa-facebook-f"></i></a>
-                <a href="#"><i class="fab fa-x-twitter"></i></a>
-                <a href="#"><i class="fab fa-instagram"></i></a>
-                <a href="#"><i class="fab fa-tiktok"></i></a>
+                <a href="#" aria-label="Facebook">
+                    <i class="fab fa-facebook-f"></i>
+                </a>
+
+                <a href="#" aria-label="X">
+                    <i class="fab fa-x-twitter"></i>
+                </a>
+
+                <a href="#" aria-label="Instagram">
+                    <i class="fab fa-instagram"></i>
+                </a>
+
+                <a href="#" aria-label="TikTok">
+                    <i class="fab fa-tiktok"></i>
+                </a>
             </div>
 
         </div>
 
         {% if user.is_authenticated %}
 
-        <!-- Logged In -->
+            <div class="footer-column">
+                <h4>Dashboard</h4>
 
-        <div class="footer-column">
+                <a href="{% url 'dashboard' %}">Dashboard</a>
+                <a href="{% url 'more_page' %}">My Profile</a>
+                <a href="{% url 'earnings' %}">Earnings</a>
+                <a href="{% url 'logout' %}">Logout</a>
+            </div>
 
-            <h4>Dashboard</h4>
+            <div class="footer-column">
+                <h4>Marketplace</h4>
 
-            <a href="{% url 'dashboard' %}">Dashboard</a>
-            <a href="{% url 'more_page' %}">My Profile</a>
-            <a href="{% url 'earnings' %}">Earnings</a>
-            <a href="{% url 'logout' %}">Logout</a>
+                <a href="{% url 'marketplace' %}">Browse Products</a>
+                <a href="{% url 'sell' %}">Sell Products</a>
+                <a href="{% url 'cart' %}">My Cart</a>
+                <a href="{% url 'seller_history' %}">Sold Items</a>
+            </div>
 
-        </div>
+            <div class="footer-column">
+                <h4>Tasks</h4>
 
-        <div class="footer-column">
+                <a href="{% url 'dashboard' %}">Create Task</a>
+                <a href="{% url 'earnings' %}">Earn Money</a>
+                <a href="{% url 'my_tasks' %}">My Tasks</a>
+            </div>
 
-            <h4>Marketplace</h4>
+            {% if request.user.is_staff %}
+                <div class="footer-column">
+                    <h4>Admin</h4>
 
-            <a href="{% url 'marketplace' %}">Browse Products</a>
-            <a href="{% url 'sell' %}">Sell Products</a>
-            <a href="{% url 'cart' %}">My Cart</a>
-            <a href="{% url 'seller_history' %}">Sold Items</a>
+                    <a href="{% url 'squeeb_admin_dashboard' %}">
+                        Admin Dashboard
+                    </a>
 
-        </div>
+                    <a href="{% url 'admin_campaigns' %}">
+                        Campaigns
+                    </a>
 
-        <div class="footer-column">
-
-            <h4>Tasks</h4>
-
-            <a href="{% url 'dashboard' %}">Create Task</a>
-            <a href="{% url 'earnings' %}">Earn Money</a>
-
-        </div>
+                    <a href="{% url 'admin_campaign_submissions' %}">
+                        Campaign Submissions
+                    </a>
+                </div>
+            {% endif %}
 
         {% else %}
 
-        <!-- Logged Out -->
+            <div class="footer-column">
+                <h4>Company</h4>
 
-        <div class="footer-column">
+                <a href="{% url 'about' %}">About</a>
+                <a href="{% url 'support' %}">Support</a>
+                <a href="#">Contact Us</a>
+                <a href="#">Careers</a>
+            </div>
 
-            <h4>Company</h4>
+            <div class="footer-column">
+                <h4>Marketplace</h4>
 
-            <a href="{% url 'about' %}">About</a>
-            <a href="{% url 'support' %}">Support</a>
-            <a href="#">Contact Us</a>
-            <a href="#">Careers</a>
+                <a href="{% url 'marketplace' %}">Browse Products</a>
+                <a href="{% url 'sell' %}">Sell Products</a>
+            </div>
 
-        </div>
+            <div class="footer-column">
+                <h4>Account</h4>
 
-        <div class="footer-column">
-
-            <h4>Marketplace</h4>
-
-            <a href="{% url 'marketplace' %}">Browse Products</a>
-            <a href="{% url 'sell' %}">Sell Products</a>
-
-        </div>
-
-        <div class="footer-column">
-
-            <h4>Account</h4>
-
-            <a href="{% url 'login' %}">Login</a>
-            <a href="{% url 'signup_page' %}">Create Account</a>
-
-        </div>
+                <a href="{% url 'login' %}">Login</a>
+                <a href="{% url 'signup' %}">Create Account</a>
+            </div>
 
         {% endif %}
 
         <div class="footer-column">
-
             <h4>Legal</h4>
 
-            <a href="{% url 'privacy_policy' %}">Privacy Policy</a>
-            <a href="{% url 'terms_conditions' %}">Terms & Conditions</a>
-            <a href="{% url 'refund_policy' %}">Refund Policy</a>
-            <a href="{% url 'cookie_policy' %}">Cookies Policy</a>
-            <a href="{% url 'acceptable_use' %}">Acceptable Use Policy</a>
+            <a href="{% url 'privacy_policy' %}">
+                Privacy Policy
+            </a>
+
+            <a href="{% url 'terms_conditions' %}">
+                Terms &amp; Conditions
+            </a>
+
+            <a href="{% url 'refund_policy' %}">
+                Refund Policy
+            </a>
+
+            <a href="{% url 'cookie_policy' %}">
+                Cookies Policy
+            </a>
+
+            <a href="{% url 'acceptable_use' %}">
+                Acceptable Use Policy
+            </a>
         </div>
 
     </div>
 
     <div class="footer-bottom">
-        <p>
-            © 2026 Squeeb. All rights reserved.
-        </p>
+        <p>© 2026 Squeeb. All rights reserved.</p>
     </div>
 
 </footer>
+
+<!-- ====================== JAVASCRIPT ====================== -->
+
+{% if user.is_authenticated %}
+    <script src="{% static 'accounts/js/dashboard.js' %}"></script>
+{% else %}
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            const menuBtn = document.getElementById("menuBtn");
+            const navMenu = document.getElementById("navMenu");
+
+            if (menuBtn && navMenu) {
+                menuBtn.addEventListener("click", function () {
+                    navMenu.classList.toggle("active");
+                });
+            }
+        });
+    </script>
+{% endif %}
+
+{% block extra_js %}
+{% endblock %}
+
 </body>
 </html>
