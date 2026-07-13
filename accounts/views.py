@@ -578,117 +578,6 @@ def admin_create_campaign(request):
 # AVAILABLE TASKS AND ADMIN CAMPAIGNS API
 # ==========================================================
 
-@login_required
-def get_tasks(request):
-    """
-    Returns SQUEEB campaigns and normal advertiser tasks in one
-    response.
-
-    Admin campaigns appear first because campaign_data is added
-    before task_data.
-    """
-
-    if not request.user.is_member:
-        return JsonResponse(
-            {
-                "error": (
-                    "Membership required to access tasks."
-                ),
-            },
-            status=403,
-        )
-
-    today = timezone.now().date()
-
-    # Campaigns that the current user has already submitted
-    # should no longer appear in the available task list.
-    submitted_campaign_ids = CampaignSubmission.objects.filter(
-        user=request.user,
-    ).values_list(
-        "campaign_id",
-        flat=True,
-    )
-
-    campaigns = AdminCampaign.objects.filter(
-        status="active",
-        start_date__lte=today,
-        end_date__gte=today,
-    ).exclude(
-        id__in=submitted_campaign_ids,
-    ).order_by(
-        "-created_at",
-    )
-
-    campaign_data = []
-
-    for campaign in campaigns:
-        slots_remaining = max(
-            0,
-            campaign.max_participants - campaign.participants,
-        )
-
-        # Do not show campaigns that have no available slots.
-        if slots_remaining <= 0:
-            continue
-
-        campaign_data.append({
-            "id": campaign.id,
-            "title": campaign.title,
-            "payout": str(campaign.reward),
-            "available": slots_remaining,
-            "icon": (
-                campaign.image.url
-                if campaign.image
-                else ""
-            ),
-            "instructions": campaign.description,
-            "short_desc": campaign.description,
-            "platforms": campaign.get_platform_display(),
-            "task_type": "campaign",
-            "featured": True,
-        })
-
-    # Get normal advertiser-created tasks.
-    tasks = Task.objects.filter(
-        available__gt=0,
-    ).exclude(
-        creator=request.user,
-    )
-
-    completed_task_ids = TaskCompletion.objects.filter(
-        user=request.user,
-    ).values_list(
-        "task_id",
-        flat=True,
-    )
-
-    tasks = tasks.exclude(
-        id__in=completed_task_ids,
-    ).order_by(
-        "-created_at",
-    )
-
-    task_data = []
-
-    for task in tasks:
-        task_data.append({
-            "id": task.id,
-            "title": task.title,
-            "payout": str(task.worker_reward),
-            "available": task.available,
-            "icon": task.icon,
-            "instructions": task.instructions,
-            "short_desc": task.short_desc,
-            "platforms": task.platforms,
-            "task_type": task.task_type,
-            "featured": False,
-        })
-
-    return JsonResponse({
-        "tasks": campaign_data + task_data,
-    })
-
-
 # ==========================================================
 # GET SINGLE ADMIN CAMPAIGN
 # ==========================================================
@@ -699,13 +588,6 @@ def get_campaign(request, campaign_id):
     Returns the full details of one active SQUEEB campaign.
     """
 
-    if not request.user.is_member:
-        return JsonResponse(
-            {
-                "error": "Membership required.",
-            },
-            status=403,
-        )
 
     today = timezone.now().date()
 
@@ -779,13 +661,6 @@ def submit_campaign(request, campaign_id):
             status=405,
         )
 
-    if not request.user.is_member:
-        return JsonResponse(
-            {
-                "error": "Membership required.",
-            },
-            status=403,
-        )
 
     today = timezone.now().date()
 
@@ -899,36 +774,6 @@ def bank_details(request):
 @login_required
 def my_tasks(request):
     return render(request, "accounts/dashboard/my_tasks.html")
-
-@login_required
-def my_tasks_api(request):
-    tasks = Task.objects.filter(
-        creator=request.user
-    ).order_by("-id")
-
-    data = []
-
-    for task in tasks:
-        data.append({
-            "id": task.id,
-            "title": task.title,
-            "platform": task.platforms,
-            "task_type": task.get_task_type_display(),
-            "available": task.available,
-            "budget": str(task.total_budget),
-            "reward": str(task.worker_reward),
-            "status": "Completed" if task.available == 0 else "Active",
-            "link": task.link,
-        })
-
-    return JsonResponse({
-        "tasks": data,
-        "total": tasks.count(),
-        "active": tasks.filter(available__gt=0).count(),
-        "completed": tasks.filter(available=0).count(),
-    })
-
-
 
 def privacy_policy(request):
     return render(request, "accounts/legal/privacy.html")
@@ -1944,41 +1789,118 @@ def user_info(request):
 # WITHDRAWAL
 # ==========================
 
+def _withdrawal_fee_details(user, amount):
+    """
+    Returns the applicable withdrawal fee information.
+
+    First successful withdrawal:
+    - No membership required
+    - 20% fee
+
+    Future withdrawals:
+    - Membership required
+    - 10% fee
+    """
+    if not user.first_withdrawal_completed:
+        fee_percentage = Decimal("20.00")
+    else:
+        fee_percentage = Decimal("10.00")
+
+    fee_amount = (amount * fee_percentage / Decimal("100")).quantize(
+        Decimal("0.01")
+    )
+    net_amount = (amount - fee_amount).quantize(Decimal("0.01"))
+
+    return fee_percentage, fee_amount, net_amount
+
+
 @login_required
+@require_POST
+@transaction.atomic
 def request_withdrawal(request):
-    if request.method != "POST":
-        return JsonResponse({
-            "success": False,
-            "message": "Invalid request method."
-        }, status=405)
+    user = User.objects.select_for_update().get(pk=request.user.pk)
 
-    user = request.user
-    method = request.POST.get("method")
-    amount = request.POST.get("amount")
+    if user.first_withdrawal_completed and not user.is_member:
+        return JsonResponse(
+            {
+                "success": False,
+                "membership_required": True,
+                "message": (
+                    "Your first withdrawal has been completed. "
+                    "Activate SQUEEB Membership before requesting "
+                    "another withdrawal."
+                ),
+            },
+            status=403,
+        )
 
-    if not method or not amount:
-        return JsonResponse({
-            "success": False,
-            "message": "Withdrawal method and amount are required."
-        }, status=400)
+    method = request.POST.get("method", "").strip()
+    amount_raw = request.POST.get("amount", "").strip()
 
-    amount = Decimal(amount)
+    if not method or not amount_raw:
+        return JsonResponse(
+            {
+                "success": False,
+                "message": "Withdrawal method and amount are required.",
+            },
+            status=400,
+        )
+
+    try:
+        amount = Decimal(amount_raw).quantize(Decimal("0.01"))
+    except Exception:
+        return JsonResponse(
+            {
+                "success": False,
+                "message": "Enter a valid withdrawal amount.",
+            },
+            status=400,
+        )
 
     if amount < Decimal("10.00"):
-        return JsonResponse({
-            "success": False,
-            "message": "Minimum withdrawal amount is £10."
-        }, status=400)
+        return JsonResponse(
+            {
+                "success": False,
+                "message": "Minimum withdrawal amount is £10.",
+            },
+            status=400,
+        )
 
     if user.balance < amount:
-        return JsonResponse({
-            "success": False,
-            "message": "Insufficient balance."
-        }, status=400)
+        return JsonResponse(
+            {
+                "success": False,
+                "message": "Insufficient balance.",
+            },
+            status=400,
+        )
+
+    if WithdrawalRequest.objects.filter(
+        user=user,
+        status="pending",
+    ).exists():
+        return JsonResponse(
+            {
+                "success": False,
+                "message": (
+                    "You already have a pending withdrawal request. "
+                    "Please wait for it to be processed."
+                ),
+            },
+            status=400,
+        )
+
+    fee_percentage, fee_amount, net_amount = _withdrawal_fee_details(
+        user,
+        amount,
+    )
 
     withdrawal = WithdrawalRequest.objects.create(
         user=user,
         amount=amount,
+        fee_percentage=fee_percentage,
+        fee_amount=fee_amount,
+        net_amount=net_amount,
         method=method,
         account_name=request.POST.get("account_name"),
         bank_name=request.POST.get("bank_name"),
@@ -1988,7 +1910,10 @@ def request_withdrawal(request):
     )
 
     approve_url = request.build_absolute_uri(
-        reverse("approve_withdrawal", args=[withdrawal.approval_token])
+        reverse(
+            "approve_withdrawal",
+            args=[withdrawal.approval_token],
+        )
     )
 
     subject = "New SQUEEB Withdrawal Request"
@@ -1998,7 +1923,9 @@ New Withdrawal Request
 
 User: {user.username}
 Email: {user.email}
-Amount: £{amount}
+Requested amount: £{amount}
+Fee: {fee_percentage}% (£{fee_amount})
+Amount to send: £{net_amount}
 Method: {method}
 
 Approve after manual payment:
@@ -2008,7 +1935,6 @@ Approve after manual payment:
     html_content = f"""
     <div style="font-family:Arial,sans-serif;background:#f5f7fb;padding:30px;">
         <div style="max-width:620px;margin:auto;background:white;border-radius:18px;overflow:hidden;box-shadow:0 10px 30px rgba(0,0,0,.08);">
-
             <div style="background:linear-gradient(135deg,#2563eb,#7c3aed);color:white;padding:28px;">
                 <h1 style="margin:0;font-size:24px;">SQUEEB Withdrawal Request</h1>
                 <p style="margin:8px 0 0;">A user has requested a withdrawal.</p>
@@ -2016,42 +1942,17 @@ Approve after manual payment:
 
             <div style="padding:28px;">
                 <table style="width:100%;border-collapse:collapse;border:1px solid #e5e7eb;">
-                    <tr>
-                        <td style="padding:12px;background:#f9fafb;font-weight:bold;">User</td>
-                        <td style="padding:12px;">{user.username}</td>
-                    </tr>
-                    <tr>
-                        <td style="padding:12px;background:#f9fafb;font-weight:bold;">Email</td>
-                        <td style="padding:12px;">{user.email}</td>
-                    </tr>
-                    <tr>
-                        <td style="padding:12px;background:#f9fafb;font-weight:bold;">Amount</td>
-                        <td style="padding:12px;font-weight:bold;color:#2563eb;">£{amount}</td>
-                    </tr>
-                    <tr>
-                        <td style="padding:12px;background:#f9fafb;font-weight:bold;">Method</td>
-                        <td style="padding:12px;">{method}</td>
-                    </tr>
-                    <tr>
-                        <td style="padding:12px;background:#f9fafb;font-weight:bold;">Account Name</td>
-                        <td style="padding:12px;">{withdrawal.account_name or "-"}</td>
-                    </tr>
-                    <tr>
-                        <td style="padding:12px;background:#f9fafb;font-weight:bold;">Bank Name</td>
-                        <td style="padding:12px;">{withdrawal.bank_name or "-"}</td>
-                    </tr>
-                    <tr>
-                        <td style="padding:12px;background:#f9fafb;font-weight:bold;">Sort Code</td>
-                        <td style="padding:12px;">{withdrawal.sort_code or "-"}</td>
-                    </tr>
-                    <tr>
-                        <td style="padding:12px;background:#f9fafb;font-weight:bold;">Account Number</td>
-                        <td style="padding:12px;">{withdrawal.account_number or "-"}</td>
-                    </tr>
-                    <tr>
-                        <td style="padding:12px;background:#f9fafb;font-weight:bold;">PayPal Email</td>
-                        <td style="padding:12px;">{withdrawal.paypal_email or "-"}</td>
-                    </tr>
+                    <tr><td style="padding:12px;background:#f9fafb;font-weight:bold;">User</td><td style="padding:12px;">{user.username}</td></tr>
+                    <tr><td style="padding:12px;background:#f9fafb;font-weight:bold;">Email</td><td style="padding:12px;">{user.email}</td></tr>
+                    <tr><td style="padding:12px;background:#f9fafb;font-weight:bold;">Requested Amount</td><td style="padding:12px;font-weight:bold;">£{amount}</td></tr>
+                    <tr><td style="padding:12px;background:#f9fafb;font-weight:bold;">Fee</td><td style="padding:12px;">{fee_percentage}% (£{fee_amount})</td></tr>
+                    <tr><td style="padding:12px;background:#f9fafb;font-weight:bold;">Amount to Send</td><td style="padding:12px;font-weight:bold;color:#2563eb;">£{net_amount}</td></tr>
+                    <tr><td style="padding:12px;background:#f9fafb;font-weight:bold;">Method</td><td style="padding:12px;">{method}</td></tr>
+                    <tr><td style="padding:12px;background:#f9fafb;font-weight:bold;">Account Name</td><td style="padding:12px;">{withdrawal.account_name or "-"}</td></tr>
+                    <tr><td style="padding:12px;background:#f9fafb;font-weight:bold;">Bank Name</td><td style="padding:12px;">{withdrawal.bank_name or "-"}</td></tr>
+                    <tr><td style="padding:12px;background:#f9fafb;font-weight:bold;">Sort Code</td><td style="padding:12px;">{withdrawal.sort_code or "-"}</td></tr>
+                    <tr><td style="padding:12px;background:#f9fafb;font-weight:bold;">Account Number</td><td style="padding:12px;">{withdrawal.account_number or "-"}</td></tr>
+                    <tr><td style="padding:12px;background:#f9fafb;font-weight:bold;">PayPal Email</td><td style="padding:12px;">{withdrawal.paypal_email or "-"}</td></tr>
                 </table>
 
                 <div style="margin-top:24px;text-align:center;">
@@ -2062,7 +1963,7 @@ Approve after manual payment:
                 </div>
 
                 <p style="margin-top:20px;color:#64748b;font-size:13px;">
-                    Only click this after you have manually sent the payment.
+                    Send exactly £{net_amount} to the user, then click the button.
                 </p>
             </div>
         </div>
@@ -2075,47 +1976,107 @@ Approve after manual payment:
         from_email=settings.DEFAULT_FROM_EMAIL,
         to=[settings.ADMIN_EMAIL],
     )
-
     email.attach_alternative(html_content, "text/html")
     email.send()
 
-    return JsonResponse({
-        "success": True,
-        "message": "Withdrawal request submitted successfully."
-    })
+    Notification.objects.create(
+        user=user,
+        title="Withdrawal submitted",
+        message=(
+            f"Your withdrawal request for £{amount} was submitted. "
+            f"After the {fee_percentage}% fee, you will receive £{net_amount}."
+        ),
+    )
+
+    return JsonResponse(
+        {
+            "success": True,
+            "message": "Withdrawal request submitted successfully.",
+            "amount": str(amount),
+            "fee_percentage": str(fee_percentage),
+            "fee_amount": str(fee_amount),
+            "net_amount": str(net_amount),
+        }
+    )
 
 
-
+@transaction.atomic
 def approve_withdrawal(request, token):
     withdrawal = get_object_or_404(
-        WithdrawalRequest,
-        approval_token=token
+        WithdrawalRequest.objects.select_for_update().select_related("user"),
+        approval_token=token,
     )
 
     if withdrawal.status == "paid":
-        return HttpResponse("This withdrawal has already been marked as paid.")
+        return HttpResponse(
+            "This withdrawal has already been marked as paid."
+        )
 
-    with transaction.atomic():
-        user = withdrawal.user
+    if withdrawal.status == "rejected":
+        return HttpResponse(
+            "A rejected withdrawal cannot be marked as paid."
+        )
 
-        if user.balance < withdrawal.amount:
-            return HttpResponse("User does not have enough balance.")
+    user = User.objects.select_for_update().get(pk=withdrawal.user_id)
 
-        user.balance -= withdrawal.amount
-        user.save()
+    if user.balance < withdrawal.amount:
+        return HttpResponse("User does not have enough balance.")
 
-        withdrawal.status = "paid"
-        withdrawal.paid_at = timezone.now()
-        withdrawal.save()
+    user.balance -= withdrawal.amount
 
-    return HttpResponse("Withdrawal marked as paid and user balance deducted successfully.")
+    if not user.first_withdrawal_completed:
+        user.first_withdrawal_completed = True
+
+    user.save(
+        update_fields=[
+            "balance",
+            "first_withdrawal_completed",
+        ]
+    )
+
+    withdrawal.status = "paid"
+    withdrawal.paid_at = timezone.now()
+    withdrawal.save(
+        update_fields=[
+            "status",
+            "paid_at",
+        ]
+    )
+
+    Notification.objects.create(
+        user=user,
+        title="Withdrawal paid",
+        message=(
+            f"Your withdrawal has been paid. "
+            f"You received £{withdrawal.net_amount} after fees."
+        ),
+    )
+
+    return HttpResponse(
+        "Withdrawal marked as paid and user balance deducted successfully."
+    )
 
 
 @login_required
 def withdrawals(request):
-    return render(request, "accounts/dashboard/withdrawals.html")
-
-
+    return render(
+        request,
+        "accounts/dashboard/withdrawals.html",
+        {
+            "first_withdrawal_completed": (
+                request.user.first_withdrawal_completed
+            ),
+            "membership_required": (
+                request.user.first_withdrawal_completed
+                and not request.user.is_member
+            ),
+            "fee_percentage": (
+                Decimal("10.00")
+                if request.user.first_withdrawal_completed
+                else Decimal("20.00")
+            ),
+        },
+    )
 
 
 @login_required
@@ -2125,7 +2086,6 @@ def withdrawal_history_api(request):
     ).order_by("-created_at")
 
     data = []
-
     pending_total = Decimal("0.00")
     paid_total = Decimal("0.00")
     rejected_count = 0
@@ -2133,28 +2093,44 @@ def withdrawal_history_api(request):
     for withdrawal in withdrawals:
         if withdrawal.status == "pending":
             pending_total += withdrawal.amount
-
-        if withdrawal.status == "paid":
-            paid_total += withdrawal.amount
-
-        if withdrawal.status == "rejected":
+        elif withdrawal.status == "paid":
+            paid_total += withdrawal.net_amount
+        elif withdrawal.status == "rejected":
             rejected_count += 1
 
-        data.append({
-            "id": withdrawal.id,
-            "amount": str(withdrawal.amount),
-            "method": withdrawal.method,
-            "status": withdrawal.status,
-            "created_at": withdrawal.created_at.strftime("%d %b %Y, %I:%M %p"),
-            "paid_at": withdrawal.paid_at.strftime("%d %b %Y, %I:%M %p") if withdrawal.paid_at else "",
-        })
+        data.append(
+            {
+                "id": withdrawal.id,
+                "amount": str(withdrawal.amount),
+                "fee_percentage": str(withdrawal.fee_percentage),
+                "fee_amount": str(withdrawal.fee_amount),
+                "net_amount": str(withdrawal.net_amount),
+                "method": withdrawal.method,
+                "status": withdrawal.status,
+                "created_at": withdrawal.created_at.strftime(
+                    "%d %b %Y, %I:%M %p"
+                ),
+                "paid_at": (
+                    withdrawal.paid_at.strftime("%d %b %Y, %I:%M %p")
+                    if withdrawal.paid_at
+                    else ""
+                ),
+            }
+        )
 
-    return JsonResponse({
-        "withdrawals": data,
-        "pending_total": str(pending_total),
-        "paid_total": str(paid_total),
-        "rejected_count": rejected_count,
-    })
+    return JsonResponse(
+        {
+            "withdrawals": data,
+            "pending_total": str(pending_total),
+            "paid_total": str(paid_total),
+            "rejected_count": rejected_count,
+            "membership_required": (
+                request.user.first_withdrawal_completed
+                and not request.user.is_member
+            ),
+            "is_member": request.user.is_member,
+        }
+    )
 
 # ==========================
 # SELL PRODUCT
@@ -2200,8 +2176,6 @@ def delete_product(request, product_id):
 # ==========================
 @login_required
 def get_tasks(request):
-    if not request.user.is_member:
-        return JsonResponse({"error": "Membership required to access tasks."}, status=403)
 
     today = timezone.now().date()
 
@@ -2260,8 +2234,6 @@ def get_tasks(request):
 
 @login_required
 def get_single_task(request, task_id):
-    if not request.user.is_member:
-        return JsonResponse({"error": "Membership required."}, status=403)
 
     task = get_object_or_404(Task, id=task_id)
 
@@ -2485,8 +2457,6 @@ def complete_task(request, task_id):
     if request.method != "POST":
         return JsonResponse({"error": "POST required"}, status=400)
 
-    if not request.user.is_member:
-        return JsonResponse({"error": "Membership required."}, status=403)
 
     task = get_object_or_404(Task, id=task_id)
 

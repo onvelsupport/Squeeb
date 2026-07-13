@@ -12,27 +12,53 @@ class WithdrawalRequest(models.Model):
         ("rejected", "Rejected"),
     ]
 
-    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name="withdrawal_requests",
+    )
 
     amount = models.DecimalField(max_digits=10, decimal_places=2)
-    method = models.CharField(max_length=50)
+    fee_percentage = models.DecimalField(
+        max_digits=5,
+        decimal_places=2,
+        default=0,
+    )
+    fee_amount = models.DecimalField(
+        max_digits=10,
+        decimal_places=2,
+        default=0,
+    )
+    net_amount = models.DecimalField(
+        max_digits=10,
+        decimal_places=2,
+        default=0,
+    )
 
+    method = models.CharField(max_length=50)
     account_name = models.CharField(max_length=255, blank=True, null=True)
     bank_name = models.CharField(max_length=255, blank=True, null=True)
     sort_code = models.CharField(max_length=20, blank=True, null=True)
     account_number = models.CharField(max_length=20, blank=True, null=True)
     paypal_email = models.EmailField(blank=True, null=True)
 
-    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default="pending")
+    status = models.CharField(
+        max_length=20,
+        choices=STATUS_CHOICES,
+        default="pending",
+    )
     approval_token = models.UUIDField(default=uuid.uuid4, editable=False)
 
     created_at = models.DateTimeField(auto_now_add=True)
     paid_at = models.DateTimeField(blank=True, null=True)
 
     def __str__(self):
-        return f"{self.user.username} - £{self.amount} - {self.status}"
-    
-
+        return (
+            f"{self.user.username} - "
+            f"£{self.amount} requested - "
+            f"£{self.net_amount} payable - "
+            f"{self.status}"
+        )
 
 class Follow(models.Model):
     follower = models.ForeignKey(
@@ -59,7 +85,12 @@ class User(AbstractUser):
     earnings = models.DecimalField(max_digits=10, decimal_places=2, default=0)
     tasks_completed = models.IntegerField(default=0)
     referrals = models.IntegerField(default=0)
+
     is_member = models.BooleanField(default=False)
+
+    first_withdrawal_completed = models.BooleanField(
+        default=False
+    )
 
     country = models.CharField(
         max_length=100,
