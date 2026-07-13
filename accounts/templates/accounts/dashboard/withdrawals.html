@@ -1,159 +1,495 @@
 {% extends 'accounts/base.html' %}
 {% load static %}
 
-{% block title %}Withdrawals | SQUEEB{% endblock %}
+{% block title %}
+Withdrawals | SQUEEB
+{% endblock %}
 
 {% block extra_css %}
-<link rel="stylesheet" href="{% static 'accounts/css/withdrawals.css' %}">
+<link
+    rel="stylesheet"
+    href="{% static 'accounts/css/withdrawals.css' %}"
+>
 {% endblock %}
 
 {% block content %}
 
 <div class="withdraw-page">
+
     <main class="withdraw-main">
 
         <section class="withdraw-hero">
+
             <div>
                 <p class="eyebrow">Withdraw Funds</p>
-                <h1>Hello, <span id="usernameDisplay">User</span></h1>
-                <p>Submit withdrawal requests and track their approval status.</p>
+
+                <h1>
+                    Hello,
+                    <span id="usernameDisplay">User</span>
+                </h1>
+
+                <p>
+                    Request a withdrawal, review the applicable fee,
+                    and track the status of your payments.
+                </p>
             </div>
 
             <div class="balance-card">
                 <p>Available Balance</p>
+
                 <h2 id="balanceAmount">£0.00</h2>
-                <p>Choose how you want to withdraw from your SQUEEB wallet.</p>
+
+                <p>
+                    Minimum withdrawal amount:
+                    <strong>£10.00</strong>
+                </p>
             </div>
+
         </section>
 
+        <section
+            class="withdrawal-status-panel"
+            id="withdrawalStatusPanel"
+        >
+            <div class="withdrawal-status-content">
+
+                <p class="eyebrow">
+                    Withdrawal Status
+                </p>
+
+                <h2 id="withdrawalStatusTitle">
+                    Your first withdrawal is available
+                </h2>
+
+                <p id="withdrawalStatusMessage">
+                    Membership is not required for your first withdrawal.
+                    A 20% withdrawal fee will apply.
+                </p>
+
+            </div>
+
+            <div class="withdrawal-status-action">
+
+                <div class="current-fee-card">
+                    <span>Current Fee</span>
+                    <strong id="currentWithdrawalFee">20%</strong>
+                </div>
+
+                <button
+                    type="button"
+                    id="activateMembershipBtn"
+                    class="activate-membership-btn"
+                    style="display: none;"
+                >
+                    Activate Membership
+                </button>
+
+                <div
+                    id="membershipActiveBadge"
+                    class="membership-active-badge"
+                    style="display: none;"
+                >
+                    <i class="fa fa-circle-check"></i>
+                    Membership Active
+                </div>
+
+            </div>
+
+        </section>
+
+        <div
+            class="membership-required-notice"
+            id="membershipRequiredNotice"
+            style="display: none;"
+        >
+            <i class="fa fa-lock"></i>
+
+            <div>
+                <strong>
+                    Membership required for your next withdrawal
+                </strong>
+
+                <p>
+                    You can continue completing tasks and earning money,
+                    but you must activate SQUEEB Membership before making
+                    another withdrawal.
+                </p>
+            </div>
+        </div>
+
         <section class="withdraw-stats">
+
             <div>
                 <strong id="pendingWithdrawals">£0.00</strong>
-                <span>Pending Withdrawals</span>
+                <span>Pending Requests</span>
             </div>
 
             <div>
                 <strong id="paidWithdrawals">£0.00</strong>
-                <span>Total Paid</span>
+                <span>Total Received</span>
             </div>
 
             <div>
                 <strong id="rejectedWithdrawals">0</strong>
                 <span>Rejected Requests</span>
             </div>
+
         </section>
 
         <section class="withdraw-options">
 
-            <!-- Withdraw to bank available 
-            <button class="withdraw-option" id="openBankModal">
+            <button
+                type="button"
+                class="withdraw-option disabled"
+                id="openBankModal"
+                disabled
+            >
                 <i class="fa fa-building-columns"></i>
+
                 <h3>Withdraw to Bank</h3>
-                <p>Send money to a UK bank account.</p>
+
+                <p>
+                    Temporarily unavailable.
+                </p>
             </button>
 
-            -->
-
-            <button class="withdraw-option disabled" id="openBankModal" disabled>
-                <i class="fa fa-building-columns"></i>
-                <h3>Withdraw to Bank</h3>
-                <p>Temporarily unavailable.</p>
-            </button>
-
-            <button class="withdraw-option" id="openPaypalModal">
+            <button
+                type="button"
+                class="withdraw-option"
+                id="openPaypalModal"
+            >
                 <i class="fa-brands fa-paypal"></i>
+
                 <h3>Withdraw to PayPal</h3>
-                <p>Send money to your PayPal account.</p>
+
+                <p>
+                    Send your net withdrawal amount to PayPal.
+                </p>
+
+                <span class="withdraw-option-fee">
+                    Fee:
+                    <strong id="paypalOptionFee">20%</strong>
+                </span>
             </button>
 
         </section>
 
         <section class="withdraw-history-section">
+
             <div class="section-heading">
                 <div>
                     <h2>Withdrawal History</h2>
-                    <p>Track pending, paid, and rejected withdrawal requests.</p>
+
+                    <p>
+                        Review requested amounts, fees, net payouts,
+                        and withdrawal statuses.
+                    </p>
                 </div>
             </div>
 
             <div class="withdraw-tabs">
-                <button class="withdraw-tab active" data-status="all">All</button>
-                <button class="withdraw-tab" data-status="pending">Pending</button>
-                <button class="withdraw-tab" data-status="paid">Paid</button>
-                <button class="withdraw-tab" data-status="rejected">Rejected</button>
+
+                <button
+                    type="button"
+                    class="withdraw-tab active"
+                    data-status="all"
+                >
+                    All
+                </button>
+
+                <button
+                    type="button"
+                    class="withdraw-tab"
+                    data-status="pending"
+                >
+                    Pending
+                </button>
+
+                <button
+                    type="button"
+                    class="withdraw-tab"
+                    data-status="paid"
+                >
+                    Paid
+                </button>
+
+                <button
+                    type="button"
+                    class="withdraw-tab"
+                    data-status="rejected"
+                >
+                    Rejected
+                </button>
+
             </div>
 
-            <div class="withdraw-history-list" id="withdrawHistoryList">
+            <div
+                class="withdraw-history-list"
+                id="withdrawHistoryList"
+            >
                 <div class="empty-withdraw">
                     <i class="fa fa-clock"></i>
+
                     <h3>Loading withdrawals...</h3>
-                    <p>Please wait while we fetch your withdrawal history.</p>
+
+                    <p>
+                        Please wait while we fetch your withdrawal history.
+                    </p>
                 </div>
             </div>
+
         </section>
 
     </main>
+
 </div>
 
-<!-- BANK MODAL -->
-<div class="modal-overlay" id="bankModal">
+<!-- Bank withdrawal modal -->
+<div
+    class="modal-overlay"
+    id="bankModal"
+>
     <div class="withdraw-modal">
-        <button class="close-modal" data-close="bankModal">&times;</button>
+
+        <button
+            type="button"
+            class="close-modal"
+            data-close="bankModal"
+            aria-label="Close bank withdrawal modal"
+        >
+            &times;
+        </button>
 
         <h2>Bank Withdrawal</h2>
-        <p>Enter your UK bank details carefully.</p>
+
+        <p>
+            Enter your UK bank details carefully.
+        </p>
 
         <form id="bankWithdrawForm">
-            <input type="hidden" name="method" value="Bank Account">
 
-            <label>Amount</label>
-            <input type="number" name="amount" min="10" step="0.01" required>
+            <input
+                type="hidden"
+                name="method"
+                value="Bank Account"
+            >
+
+            <label for="bankWithdrawalAmount">
+                Withdrawal Amount
+            </label>
+
+            <input
+                type="number"
+                id="bankWithdrawalAmount"
+                name="amount"
+                min="10"
+                step="0.01"
+                placeholder="10.00"
+                required
+            >
+
             <small class="field-hint">
-                Minimum withdrawal amount is <strong>£10.00</strong>.
+                Minimum withdrawal amount is
+                <strong>£10.00</strong>.
             </small>
 
+            <div class="withdrawal-calculation">
 
-            <label>Account Name</label>
-            <input type="text" name="account_name" required>
+                <div>
+                    <span>Requested</span>
+                    <strong id="bankRequestedAmount">£0.00</strong>
+                </div>
 
-            <label>Bank Name</label>
-            <input type="text" name="bank_name" required>
+                <div>
+                    <span>
+                        Fee
+                        (<span id="bankFeePercentage">20%</span>)
+                    </span>
 
-            <label>Sort Code</label>
-            <input type="text" name="sort_code" placeholder="12-34-56" maxlength="8" required>
+                    <strong id="bankFeeAmount">£0.00</strong>
+                </div>
 
-            <label>Account Number</label>
-            <input type="text" name="account_number" maxlength="8" required>
+                <div class="withdrawal-net-row">
+                    <span>You will receive</span>
+                    <strong id="bankNetAmount">£0.00</strong>
+                </div>
 
-            <button type="submit">Submit Withdrawal</button>
+            </div>
+
+            <label for="accountName">
+                Account Name
+            </label>
+
+            <input
+                type="text"
+                id="accountName"
+                name="account_name"
+                autocomplete="name"
+                required
+            >
+
+            <label for="bankName">
+                Bank Name
+            </label>
+
+            <input
+                type="text"
+                id="bankName"
+                name="bank_name"
+                required
+            >
+
+            <label for="sortCode">
+                Sort Code
+            </label>
+
+            <input
+                type="text"
+                id="sortCode"
+                name="sort_code"
+                placeholder="12-34-56"
+                maxlength="8"
+                required
+            >
+
+            <label for="accountNumber">
+                Account Number
+            </label>
+
+            <input
+                type="text"
+                id="accountNumber"
+                name="account_number"
+                maxlength="8"
+                inputmode="numeric"
+                required
+            >
+
+            <button
+                type="submit"
+                class="submit-withdrawal-btn"
+            >
+                Submit Withdrawal
+            </button>
+
             <p class="withdraw-msg"></p>
+
         </form>
+
     </div>
 </div>
 
-<!-- PAYPAL MODAL -->
-<div class="modal-overlay" id="paypalModal">
+<!-- PayPal withdrawal modal -->
+<div
+    class="modal-overlay"
+    id="paypalModal"
+>
     <div class="withdraw-modal">
-        <button class="close-modal" data-close="paypalModal">&times;</button>
+
+        <button
+            type="button"
+            class="close-modal"
+            data-close="paypalModal"
+            aria-label="Close PayPal withdrawal modal"
+        >
+            &times;
+        </button>
+
+        <div class="modal-method-icon paypal">
+            <i class="fa-brands fa-paypal"></i>
+        </div>
 
         <h2>PayPal Withdrawal</h2>
-        <p>Enter the PayPal email you want to receive money with.</p>
+
+        <p>
+            Enter the PayPal email address where you want to receive
+            your payment.
+        </p>
 
         <form id="paypalWithdrawForm">
-            <input type="hidden" name="method" value="PayPal">
 
-            <label>Amount</label>
-            <input type="number" name="amount" min="10" step="0.01" required>
+            <input
+                type="hidden"
+                name="method"
+                value="PayPal"
+            >
+
+            <label for="paypalWithdrawalAmount">
+                Withdrawal Amount
+            </label>
+
+            <input
+                type="number"
+                id="paypalWithdrawalAmount"
+                name="amount"
+                min="10"
+                step="0.01"
+                placeholder="10.00"
+                required
+            >
+
             <small class="field-hint">
-                Minimum withdrawal amount is <strong>£10.00</strong>.
+                Minimum withdrawal amount is
+                <strong>£10.00</strong>.
             </small>
 
-            <label>PayPal Email</label>
-            <input type="email" name="paypal_email" required>
+            <div class="withdrawal-calculation">
 
-            <button type="submit">Submit Withdrawal</button>
+                <div>
+                    <span>Requested</span>
+                    <strong id="paypalRequestedAmount">£0.00</strong>
+                </div>
+
+                <div>
+                    <span>
+                        Fee
+                        (<span id="paypalFeePercentage">20%</span>)
+                    </span>
+
+                    <strong id="paypalFeeAmount">£0.00</strong>
+                </div>
+
+                <div class="withdrawal-net-row">
+                    <span>You will receive</span>
+                    <strong id="paypalNetAmount">£0.00</strong>
+                </div>
+
+            </div>
+
+            <label for="paypalEmail">
+                PayPal Email
+            </label>
+
+            <input
+                type="email"
+                id="paypalEmail"
+                name="paypal_email"
+                placeholder="name@example.com"
+                autocomplete="email"
+                required
+            >
+
+            <div class="withdrawal-warning">
+                <i class="fa fa-circle-info"></i>
+
+                <p>
+                    Check your PayPal email carefully. SQUEEB is not
+                    responsible for payments sent to an incorrect email
+                    address supplied by you.
+                </p>
+            </div>
+
+            <button
+                type="submit"
+                class="submit-withdrawal-btn"
+            >
+                Submit Withdrawal
+            </button>
+
             <p class="withdraw-msg"></p>
+
         </form>
+
     </div>
 </div>
 
