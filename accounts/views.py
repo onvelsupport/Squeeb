@@ -1753,7 +1753,6 @@ from .models import Follow, TaskCompletion, Referral
 
 @login_required
 def user_info(request):
-
     followers_count = Follow.objects.filter(
         following=request.user
     ).count()
@@ -1782,7 +1781,15 @@ def user_info(request):
         "tasks_completed": approved_tasks_count,
         "referrals": referrals_count,
 
+        # Membership status
         "is_member": request.user.is_member,
+
+        # Needed by the new earnings dashboard.
+        # False = first withdrawal not completed.
+        # True = first withdrawal completed.
+        "first_withdrawal_completed": (
+            request.user.first_withdrawal_completed
+        ),
     })
 
 # ==========================
