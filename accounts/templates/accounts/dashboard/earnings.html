@@ -6,6 +6,7 @@ Earnings | SQUEEB
 {% endblock %}
 
 {% block extra_css %}
+
 <link rel="stylesheet" href="{% static 'accounts/css/earnings.css' %}">
 {% endblock %}
 
@@ -13,226 +14,378 @@ Earnings | SQUEEB
 
 <div class="dashboard-page">
 
-    <main class="earnings-page">
+```
+<main class="earnings-page">
 
-        <section class="earnings-hero">
-            <div>
-                <p class="eyebrow">Earnings Dashboard</p>
-                <h1>Earn money on SQUEEB</h1>
-                <p>
-                    Complete social tasks, submit proof, and track pending, approved, and rejected submissions.
-                </p>
-            </div>
+    <section class="earnings-hero">
+        <div>
+            <p class="eyebrow">Earnings Dashboard</p>
 
-            <a href="{% url 'dashboard' %}" class="back-btn">
-                <i class="fa fa-plus"></i>
-                Create a Task
-            </a>
-        </section>
+            <h1>Earn money on SQUEEB</h1>
 
-        <section class="profile-strip">
-            <img src="{% static 'accounts/img/avatar.png' %}" alt="Profile">
-
-            <div>
-                <h3 id="usernameDisplay">User</h3>
-                <span id="usernameTag">@user</span>
-            </div>
-
-            <div class="profile-metrics">
-                <div>
-                    <strong id="balanceAmount">£0.00</strong>
-                    <span>Wallet</span>
-                </div>
-
-                <div>
-                    <strong id="earningsTotal">£0.00</strong>
-                    <span>Earnings</span>
-                </div>
-
-                <div>
-                    <strong id="tasksCompleted">0</strong>
-                    <span>Approved Tasks</span>
-                </div>
-
-                <div>
-                    <strong id="referrals">0</strong>
-                    <span>Referrals</span>
-                </div>
-            </div>
-        </section>
-
-        <section class="membership-panel" id="membershipSection">
-            <div>
-                <p class="eyebrow">Membership</p>
-                <h2>Activate your earning access</h2>
-                <p>
-                    Pay the membership fee to unlock available tasks and start earning from social activity.
-                </p>
-            </div>
-
-            <div class="membership-price">
-                <span>One-time fee</span>
-                <h2>£10</h2>
-                <button id="payMembershipBtn">Activate Membership</button>
-            </div>
-        </section>
-
-        <section class="task-section">
-            <div class="section-heading">
-                <div>
-                    <h2>Available Tasks</h2>
-                    <p>Choose a task, complete it, and submit your proof for review.</p>
-                </div>
-            </div>
-
-            <div id="taskList" class="task-grid">
-                <div class="empty-task">
-                    <i class="fa fa-list-check"></i>
-                    <h3>No tasks available yet</h3>
-                    <p>Tasks will appear here once your account has access.</p>
-                </div>
-            </div>
-        </section>
-
-        <section class="submission-panel">
-            <div class="section-heading">
-                <div>
-                    <h2>My Task Submissions</h2>
-                    <p>Track tasks you submitted for review.</p>
-                </div>
-            </div>
-
-            <div class="submission-tabs">
-                <button class="submission-tab active" data-status="all">All</button>
-                <button class="submission-tab" data-status="pending">Pending</button>
-                <button class="submission-tab" data-status="approved">Approved</button>
-                <button class="submission-tab" data-status="rejected">Rejected</button>
-            </div>
-
-            <div id="submissionList" class="submission-list">
-                <div class="empty-task">
-                    <i class="fa fa-clock"></i>
-                    <h3>Loading submissions...</h3>
-                    <p>Please wait while we fetch your submitted tasks.</p>
-                </div>
-            </div>
-        </section>
-
-        <section class="activity-panel">
-            <div class="section-heading">
-                <div>
-                    <h2>Recent Activity</h2>
-                    <p>See what people are earning on SQUEEB.</p>
-                </div>
-            </div>
-
-            <div class="activity-list" id="activityList">
-                <div class="activity-item">
-                    <p>Loading activities...</p>
-                </div>
-            </div>
-        </section>
-
-    </main>
-
-</div>
-
-<div class="task-modal-bg" id="taskModal">
-    <div class="task-modal">
-
-        <div class="task-modal-header">
-            <div>
-                <p class="task-modal-eyebrow">Earning Opportunity</p>
-                <h2 id="modalTaskTitle">Task Title</h2>
-            </div>
-
-            <button
-                type="button"
-                class="modal-close"
-                id="cancelTaskBtn"
-                aria-label="Close modal"
-            >
-                ✖
-            </button>
+            <p>
+                Complete social tasks, earn rewards, submit proof,
+                and withdraw your earnings whenever you are eligible.
+            </p>
         </div>
 
-        <div class="task-modal-body">
+        <a href="{% url 'dashboard' %}" class="back-btn">
+            <i class="fa fa-plus"></i>
+            Create a Task
+        </a>
+    </section>
 
-            <div class="task-meta">
-                <p>
-                    <strong>Platform:</strong>
-                    <span id="modalPlatform"></span>
-                </p>
+    <section class="profile-strip">
+        <img
+            src="{% static 'accounts/img/avatar.png' %}"
+            alt="Profile"
+        >
 
-                <p>
-                    <strong>Task Type:</strong>
-                    <span id="modalType"></span>
-                </p>
+        <div class="profile-identity">
+            <h3 id="usernameDisplay">User</h3>
+            <span id="usernameTag">@user</span>
+        </div>
+
+        <div class="profile-metrics">
+
+            <div>
+                <strong id="balanceAmount">£0.00</strong>
+                <span>Wallet</span>
             </div>
 
-            <div
-                id="modalTaskInstructions"
-                class="task-instructions"
-            ></div>
+            <div>
+                <strong id="earningsTotal">£0.00</strong>
+                <span>Earnings</span>
+            </div>
+
+            <div>
+                <strong id="tasksCompleted">0</strong>
+                <span>Approved Tasks</span>
+            </div>
+
+            <div>
+                <strong id="referrals">0</strong>
+                <span>Referrals</span>
+            </div>
+
+        </div>
+    </section>
+
+    <section
+        class="withdrawal-panel"
+        id="withdrawalPanel"
+    >
+        <div class="withdrawal-info">
+            <p class="eyebrow">Withdrawals</p>
+
+            <h2>Withdraw your earnings</h2>
+
+            <p id="withdrawalMessage">
+                Your first withdrawal does not require membership.
+                A 20% withdrawal fee will be applied.
+            </p>
 
             <a
-                id="modalTaskLink"
-                href="#"
-                target="_blank"
-                rel="noopener noreferrer"
-                class="task-link"
+                href="{% url 'withdrawals' %}"
+                class="withdrawal-link"
             >
-                Open Task Link
+                Go to Withdrawals
             </a>
-
-            <div
-                class="form-group"
-                id="campaignVideoGroup"
-                style="display:none;"
-            >
-                <label for="campaignVideoLink">
-                    Published Video Link
-                </label>
-
-                <input
-                    type="url"
-                    id="campaignVideoLink"
-                    placeholder="https://www.tiktok.com/..."
-                >
-            </div>
-
-            <div class="proof-upload-group">
-                <label for="proofInput">Upload Screenshot Proof</label>
-
-                <input
-                    type="file"
-                    id="proofInput"
-                    accept="image/*"
-                >
-            </div>
-
         </div>
 
-        <div class="task-modal-footer">
-            <div>
-                <span>Reward</span>
-                <h3 id="modalTaskReward">Earn £0.00</h3>
+        <div class="withdrawal-action">
+
+            <div class="fee-card">
+                <span>Current Fee</span>
+                <h2 id="withdrawalFee">20%</h2>
             </div>
 
             <button
                 type="button"
-                id="submitProofBtn"
-                class="submit-proof-btn"
+                id="activateMembershipBtn"
+                class="activate-membership-btn"
+                style="display: none;"
             >
-                Submit Proof
+                Activate Membership
             </button>
+
+            <div
+                id="membershipActiveBadge"
+                class="membership-active-badge"
+                style="display: none;"
+            >
+                <i class="fa fa-circle-check"></i>
+                Membership Active
+            </div>
+
+        </div>
+    </section>
+
+    <div class="earning-banner">
+
+        <i class="fa-solid fa-circle-info"></i>
+
+        <div>
+            <strong>Good news!</strong>
+
+            <p>
+                You can complete tasks without membership.
+                Membership is only required before making a second
+                withdrawal.
+            </p>
         </div>
 
     </div>
+
+    <section class="task-section">
+
+        <div class="section-heading">
+            <div>
+                <h2>Available Tasks</h2>
+
+                <p>
+                    Complete tasks and campaigns to grow your earnings.
+                    Membership is not required to participate.
+                </p>
+            </div>
+        </div>
+
+        <div id="taskList" class="task-grid">
+
+            <div class="empty-task">
+                <i class="fa fa-list-check"></i>
+
+                <h3>No tasks available yet</h3>
+
+                <p>
+                    There are currently no tasks available.
+                    Check back again soon.
+                </p>
+            </div>
+
+        </div>
+    </section>
+
+    <section class="submission-panel">
+
+        <div class="section-heading">
+            <div>
+                <h2>My Task Submissions</h2>
+
+                <p>
+                    Track your pending, approved, and rejected
+                    submissions.
+                </p>
+            </div>
+        </div>
+
+        <div class="submission-tabs">
+
+            <button
+                type="button"
+                class="submission-tab active"
+                data-status="all"
+            >
+                All
+            </button>
+
+            <button
+                type="button"
+                class="submission-tab"
+                data-status="pending"
+            >
+                Pending
+            </button>
+
+            <button
+                type="button"
+                class="submission-tab"
+                data-status="approved"
+            >
+                Approved
+            </button>
+
+            <button
+                type="button"
+                class="submission-tab"
+                data-status="rejected"
+            >
+                Rejected
+            </button>
+
+        </div>
+
+        <div
+            id="submissionList"
+            class="submission-list"
+        >
+            <div class="empty-task">
+                <i class="fa fa-clock"></i>
+
+                <h3>Loading submissions...</h3>
+
+                <p>
+                    Please wait while we fetch your submitted tasks.
+                </p>
+            </div>
+        </div>
+
+    </section>
+
+    <section class="activity-panel">
+
+        <div class="section-heading">
+            <div>
+                <h2>Recent Activity</h2>
+
+                <p>
+                    See what people are earning on SQUEEB.
+                </p>
+            </div>
+        </div>
+
+        <div
+            class="activity-list"
+            id="activityList"
+        >
+            <div class="activity-item">
+                <p>Loading activities...</p>
+            </div>
+        </div>
+
+    </section>
+
+</main>
+```
+
+</div>
+
+<div
+    class="task-modal-bg"
+    id="taskModal"
+>
+    <div class="task-modal">
+
+```
+    <div class="task-modal-header">
+
+        <div>
+            <p class="task-modal-eyebrow">
+                Complete this task and earn
+            </p>
+
+            <h2 id="modalTaskTitle">
+                Task Title
+            </h2>
+        </div>
+
+        <button
+            type="button"
+            class="modal-close"
+            id="cancelTaskBtn"
+            aria-label="Close task modal"
+        >
+            <i class="fa fa-xmark"></i>
+        </button>
+
+    </div>
+
+    <div class="task-modal-body">
+
+        <div class="task-meta">
+
+            <p>
+                <strong>Platform:</strong>
+                <span id="modalPlatform">—</span>
+            </p>
+
+            <p>
+                <strong>Task Type:</strong>
+                <span id="modalType">—</span>
+            </p>
+
+        </div>
+
+        <div
+            id="modalTaskInstructions"
+            class="task-instructions"
+        ></div>
+
+        <a
+            id="modalTaskLink"
+            href="#"
+            target="_blank"
+            rel="noopener noreferrer"
+            class="task-link"
+        >
+            <i class="fa fa-arrow-up-right-from-square"></i>
+            Open Task Link
+        </a>
+
+        <div
+            class="form-group"
+            id="campaignVideoGroup"
+            style="display: none;"
+        >
+            <label for="campaignVideoLink">
+                Published Video Link
+            </label>
+
+            <input
+                type="url"
+                id="campaignVideoLink"
+                placeholder="https://www.tiktok.com/..."
+                autocomplete="off"
+            >
+        </div>
+
+        <div class="proof-upload-group">
+
+            <label for="proofInput">
+                Upload Screenshot Proof
+            </label>
+
+            <input
+                type="file"
+                id="proofInput"
+                accept="image/*"
+            >
+
+            <p class="proof-help">
+                Upload a clear screenshot showing that you completed
+                the task.
+            </p>
+
+        </div>
+
+    </div>
+
+    <div class="task-modal-footer">
+
+        <div>
+            <span>Reward</span>
+            <h3 id="modalTaskReward">Earn £0.00</h3>
+        </div>
+
+        <button
+            type="button"
+            id="submitProofBtn"
+            class="submit-proof-btn"
+        >
+            Submit Proof
+        </button>
+
+    </div>
+
+</div>
+```
+
 </div>
 
 {% endblock %}
 
 {% block extra_js %}
+
 <script src="{% static 'accounts/js/earnings.js' %}"></script>
+
 {% endblock %}
