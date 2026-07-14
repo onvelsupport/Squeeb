@@ -1,1058 +1,478 @@
 document.addEventListener("DOMContentLoaded", () => {
-    const money = (value) =>
-        `£${parseFloat(value || 0).toFixed(2)}`;
-
-    const bankModal = document.getElementById("bankModal");
-    const paypalModal = document.getElementById("paypalModal");
-
-    const openBankModal = document.getElementById("openBankModal");
-    const openPaypalModal = document.getElementById("openPaypalModal");
-
-    const withdrawHistoryList = document.getElementById(
-        "withdrawHistoryList"
-    );
-
-    const withdrawTabs = document.querySelectorAll(
-        ".withdraw-tab"
-    );
-
-    const withdrawalStatusTitle = document.getElementById(
-        "withdrawalStatusTitle"
-    );
-
-    const withdrawalStatusMessage = document.getElementById(
-        "withdrawalStatusMessage"
-    );
-
-    const currentWithdrawalFee = document.getElementById(
-        "currentWithdrawalFee"
-    );
-
-    const activateMembershipBtn = document.getElementById(
-        "activateMembershipBtn"
-    );
-
-    const membershipActiveBadge = document.getElementById(
-        "membershipActiveBadge"
-    );
-
-    const membershipRequiredNotice = document.getElementById(
-        "membershipRequiredNotice"
-    );
-
-    const paypalOptionFee = document.getElementById(
-        "paypalOptionFee"
-    );
-
-    const bankWithdrawalAmount = document.getElementById(
-        "bankWithdrawalAmount"
-    );
-
-    const paypalWithdrawalAmount = document.getElementById(
-        "paypalWithdrawalAmount"
-    );
-
-    let allWithdrawals = [];
-    let activeFilter = "all";
-
+    const MINIMUM_WITHDRAWAL = 10;
     let currentFeePercentage = 20;
-    let membershipRequired = false;
-    let currentBalance = 0;
+    let allWithdrawals = [];
+    let availableBalance = 0;
 
-    // ==========================================================
-    // MODALS
-    // ==========================================================
+    const byId = (id) => document.getElementById(id);
 
-    openBankModal?.addEventListener("click", () => {
-        if (
-            openBankModal.disabled ||
-            openBankModal.classList.contains("membership-locked")
-        ) {
-            return;
+    const money = (value) => {
+        const amount = Number.parseFloat(value || 0);
+        return new Intl.NumberFormat("en-GB", {
+            style: "currency",
+            currency: "GBP",
+        }).format(Number.isFinite(amount) ? amount : 0);
+    };
+
+    const escapeHtml = (value) => {
+        const div = document.createElement("div");
+        div.textContent = String(value ?? "");
+        return div.innerHTML;
+    };
+
+    const setText = (id, value) => {
+        const element = byId(id);
+        if (element) element.textContent = value;
+    };
+
+    const getCookie = (name) => {
+        const cookie = document.cookie
+            .split(";")
+            .map((item) => item.trim())
+            .find((item) => item.startsWith(`${name}=`));
+
+        return cookie ? decodeURIComponent(cookie.split("=")[1]) : "";
+    };
+
+    const getErrorMessage = async (response) => {
+        try {
+            const data = await response.json();
+            return data.message || data.error || "Something went wrong.";
+        } catch {
+            return "Something went wrong. Please try again.";
         }
+    };
 
-        bankModal?.classList.add("show");
-    });
+    function openModal(modalId) {
+        const modal = byId(modalId);
+        if (!modal) return;
 
-    openPaypalModal?.addEventListener("click", () => {
-        if (
-            openPaypalModal.disabled ||
-            openPaypalModal.classList.contains("membership-locked")
-        ) {
-            alert(
-                "Activate SQUEEB Membership before making another withdrawal."
-            );
+        modal.classList.add("show");
+        modal.setAttribute("aria-hidden", "false");
+        document.body.classList.add("modal-open");
 
-            return;
-        }
-
-        paypalModal?.classList.add("show");
-    });
-
-    function closeModal(modal) {
-        if (!modal) {
-            return;
-        }
-
-        modal.classList.remove("show");
-
-        const form = modal.querySelector("form");
-        const message = modal.querySelector(".withdraw-msg");
-
-        form?.reset();
-
-        if (message) {
-            message.textContent = "";
-            message.className = "withdraw-msg";
-        }
-
-        resetCalculation(modal);
+        const firstInput = modal.querySelector("input:not([type='hidden'])");
+        window.setTimeout(() => firstInput?.focus(), 50);
     }
 
-    document.querySelectorAll(".close-modal").forEach((button) => {
-        button.addEventListener("click", () => {
-            const modal = document.getElementById(
-                button.dataset.close
+    function closeModal(modalId) {
+        const modal = byId(modalId);
+        if (!modal) return;
+
+        modal.classList.remove("show");
+        modal.setAttribute("aria-hidden", "true");
+        document.body.classList.remove("modal-open");
+    }
+
+    function updateFeeDisplay(fee) {
+        currentFeePercentage = Number.parseFloat(fee) || 0;
+        const label = `${currentFeePercentage}%`;
+
+        setText("summaryFee", label);
+        setText("currentWithdrawalFee", label);
+        setText("paypalOptionFee", label);
+        setText("paypalFeePercentage", label);
+
+        calculatePaypalWithdrawal();
+    }
+
+    function calculatePaypalWithdrawal() {
+        const amountInput = byId("paypalWithdrawalAmount");
+        const amount = Number.parseFloat(amountInput?.value || 0);
+        const safeAmount = Number.isFinite(amount) ? amount : 0;
+        const feeAmount = safeAmount * (currentFeePercentage / 100);
+        const netAmount = Math.max(0, safeAmount - feeAmount);
+
+        setText("paypalRequestedAmount", money(safeAmount));
+        setText("paypalFeeAmount", money(feeAmount));
+        setText("paypalNetAmount", money(netAmount));
+    }
+
+    function updateMembershipState(user) {
+        const firstCompleted = Boolean(
+            user.first_withdrawal_completed ??
+            user.firstWithdrawalCompleted
+        );
+
+        const isMember = Boolean(user.is_member ?? user.isMember);
+        const notice = byId("membershipRequiredNotice");
+        const activeBadge = byId("membershipActiveBadge");
+
+        updateFeeDisplay(firstCompleted ? 10 : 20);
+
+        if (!firstCompleted) {
+            setText(
+                "withdrawalStatusTitle",
+                "Your first withdrawal is available"
+            );
+            setText(
+                "withdrawalStatusMessage",
+                "Membership is not required. A 20% withdrawal fee applies."
             );
 
-            closeModal(modal);
-        });
-    });
-
-    document.querySelectorAll(".modal-overlay").forEach((modal) => {
-        modal.addEventListener("click", (event) => {
-            if (event.target === modal) {
-                closeModal(modal);
-            }
-        });
-    });
-
-    window.addEventListener("keydown", (event) => {
-        if (event.key !== "Escape") {
+            if (notice) notice.hidden = true;
+            if (activeBadge) activeBadge.hidden = true;
             return;
         }
 
-        closeModal(bankModal);
-        closeModal(paypalModal);
-    });
+        if (isMember) {
+            setText("withdrawalStatusTitle", "Membership active");
+            setText(
+                "withdrawalStatusMessage",
+                "You can request another withdrawal. A 10% fee applies."
+            );
 
-    // ==========================================================
-    // USER INFORMATION
-    // ==========================================================
+            if (notice) notice.hidden = true;
+            if (activeBadge) activeBadge.hidden = false;
+            return;
+        }
+
+        setText("withdrawalStatusTitle", "Membership required");
+        setText(
+            "withdrawalStatusMessage",
+            "Activate membership before requesting another withdrawal."
+        );
+
+        if (notice) notice.hidden = false;
+        if (activeBadge) activeBadge.hidden = true;
+    }
 
     async function loadUser() {
         try {
             const response = await fetch("/api/user-info/", {
-                method: "GET",
-                credentials: "include",
-                headers: {
-                    "Accept": "application/json"
-                }
+                credentials: "same-origin",
+                headers: { Accept: "application/json" },
             });
 
-            if (
-                response.status === 401 ||
-                response.status === 403 ||
-                response.redirected
-            ) {
-                window.location.href = "/login/";
-                return;
-            }
+            if (!response.ok) return;
 
-            if (!response.ok) {
-                console.error(
-                    "USER INFO ERROR:",
-                    response.status
-                );
+            const data = await response.json();
+            const user = data.user || data;
 
-                return;
-            }
-
-            const user = await response.json();
-
-            currentBalance = parseFloat(user.balance || 0);
-
-            const usernameDisplay = document.getElementById(
-                "usernameDisplay"
+            setText(
+                "usernameDisplay",
+                user.username || user.name || "User"
             );
 
-            const balanceAmount = document.getElementById(
-                "balanceAmount"
-            );
+            availableBalance = Number.parseFloat(
+                user.balance ?? user.wallet_balance ?? 0
+            ) || 0;
 
-            if (usernameDisplay) {
-                usernameDisplay.textContent =
-                    user.username || "User";
+            setText("balanceAmount", money(availableBalance));
+            updateMembershipState(user);
+
+            const paypalEmail = byId("paypalEmail");
+            if (paypalEmail && !paypalEmail.value && user.email) {
+                paypalEmail.value = user.email;
             }
-
-            if (balanceAmount) {
-                balanceAmount.textContent = money(
-                    user.balance
-                );
-            }
-
-            updateWithdrawalStatus(user);
-
         } catch (error) {
-            console.error(
-                "USER LOAD ERROR:",
-                error
-            );
+            console.error("USER INFO ERROR:", error);
         }
     }
 
-    // ==========================================================
-    // WITHDRAWAL STATUS
-    // ==========================================================
-
-    function updateWithdrawalStatus(user) {
-        /*
-         * First withdrawal:
-         * - No membership required
-         * - 20% fee
-         */
-        if (!user.first_withdrawal_completed) {
-            currentFeePercentage = 20;
-            membershipRequired = false;
-
-            if (withdrawalStatusTitle) {
-                withdrawalStatusTitle.textContent =
-                    "Your first withdrawal is available";
-            }
-
-            if (withdrawalStatusMessage) {
-                withdrawalStatusMessage.textContent =
-                    "Membership is not required for your first withdrawal. " +
-                    "A 20% withdrawal fee will apply.";
-            }
-
-            if (currentWithdrawalFee) {
-                currentWithdrawalFee.textContent = "20%";
-            }
-
-            if (paypalOptionFee) {
-                paypalOptionFee.textContent = "20%";
-            }
-
-            if (activateMembershipBtn) {
-                activateMembershipBtn.style.display = "none";
-            }
-
-            if (membershipActiveBadge) {
-                membershipActiveBadge.style.display = "none";
-            }
-
-            if (membershipRequiredNotice) {
-                membershipRequiredNotice.style.display = "none";
-            }
-
-            unlockWithdrawalOptions();
-            updateAllCalculations();
-
-            return;
-        }
-
-        /*
-         * After the first withdrawal:
-         * - User may continue earning
-         * - Membership required for another withdrawal
-         */
-        if (!user.is_member) {
-            currentFeePercentage = 10;
-            membershipRequired = true;
-
-            if (withdrawalStatusTitle) {
-                withdrawalStatusTitle.textContent =
-                    "Activate membership to withdraw again";
-            }
-
-            if (withdrawalStatusMessage) {
-                withdrawalStatusMessage.textContent =
-                    "Your first withdrawal has been completed. " +
-                    "Activate SQUEEB Membership before requesting another withdrawal.";
-            }
-
-            if (currentWithdrawalFee) {
-                currentWithdrawalFee.textContent = "10%";
-            }
-
-            if (paypalOptionFee) {
-                paypalOptionFee.textContent = "10%";
-            }
-
-            if (activateMembershipBtn) {
-                activateMembershipBtn.style.display = "block";
-            }
-
-            if (membershipActiveBadge) {
-                membershipActiveBadge.style.display = "none";
-            }
-
-            if (membershipRequiredNotice) {
-                membershipRequiredNotice.style.display = "flex";
-            }
-
-            lockWithdrawalOptions();
-            updateAllCalculations();
-
-            return;
-        }
-
-        /*
-         * Active members:
-         * - Future withdrawals allowed
-         * - 10% fee
-         */
-        currentFeePercentage = 10;
-        membershipRequired = false;
-
-        if (withdrawalStatusTitle) {
-            withdrawalStatusTitle.textContent =
-                "Membership active";
-        }
-
-        if (withdrawalStatusMessage) {
-            withdrawalStatusMessage.textContent =
-                "You can make future withdrawals with a reduced 10% fee.";
-        }
-
-        if (currentWithdrawalFee) {
-            currentWithdrawalFee.textContent = "10%";
-        }
-
-        if (paypalOptionFee) {
-            paypalOptionFee.textContent = "10%";
-        }
-
-        if (activateMembershipBtn) {
-            activateMembershipBtn.style.display = "none";
-        }
-
-        if (membershipActiveBadge) {
-            membershipActiveBadge.style.display = "flex";
-        }
-
-        if (membershipRequiredNotice) {
-            membershipRequiredNotice.style.display = "none";
-        }
-
-        unlockWithdrawalOptions();
-        updateAllCalculations();
-    }
-
-    function lockWithdrawalOptions() {
-        if (openPaypalModal) {
-            openPaypalModal.classList.add(
-                "membership-locked"
-            );
-
-            openPaypalModal.setAttribute(
-                "aria-disabled",
-                "true"
-            );
-        }
-    }
-
-    function unlockWithdrawalOptions() {
-        if (openPaypalModal) {
-            openPaypalModal.classList.remove(
-                "membership-locked"
-            );
-
-            openPaypalModal.removeAttribute(
-                "aria-disabled"
-            );
-        }
-    }
-
-    // ==========================================================
-    // MEMBERSHIP ACTIVATION
-    // ==========================================================
-
-    activateMembershipBtn?.addEventListener(
-        "click",
-        async () => {
-            activateMembershipBtn.disabled = true;
-            activateMembershipBtn.textContent =
-                "Processing...";
-
-            try {
-                const response = await fetch(
-                    "/pay-membership/",
-                    {
-                        method: "POST",
-                        credentials: "include",
-                        headers: {
-                            "Accept": "application/json",
-                            "X-CSRFToken": getCookie(
-                                "csrftoken"
-                            ),
-                            "X-Requested-With":
-                                "XMLHttpRequest"
-                        }
-                    }
-                );
-
-                const data = await response.json();
-
-                if (!response.ok) {
-                    alert(
-                        data.error ||
-                        data.message ||
-                        "Membership activation failed."
-                    );
-
-                    return;
-                }
-
-                alert(
-                    data.message ||
-                    "Membership activated successfully."
-                );
-
-                await loadUser();
-
-            } catch (error) {
-                console.error(
-                    "MEMBERSHIP ERROR:",
-                    error
-                );
-
-                alert(
-                    "Network error. Please try again."
-                );
-
-            } finally {
-                activateMembershipBtn.disabled = false;
-                activateMembershipBtn.textContent =
-                    "Activate Membership";
-            }
-        }
-    );
-
-    // ==========================================================
-    // FEE CALCULATIONS
-    // ==========================================================
-
-    function calculateWithdrawal(amount) {
-        const requestedAmount = parseFloat(amount || 0);
-
-        if (
-            Number.isNaN(requestedAmount) ||
-            requestedAmount <= 0
-        ) {
-            return {
-                requested: 0,
-                fee: 0,
-                net: 0
-            };
-        }
-
-        const fee =
-            requestedAmount *
-            (currentFeePercentage / 100);
-
-        const net = requestedAmount - fee;
-
+    function normaliseWithdrawal(item) {
         return {
-            requested: requestedAmount,
-            fee,
-            net
+            id: item.id,
+            method: item.method || "Withdrawal",
+            amount: Number.parseFloat(item.amount || 0) || 0,
+            feePercentage: Number.parseFloat(
+                item.fee_percentage ?? item.feePercent ?? 0
+            ) || 0,
+            feeAmount: Number.parseFloat(
+                item.fee_amount ?? item.fee ?? 0
+            ) || 0,
+            netAmount: Number.parseFloat(
+                item.net_amount ?? item.net ?? item.amount ?? 0
+            ) || 0,
+            status: String(item.status || "pending").toLowerCase(),
+            createdAt:
+                item.created_at ||
+                item.created ||
+                item.date ||
+                "",
         };
     }
 
-    function updateCalculation(type, amount) {
-        const calculation = calculateWithdrawal(amount);
+    function renderWithdrawals(status = "all") {
+        const list = byId("withdrawHistoryList");
+        if (!list) return;
 
-        const requestedElement = document.getElementById(
-            `${type}RequestedAmount`
-        );
+        const filtered = status === "all"
+            ? allWithdrawals
+            : allWithdrawals.filter((item) => item.status === status);
 
-        const feePercentageElement = document.getElementById(
-            `${type}FeePercentage`
-        );
-
-        const feeAmountElement = document.getElementById(
-            `${type}FeeAmount`
-        );
-
-        const netAmountElement = document.getElementById(
-            `${type}NetAmount`
-        );
-
-        if (requestedElement) {
-            requestedElement.textContent = money(
-                calculation.requested
-            );
-        }
-
-        if (feePercentageElement) {
-            feePercentageElement.textContent =
-                `${currentFeePercentage}%`;
-        }
-
-        if (feeAmountElement) {
-            feeAmountElement.textContent = money(
-                calculation.fee
-            );
-        }
-
-        if (netAmountElement) {
-            netAmountElement.textContent = money(
-                calculation.net
-            );
-        }
-    }
-
-    function updateAllCalculations() {
-        updateCalculation(
-            "bank",
-            bankWithdrawalAmount?.value
-        );
-
-        updateCalculation(
-            "paypal",
-            paypalWithdrawalAmount?.value
-        );
-    }
-
-    function resetCalculation(modal) {
-        if (modal === bankModal) {
-            updateCalculation("bank", 0);
-        }
-
-        if (modal === paypalModal) {
-            updateCalculation("paypal", 0);
-        }
-    }
-
-    bankWithdrawalAmount?.addEventListener(
-        "input",
-        () => {
-            updateCalculation(
-                "bank",
-                bankWithdrawalAmount.value
-            );
-        }
-    );
-
-    paypalWithdrawalAmount?.addEventListener(
-        "input",
-        () => {
-            updateCalculation(
-                "paypal",
-                paypalWithdrawalAmount.value
-            );
-        }
-    );
-
-    // ==========================================================
-    // WITHDRAWAL HISTORY
-    // ==========================================================
-
-    async function loadWithdrawals() {
-        if (!withdrawHistoryList) {
+        if (!filtered.length) {
+            list.innerHTML = `
+                <div class="empty-withdraw">
+                    <i class="fa fa-receipt"></i>
+                    <h3>No ${status === "all" ? "" : escapeHtml(status)} withdrawals</h3>
+                    <p>Your withdrawal requests will appear here.</p>
+                </div>
+            `;
             return;
         }
 
+        list.innerHTML = filtered.map((item) => `
+            <article class="withdraw-history-item">
+                <div>
+                    <h3>${escapeHtml(item.method)}</h3>
+                    <p>${escapeHtml(item.createdAt || "Date unavailable")}</p>
+                    <p>
+                        Fee ${escapeHtml(item.feePercentage)}%
+                        · Net ${money(item.netAmount)}
+                    </p>
+                    <span class="status-badge ${escapeHtml(item.status)}">
+                        ${escapeHtml(item.status)}
+                    </span>
+                </div>
+
+                <div class="withdraw-history-amount">
+                    <strong>${money(item.amount)}</strong>
+                </div>
+            </article>
+        `).join("");
+    }
+
+    async function loadWithdrawals() {
+        const list = byId("withdrawHistoryList");
+
         try {
-            const response = await fetch(
-                "/api/withdrawal-history/",
-                {
-                    method: "GET",
-                    credentials: "include",
-                    headers: {
-                        "Accept": "application/json"
-                    }
-                }
-            );
+            const response = await fetch("/api/withdrawal-history/", {
+                credentials: "same-origin",
+                headers: { Accept: "application/json" },
+            });
 
             if (!response.ok) {
-                withdrawHistoryList.innerHTML = `
-                    <div class="empty-withdraw">
-                        <i class="fa fa-triangle-exclamation"></i>
-
-                        <h3>Could not load withdrawals</h3>
-
-                        <p>
-                            Please refresh the page and try again.
-                        </p>
-                    </div>
-                `;
-
-                return;
+                throw new Error(await getErrorMessage(response));
             }
 
             const data = await response.json();
+            const records =
+                data.withdrawals ||
+                data.history ||
+                data.results ||
+                [];
 
-            allWithdrawals =
-                data.withdrawals || [];
+            allWithdrawals = records.map(normaliseWithdrawal);
+
+            const pendingTotal = Number.parseFloat(
+                data.pending_total ?? data.pendingWithdrawals
+            );
+
+            const paidTotal = Number.parseFloat(
+                data.paid_total ?? data.paidWithdrawals
+            );
+
+            const rejectedCount = Number.parseInt(
+                data.rejected_count ?? data.rejectedWithdrawals,
+                10
+            );
 
             setText(
                 "pendingWithdrawals",
-                money(data.pending_total || 0)
+                money(
+                    Number.isFinite(pendingTotal)
+                        ? pendingTotal
+                        : allWithdrawals
+                            .filter((item) => item.status === "pending")
+                            .reduce((sum, item) => sum + item.amount, 0)
+                )
             );
 
             setText(
                 "paidWithdrawals",
-                money(data.paid_total || 0)
+                money(
+                    Number.isFinite(paidTotal)
+                        ? paidTotal
+                        : allWithdrawals
+                            .filter((item) => item.status === "paid")
+                            .reduce((sum, item) => sum + item.netAmount, 0)
+                )
             );
 
             setText(
                 "rejectedWithdrawals",
-                data.rejected_count || 0
+                Number.isFinite(rejectedCount)
+                    ? rejectedCount
+                    : allWithdrawals.filter(
+                        (item) => item.status === "rejected"
+                    ).length
             );
 
-            renderWithdrawals();
-
+            renderWithdrawals("all");
         } catch (error) {
-            console.error(
-                "WITHDRAWAL HISTORY ERROR:",
-                error
-            );
+            console.error("WITHDRAWAL HISTORY ERROR:", error);
 
-            withdrawHistoryList.innerHTML = `
-                <div class="empty-withdraw">
-                    <i class="fa fa-wifi"></i>
-
-                    <h3>Network error</h3>
-
-                    <p>
-                        Check your connection and try again.
-                    </p>
-                </div>
-            `;
-        }
-    }
-
-    function statusIcon(status) {
-        if (status === "paid") {
-            return "fa-circle-check";
-        }
-
-        if (status === "rejected") {
-            return "fa-circle-xmark";
-        }
-
-        return "fa-clock";
-    }
-
-    function statusText(status) {
-        if (status === "paid") {
-            return "Paid";
-        }
-
-        if (status === "rejected") {
-            return "Rejected";
-        }
-
-        return "Pending";
-    }
-
-    function escapeHtml(value) {
-        const div = document.createElement("div");
-
-        div.textContent = value || "";
-
-        return div.innerHTML;
-    }
-
-    function renderWithdrawals() {
-        if (!withdrawHistoryList) {
-            return;
-        }
-
-        let withdrawals = allWithdrawals;
-
-        if (activeFilter !== "all") {
-            withdrawals = allWithdrawals.filter(
-                (item) =>
-                    item.status === activeFilter
-            );
-        }
-
-        if (!withdrawals.length) {
-            withdrawHistoryList.innerHTML = `
-                <div class="empty-withdraw">
-                    <i class="fa fa-wallet"></i>
-
-                    <h3>
-                        No ${
-                            activeFilter === "all"
-                                ? ""
-                                : activeFilter
-                        } withdrawals
-                    </h3>
-
-                    <p>
-                        Your withdrawal requests will appear here.
-                    </p>
-                </div>
-            `;
-
-            return;
-        }
-
-        withdrawHistoryList.innerHTML = withdrawals
-            .map((item) => {
-                const amount = parseFloat(
-                    item.amount || 0
-                );
-
-                const feePercentage = parseFloat(
-                    item.fee_percentage || 0
-                );
-
-                const feeAmount = parseFloat(
-                    item.fee_amount || 0
-                );
-
-                const netAmount = parseFloat(
-                    item.net_amount || 0
-                );
-
-                return `
-                    <div class="withdraw-card">
-
-                        <div class="withdraw-card-details">
-
-                            <span class="
-                                withdraw-status
-                                ${escapeHtml(item.status)}
-                            ">
-                                <i class="
-                                    fa
-                                    ${statusIcon(item.status)}
-                                "></i>
-
-                                ${statusText(item.status)}
-                            </span>
-
-                            <h3>
-                                ${escapeHtml(
-                                    item.method ||
-                                    "Withdrawal"
-                                )}
-                            </h3>
-
-                            <p>
-                                <i class="fa fa-calendar"></i>
-
-                                Requested:
-                                ${escapeHtml(
-                                    item.created_at ||
-                                    ""
-                                )}
-                            </p>
-
-                            ${
-                                item.paid_at
-                                    ? `
-                                        <p>
-                                            <i class="
-                                                fa
-                                                fa-circle-check
-                                            "></i>
-
-                                            Paid:
-                                            ${escapeHtml(
-                                                item.paid_at
-                                            )}
-                                        </p>
-                                    `
-                                    : item.status === "rejected"
-                                        ? `
-                                            <p>
-                                                <i class="
-                                                    fa
-                                                    fa-circle-xmark
-                                                "></i>
-
-                                                Request rejected
-                                            </p>
-                                        `
-                                        : `
-                                            <p>
-                                                <i class="
-                                                    fa
-                                                    fa-hourglass-half
-                                                "></i>
-
-                                                Waiting for admin review
-                                            </p>
-                                        `
-                            }
-
-                        </div>
-
-                        <div class="withdraw-amount-breakdown">
-
-                            <span>
-                                Requested amount
-                            </span>
-
-                            <strong>
-                                ${money(amount)}
-                            </strong>
-
-                            <div class="withdraw-fee-details">
-
-                                <span>
-                                    Fee:
-                                    ${feePercentage.toFixed(0)}%
-                                    (${money(feeAmount)})
-                                </span>
-
-                                <span>
-                                    You receive:
-                                    ${money(netAmount)}
-                                </span>
-
-                            </div>
-
-                        </div>
-
+            if (list) {
+                list.innerHTML = `
+                    <div class="empty-withdraw">
+                        <i class="fa fa-triangle-exclamation"></i>
+                        <h3>Unable to load withdrawals</h3>
+                        <p>${escapeHtml(error.message)}</p>
                     </div>
                 `;
-            })
-            .join("");
+            }
+        }
     }
 
-    withdrawTabs.forEach((tab) => {
-        tab.addEventListener("click", () => {
-            withdrawTabs.forEach((button) => {
-                button.classList.remove("active");
-            });
+    async function submitPaypalWithdrawal(event) {
+        event.preventDefault();
 
-            tab.classList.add("active");
-
-            activeFilter =
-                tab.dataset.status || "all";
-
-            renderWithdrawals();
-        });
-    });
-
-    // ==========================================================
-    // SUBMIT WITHDRAWAL
-    // ==========================================================
-
-    async function submitWithdrawal(form) {
-        const message = form.querySelector(
-            ".withdraw-msg"
+        const form = event.currentTarget;
+        const message = form.querySelector(".withdraw-msg");
+        const submitButton = form.querySelector(
+            ".submit-withdrawal-btn"
         );
 
-        const button = form.querySelector(
-            "button[type='submit']"
+        const amount = Number.parseFloat(
+            byId("paypalWithdrawalAmount")?.value || 0
         );
 
-        const amountInput = form.querySelector(
-            "input[name='amount']"
-        );
+        const paypalEmail = byId("paypalEmail")?.value.trim() || "";
 
-        if (!message || !button || !amountInput) {
+        if (!Number.isFinite(amount) || amount < MINIMUM_WITHDRAWAL) {
+            message.textContent = "Minimum withdrawal amount is £10.";
+            message.className = "withdraw-msg error";
             return;
         }
 
+        if (amount > availableBalance) {
+            message.textContent = "Your available balance is too low.";
+            message.className = "withdraw-msg error";
+            return;
+        }
+
+        if (!paypalEmail) {
+            message.textContent = "Enter your PayPal email address.";
+            message.className = "withdraw-msg error";
+            return;
+        }
+
+        submitButton.disabled = true;
+        submitButton.textContent = "Submitting...";
         message.textContent = "";
         message.className = "withdraw-msg";
 
-        if (membershipRequired) {
-            message.textContent =
-                "Activate membership before requesting another withdrawal.";
-
-            message.className =
-                "withdraw-msg error";
-
-            return;
-        }
-
-        const amount = parseFloat(
-            amountInput.value || 0
-        );
-
-        if (
-            Number.isNaN(amount) ||
-            amount < 10
-        ) {
-            message.textContent =
-                "Minimum withdrawal amount is £10.00.";
-
-            message.className =
-                "withdraw-msg error";
-
-            return;
-        }
-
-        if (amount > currentBalance) {
-            message.textContent =
-                "The withdrawal amount exceeds your available balance.";
-
-            message.className =
-                "withdraw-msg error";
-
-            return;
-        }
-
-        button.disabled = true;
-        button.textContent = "Submitting...";
-
-        const formData = new FormData(form);
-
         try {
-            const response = await fetch(
-                "/request-withdrawal/",
-                {
-                    method: "POST",
-                    body: formData,
-                    credentials: "include",
-                    headers: {
-                        "X-CSRFToken": getCookie(
-                            "csrftoken"
-                        ),
-                        "X-Requested-With":
-                            "XMLHttpRequest"
-                    }
-                }
-            );
+            const formData = new FormData(form);
+
+            const response = await fetch("/request-withdrawal/", {
+                method: "POST",
+                credentials: "same-origin",
+                headers: {
+                    "X-CSRFToken": getCookie("csrftoken"),
+                    "X-Requested-With": "XMLHttpRequest",
+                },
+                body: formData,
+            });
 
             const data = await response.json();
 
-            if (
-                !response.ok ||
-                !data.success
-            ) {
+            if (!response.ok || data.success === false) {
                 if (data.membership_required) {
-                    membershipRequired = true;
-
-                    await loadUser();
+                    const notice = byId("membershipRequiredNotice");
+                    if (notice) notice.hidden = false;
                 }
 
-                message.textContent =
+                throw new Error(
                     data.message ||
-                    "Withdrawal request failed.";
-
-                message.className =
-                    "withdraw-msg error";
-
-                return;
+                    data.error ||
+                    "Withdrawal request failed."
+                );
             }
 
             message.textContent =
                 data.message ||
                 "Withdrawal request submitted successfully.";
 
-            message.className =
-                "withdraw-msg success";
+            message.className = "withdraw-msg success";
 
-            await loadUser();
-            await loadWithdrawals();
+            form.reset();
+            calculatePaypalWithdrawal();
 
-            setTimeout(() => {
-                const modal = form.closest(
-                    ".modal-overlay"
-                );
+            await Promise.all([loadUser(), loadWithdrawals()]);
 
-                closeModal(modal);
+            window.setTimeout(() => {
+                closeModal("paypalModal");
+                message.textContent = "";
+                message.className = "withdraw-msg";
             }, 1200);
-
         } catch (error) {
-            console.error(
-                "WITHDRAWAL SUBMIT ERROR:",
-                error
-            );
-
-            message.textContent =
-                "Network error. Please try again.";
-
-            message.className =
-                "withdraw-msg error";
-
+            console.error("WITHDRAWAL SUBMIT ERROR:", error);
+            message.textContent = error.message;
+            message.className = "withdraw-msg error";
         } finally {
-            button.disabled = false;
-            button.textContent =
-                "Submit Withdrawal";
+            submitButton.disabled = false;
+            submitButton.textContent = "Submit Withdrawal";
         }
     }
 
-    const bankWithdrawForm = document.getElementById(
-        "bankWithdrawForm"
+    byId("openPaypalModal")?.addEventListener("click", () => {
+        const message = byId("paypalWithdrawForm")?.querySelector(
+            ".withdraw-msg"
+        );
+
+        if (message) {
+            message.textContent = "";
+            message.className = "withdraw-msg";
+        }
+
+        openModal("paypalModal");
+    });
+
+    document.querySelectorAll(".close-modal").forEach((button) => {
+        button.addEventListener("click", () => {
+            closeModal(button.dataset.close);
+        });
+    });
+
+    document.querySelectorAll(".modal-overlay").forEach((modal) => {
+        modal.addEventListener("click", (event) => {
+            if (event.target === modal) closeModal(modal.id);
+        });
+    });
+
+    document.addEventListener("keydown", (event) => {
+        if (event.key !== "Escape") return;
+
+        document.querySelectorAll(".modal-overlay.show").forEach(
+            (modal) => closeModal(modal.id)
+        );
+    });
+
+    byId("paypalWithdrawalAmount")?.addEventListener(
+        "input",
+        calculatePaypalWithdrawal
     );
 
-    const paypalWithdrawForm = document.getElementById(
-        "paypalWithdrawForm"
-    );
-
-    bankWithdrawForm?.addEventListener(
+    byId("paypalWithdrawForm")?.addEventListener(
         "submit",
-        (event) => {
-            event.preventDefault();
-
-            submitWithdrawal(
-                bankWithdrawForm
-            );
-        }
+        submitPaypalWithdrawal
     );
 
-    paypalWithdrawForm?.addEventListener(
-        "submit",
-        (event) => {
-            event.preventDefault();
+    byId("activateMembershipBtn")?.addEventListener("click", () => {
+        window.location.href = "/pay-membership/";
+    });
 
-            submitWithdrawal(
-                paypalWithdrawForm
+    byId("historyToggle")?.addEventListener("click", (event) => {
+        const button = event.currentTarget;
+        const content = byId("historyContent");
+        const expanded = button.getAttribute("aria-expanded") === "true";
+
+        button.setAttribute("aria-expanded", String(!expanded));
+        if (content) content.hidden = expanded;
+    });
+
+    document.querySelectorAll(".withdraw-tab").forEach((tab) => {
+        tab.addEventListener("click", () => {
+            document.querySelectorAll(".withdraw-tab").forEach(
+                (item) => item.classList.remove("active")
             );
-        }
-    );
 
-    // ==========================================================
-    // HELPERS
-    // ==========================================================
-
-    function setText(id, value) {
-        const element = document.getElementById(id);
-
-        if (element) {
-            element.textContent = value;
-        }
-    }
-
-    function getCookie(name) {
-        let cookieValue = null;
-
-        if (
-            document.cookie &&
-            document.cookie !== ""
-        ) {
-            const cookies =
-                document.cookie.split(";");
-
-            for (let cookie of cookies) {
-                cookie = cookie.trim();
-
-                if (
-                    cookie.startsWith(
-                        `${name}=`
-                    )
-                ) {
-                    cookieValue =
-                        decodeURIComponent(
-                            cookie.substring(
-                                name.length + 1
-                            )
-                        );
-
-                    break;
-                }
-            }
-        }
-
-        return cookieValue;
-    }
-
-    // ==========================================================
-    // INITIAL LOAD
-    // ==========================================================
+            tab.classList.add("active");
+            renderWithdrawals(tab.dataset.status || "all");
+        });
+    });
 
     loadUser();
     loadWithdrawals();
