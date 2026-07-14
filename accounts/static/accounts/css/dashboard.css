@@ -2713,3 +2713,399 @@ a{
         display: none !important;
     }
 }
+
+/* ==========================================================
+   DASHBOARD / WITHDRAWAL UI ALIGNMENT
+   Final overrides to keep both pages visually consistent.
+========================================================== */
+
+:root{
+    --squeeb-bg:#f4f7fc;
+    --squeeb-surface:#ffffff;
+    --squeeb-surface-soft:#f8fafc;
+    --squeeb-border:#e5e7eb;
+    --squeeb-text:#0f172a;
+    --squeeb-muted:#64748b;
+    --squeeb-primary:#2563eb;
+    --squeeb-primary-soft:#eff6ff;
+    --squeeb-radius-lg:22px;
+    --squeeb-radius-md:16px;
+    --squeeb-shadow:0 12px 30px rgba(15,23,42,.06);
+}
+
+.dashboard-page{
+    background:var(--squeeb-bg);
+}
+
+.dashboard-main{
+    width:min(1180px, calc(100% - 40px));
+    padding:32px 0 56px;
+}
+
+.hero-section,
+.quick-actions,
+.tasks-section{
+    background:var(--squeeb-surface);
+    border:1px solid var(--squeeb-border);
+    border-radius:var(--squeeb-radius-lg);
+    box-shadow:var(--squeeb-shadow);
+}
+
+.hero-section{
+    padding:26px 28px;
+    margin-bottom:20px;
+}
+
+.eyebrow{
+    display:inline-flex;
+    align-items:center;
+    min-height:28px;
+    margin-bottom:8px;
+    padding:6px 11px;
+    border-radius:999px;
+    background:var(--squeeb-primary-soft);
+    color:var(--squeeb-primary);
+    font-size:12px;
+    letter-spacing:.02em;
+}
+
+.hero-section h1{
+    margin:0 0 8px;
+    color:var(--squeeb-text);
+    font-size:34px;
+    line-height:1.15;
+}
+
+.hero-text{
+    color:var(--squeeb-muted);
+    font-size:14px;
+    line-height:1.6;
+}
+
+.profile-pill{
+    min-width:220px;
+    padding:12px 14px;
+    border:1px solid var(--squeeb-border);
+    border-radius:18px;
+    box-shadow:none;
+}
+
+.profile-pill img{
+    width:48px;
+    height:48px;
+    object-fit:cover;
+}
+
+.dashboard-grid{
+    grid-template-columns:minmax(0, 2fr) repeat(2, minmax(180px, 1fr));
+    gap:16px;
+    margin-bottom:20px;
+}
+
+.wallet-card,
+.stats-card{
+    min-height:180px;
+    border-radius:var(--squeeb-radius-lg);
+}
+
+.wallet-card{
+    padding:24px;
+    box-shadow:0 16px 34px rgba(37,99,235,.18);
+}
+
+.wallet-top h2{
+    font-size:38px;
+}
+
+.wallet-icon{
+    display:grid;
+    place-items:center;
+    width:48px;
+    height:48px;
+    border-radius:15px;
+    background:rgba(255,255,255,.16);
+    font-size:21px;
+}
+
+.wallet-actions button{
+    min-height:44px;
+    padding:11px 18px;
+    border-radius:13px;
+}
+
+.stats-card{
+    display:flex;
+    flex-direction:column;
+    justify-content:center;
+    padding:22px;
+    border:1px solid var(--squeeb-border);
+    box-shadow:var(--squeeb-shadow);
+}
+
+.stats-card h3{
+    margin:8px 0;
+    color:var(--squeeb-text);
+    font-size:30px;
+}
+
+.stats-card span{
+    color:var(--squeeb-muted);
+    font-size:13px;
+    line-height:1.5;
+}
+
+.quick-actions,
+.tasks-section{
+    padding:24px;
+    margin-bottom:20px;
+}
+
+.section-heading{
+    margin-bottom:16px;
+}
+
+.section-heading h2{
+    color:var(--squeeb-text);
+    font-size:21px;
+}
+
+.section-heading p{
+    margin-top:4px;
+    font-size:13px;
+}
+
+.quick-grid{
+    grid-template-columns:repeat(4, minmax(0,1fr));
+    gap:12px;
+}
+
+.quick-card{
+    min-height:150px;
+    padding:20px;
+    border:1px solid var(--squeeb-border);
+    border-radius:18px;
+    box-shadow:none;
+}
+
+.quick-card:hover{
+    border-color:#bfdbfe;
+    background:#fbfdff;
+    transform:translateY(-2px);
+    box-shadow:0 10px 24px rgba(15,23,42,.07);
+}
+
+.quick-card i{
+    display:grid;
+    place-items:center;
+    width:42px;
+    height:42px;
+    margin-bottom:14px;
+    border-radius:13px;
+    background:var(--squeeb-primary-soft);
+    color:var(--squeeb-primary);
+    font-size:18px;
+}
+
+.quick-card h3{
+    font-size:15px;
+}
+
+.quick-card p{
+    font-size:12px;
+    line-height:1.5;
+}
+
+.admin-card{
+    border-color:#ddd6fe;
+    background:#faf9ff;
+}
+
+.membership-banner{
+    min-height:138px;
+    margin-bottom:20px;
+    padding:26px 28px;
+    border-radius:var(--squeeb-radius-lg);
+}
+
+.pay-btn{
+    min-height:46px;
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+    padding:12px 20px;
+    border-radius:13px;
+}
+
+.task-list{
+    gap:12px;
+}
+
+.task-card{
+    padding:18px;
+    gap:18px;
+    border:1px solid var(--squeeb-border);
+    border-radius:18px;
+    box-shadow:none;
+}
+
+.task-card:hover{
+    border-color:#bfdbfe;
+    box-shadow:0 10px 24px rgba(15,23,42,.05);
+}
+
+.task-icon{
+    display:grid;
+    place-items:center;
+    width:58px;
+    height:58px;
+    flex:0 0 58px;
+    border-radius:16px;
+    background:var(--squeeb-surface-soft);
+}
+
+.task-icon img{
+    width:38px;
+    height:38px;
+    object-fit:contain;
+}
+
+.task-info h3{
+    margin:7px 0;
+    font-size:16px;
+}
+
+.task-info p{
+    font-size:13px;
+    line-height:1.5;
+}
+
+.task-label{
+    font-size:11px;
+}
+
+.task-action strong{
+    font-size:21px;
+}
+
+.select-btn{
+    min-height:40px;
+    margin-top:10px;
+    padding:10px 16px;
+    border-radius:12px;
+}
+
+@media(max-width:1000px){
+    .quick-grid{
+        grid-template-columns:repeat(2, minmax(0,1fr));
+    }
+}
+
+@media(max-width:768px){
+    body{
+        background:#f4f7fc;
+    }
+
+    .dashboard-page{
+        padding:0 !important;
+    }
+
+    .dashboard-main{
+        width:100% !important;
+        padding:14px 12px 34px !important;
+        gap:12px !important;
+    }
+
+    .hero-section,
+    .quick-actions,
+    .tasks-section,
+    .membership-banner{
+        margin-bottom:0 !important;
+        border-radius:18px !important;
+    }
+
+    .hero-section{
+        padding:16px !important;
+        border:1px solid var(--squeeb-border);
+        box-shadow:none;
+    }
+
+    .hero-section h1{
+        font-size:23px !important;
+    }
+
+    .hero-section .eyebrow{
+        min-height:24px;
+        padding:4px 9px;
+        font-size:10px !important;
+    }
+
+    .dashboard-grid{
+        margin-bottom:0 !important;
+    }
+
+    .wallet-card{
+        min-height:0 !important;
+        padding:18px !important;
+    }
+
+    .wallet-top h2{
+        font-size:31px !important;
+    }
+
+    .wallet-actions button{
+        min-height:42px;
+    }
+
+    .stats-card{
+        min-height:88px !important;
+        padding:14px !important;
+        border:1px solid var(--squeeb-border);
+        box-shadow:none;
+    }
+
+    .quick-actions,
+    .tasks-section{
+        padding:15px !important;
+        border:1px solid var(--squeeb-border);
+        box-shadow:none;
+    }
+
+    .quick-card{
+        min-height:76px !important;
+        border:1px solid var(--squeeb-border);
+        box-shadow:none;
+    }
+
+    .membership-banner{
+        padding:16px !important;
+    }
+
+    .task-card{
+        min-height:92px !important;
+        padding:12px !important;
+        border:1px solid var(--squeeb-border);
+        box-shadow:none;
+    }
+
+    .mobile-task-toggle{
+        background:#fff;
+    }
+}
+
+@media(max-width:390px){
+    .dashboard-main{
+        padding-inline:10px !important;
+    }
+
+    .wallet-actions{
+        grid-template-columns:1fr 1fr !important;
+    }
+
+    .membership-banner{
+        grid-template-columns:1fr !important;
+    }
+
+    .membership-banner .pay-btn{
+        width:100%;
+    }
+}
