@@ -13,13 +13,6 @@ def send_account_email(
     action_url=None,
     action_text=None,
 ):
-    """
-    Sends a branded transactional email to a SQUEEB user.
-
-    Email failures are logged but do not interrupt payments,
-    withdrawals, membership activation, or other account actions.
-    """
-
     if not user or not user.email:
         return False
 
@@ -49,7 +42,10 @@ def send_account_email(
         to=[user.email],
     )
 
-    email.attach_alternative(html_content, "text/html")
+    email.attach_alternative(
+        html_content,
+        "text/html",
+    )
 
     try:
         email.send(fail_silently=False)
@@ -57,7 +53,7 @@ def send_account_email(
 
     except Exception as error:
         print(
-            f"ACCOUNT EMAIL ERROR for user {user.pk}:",
+            f"ACCOUNT EMAIL ERROR FOR USER {user.pk}:",
             error,
         )
         return False

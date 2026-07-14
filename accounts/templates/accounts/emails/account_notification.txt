@@ -1,4 +1,4 @@
-Hi {{ user.username }},
+Hi {{ user.first_name|default:user.username }},
 
 {{ heading }}
 
@@ -13,6 +13,7 @@ Hi {{ user.username }},
 {{ action_url }}
 {% endif %}
 
-If you did not recognise this activity, contact SQUEEB support immediately.
+If you did not recognise this activity, contact SQUEEB support immediately and secure your account.
 
 SQUEEB
+This is an automated transactional email.
