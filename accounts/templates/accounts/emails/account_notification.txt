@@ -1,0 +1,18 @@
+Hi {{ user.username }},
+
+{{ heading }}
+
+{{ message }}
+
+{% for detail in details %}
+{{ detail.label }}: {{ detail.value }}
+{% endfor %}
+
+{% if action_url and action_text %}
+{{ action_text }}:
+{{ action_url }}
+{% endif %}
+
+If you did not recognise this activity, contact SQUEEB support immediately.
+
+SQUEEB

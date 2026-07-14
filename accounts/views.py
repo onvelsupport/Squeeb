@@ -20,6 +20,7 @@ import stripe
 
 from django.conf import settings
 from django.contrib import messages
+from .email_utils import send_account_email
 
 from django.contrib.auth import (
     authenticate,
@@ -256,6 +257,26 @@ def approve_campaign_submission(request, submission_id):
             f"£{reward} has been added to your wallet."
         ),
     )
+
+    send_account_email(
+    user=user,
+    subject="Your SQUEEB campaign reward has been credited",
+    heading="Campaign reward added",
+    message=(
+        f"Your submission for '{campaign.title}' was approved "
+        "and the reward has been added to your wallet."
+    ),
+    details=[
+        {
+            "label": "Reward",
+            "value": f"£{reward}",
+        },
+        {
+            "label": "New balance",
+            "value": f"£{user.balance}",
+        },
+    ],
+)
 
     RecentActivity.objects.create(
         username=user.username,
@@ -1064,7 +1085,10 @@ def forgot_password_api(request):
     if request.method != "POST":
         return redirect("forgot_password")
 
-    email = request.POST.get("email", "").strip().lower()
+    email = request.POST.get(
+        "email",
+        "",
+    ).strip().lower()
 
     if not email:
         return redirect("forgot_password")
@@ -1072,34 +1096,53 @@ def forgot_password_api(request):
     User = get_user_model()
 
     try:
-        user = User.objects.get(email=email)
+        user = User.objects.get(
+            email__iexact=email
+        )
     except User.DoesNotExist:
+        # Do not reveal whether an email exists.
         return redirect("password_reset_done")
 
-    uid = urlsafe_base64_encode(force_bytes(user.pk))
-    token = default_token_generator.make_token(user)
-
-    reset_link = (
-        f"{settings.SITE_URL}"
-        f"{reverse('password_reset_confirm', kwargs={'uidb64': uid, 'token': token})}"
+    uid = urlsafe_base64_encode(
+        force_bytes(user.pk)
     )
 
-    send_mail(
-        subject="Reset your Squeeb password",
-        message=f"""
-Hi {user.username},
+    token = default_token_generator.make_token(
+        user
+    )
 
-Click the link below to reset your Squeeb password:
+    site_url = settings.SITE_URL.rstrip("/")
 
-{reset_link}
+    reset_path = reverse(
+        "password_reset_confirm",
+        kwargs={
+            "uidb64": uid,
+            "token": token,
+        },
+    )
 
-If you did not request this, ignore this email.
+    reset_link = f"{site_url}{reset_path}"
 
-Squeeb Team
-""",
-        from_email=settings.DEFAULT_FROM_EMAIL,
-        recipient_list=[email],
-        fail_silently=False,
+    send_account_email(
+        user=user,
+        subject="Reset your SQUEEB password",
+        heading="Password reset requested",
+        message=(
+            "We received a request to reset your SQUEEB password. "
+            "Use the button below to create a new password."
+        ),
+        details=[
+            {
+                "label": "Account",
+                "value": user.username,
+            },
+            {
+                "label": "Request",
+                "value": "Password reset",
+            },
+        ],
+        action_url=reset_link,
+        action_text="Reset Password",
     )
 
     return redirect("password_reset_done")
@@ -1398,6 +1441,30 @@ def verify_bank_transfer(request, payment_id):
         payment.paid_at = timezone.now()
         payment.save(update_fields=["status", "paid_at"])
 
+        send_account_email(
+    user=user,
+    subject="Your SQUEEB wallet funding was confirmed",
+    heading="Wallet credited",
+    message=(
+        "Your bank transfer has been verified and your "
+        "SQUEEB wallet has been credited."
+    ),
+    details=[
+        {
+            "label": "Amount credited",
+            "value": f"£{payment.amount}",
+        },
+        {
+            "label": "New balance",
+            "value": f"£{user.balance}",
+        },
+        {
+            "label": "Reference",
+            "value": payment.reference or "Not provided",
+        },
+    ],
+)
+
         return JsonResponse({
             "message": f"Payment confirmed. £{payment.amount} credited to {user.username}."
         })
@@ -1443,42 +1510,97 @@ def transaction_history_api(request):
 @login_required
 def api_edit_profile(request):
     if request.method != "POST":
-        return JsonResponse({
-            "success": False,
-            "message": "POST request required."
-        }, status=405)
+        return JsonResponse(
+            {
+                "success": False,
+                "message": "POST request required."
+            },
+            status=405,
+        )
 
     try:
-        data = json.loads(request.body.decode("utf-8") or "{}")
+        data = json.loads(
+            request.body.decode("utf-8") or "{}"
+        )
 
         user = request.user
 
-        first_name = data.get("first_name", "").strip()
-        last_name = data.get("last_name", "").strip()
-        username = data.get("username", "").strip().lower()
-        email = data.get("email", "").strip()
-        phone_number = data.get("phone_number", "").strip()
-        city = data.get("city", "").strip()
+        # Save previous values for security notifications
+        old_username = user.username
+        old_email = user.email
+
+        first_name = data.get(
+            "first_name",
+            ""
+        ).strip()
+
+        last_name = data.get(
+            "last_name",
+            ""
+        ).strip()
+
+        username = data.get(
+            "username",
+            ""
+        ).strip().lower()
+
+        email = data.get(
+            "email",
+            ""
+        ).strip().lower()
+
+        phone_number = data.get(
+            "phone_number",
+            ""
+        ).strip()
+
+        city = data.get(
+            "city",
+            ""
+        ).strip()
 
         if not username:
-            return JsonResponse({
-                "success": False,
-                "message": "Username is required."
-            }, status=400)
+            return JsonResponse(
+                {
+                    "success": False,
+                    "message": "Username is required."
+                },
+                status=400,
+            )
 
         # Check username uniqueness
-        if User.objects.filter(username=username).exclude(id=user.id).exists():
-            return JsonResponse({
-                "success": False,
-                "message": "Username already exists."
-            }, status=400)
+        if User.objects.filter(
+            username=username
+        ).exclude(
+            id=user.id
+        ).exists():
+
+            return JsonResponse(
+                {
+                    "success": False,
+                    "message": "Username already exists."
+                },
+                status=400,
+            )
 
         # Check email uniqueness
-        if email and User.objects.filter(email=email).exclude(id=user.id).exists():
-            return JsonResponse({
-                "success": False,
-                "message": "Email address is already in use."
-            }, status=400)
+        if (
+            email and
+            User.objects.filter(
+                email=email
+            ).exclude(
+                id=user.id
+            ).exists()
+        ):
+            return JsonResponse(
+                {
+                    "success": False,
+                    "message": (
+                        "Email address is already in use."
+                    )
+                },
+                status=400,
+            )
 
         user.first_name = first_name
         user.last_name = last_name
@@ -1493,24 +1615,71 @@ def api_edit_profile(request):
 
         user.save()
 
-        return JsonResponse({
-            "success": True,
-            "message": "Profile updated successfully."
-        })
+        # --------------------------------------------------
+        # SECURITY EMAIL
+        # --------------------------------------------------
+
+        changes = []
+
+        if old_username != user.username:
+            changes.append({
+                "label": "Username",
+                "value": f"{old_username} → {user.username}",
+            })
+
+        if old_email != user.email:
+            changes.append({
+                "label": "Email",
+                "value": f"{old_email} → {user.email}",
+            })
+
+        if changes:
+
+            Notification.objects.create(
+                user=user,
+                title="Account Updated",
+                message=(
+                    "Important account information was updated."
+                ),
+            )
+
+            send_account_email(
+                user=user,
+                subject="Important changes to your SQUEEB account",
+                heading="Account details updated",
+                message=(
+                    "Important information associated with your "
+                    "SQUEEB account has recently changed."
+                ),
+                details=changes,
+            )
+
+        return JsonResponse(
+            {
+                "success": True,
+                "message": "Profile updated successfully."
+            }
+        )
 
     except json.JSONDecodeError:
-        return JsonResponse({
-            "success": False,
-            "message": "Invalid JSON data."
-        }, status=400)
+        return JsonResponse(
+            {
+                "success": False,
+                "message": "Invalid JSON data."
+            },
+            status=400,
+        )
 
     except Exception as e:
         print("EDIT PROFILE ERROR:", e)
 
-        return JsonResponse({
-            "success": False,
-            "message": str(e)
-        }, status=500)
+        return JsonResponse(
+            {
+                "success": False,
+                "message": str(e)
+            },
+            status=500,
+        )
     
 
 
@@ -1599,6 +1768,30 @@ def stripe_webhook(request):
                     payment.status = "paid"
                     payment.paid_at = timezone.now()
                     payment.save(update_fields=["status", "paid_at"])
+
+                    send_account_email(
+    user=user,
+    subject="Your SQUEEB wallet has been funded",
+    heading="Wallet funding successful",
+    message=(
+        "Your card payment was successful and the funds "
+        "have been added to your wallet."
+    ),
+    details=[
+        {
+            "label": "Amount credited",
+            "value": f"£{payment.amount}",
+        },
+        {
+            "label": "Funding fee",
+            "value": f"£{payment.fee}",
+        },
+        {
+            "label": "New balance",
+            "value": f"£{user.balance}",
+        },
+    ],
+)
 
         except FundingPayment.DoesNotExist:
             return HttpResponse(status=404)
@@ -1798,8 +1991,6 @@ def user_info(request):
 
 def _withdrawal_fee_details(user, amount):
     """
-    Returns the applicable withdrawal fee information.
-
     First successful withdrawal:
     - No membership required
     - 20% fee
@@ -1813,10 +2004,13 @@ def _withdrawal_fee_details(user, amount):
     else:
         fee_percentage = Decimal("10.00")
 
-    fee_amount = (amount * fee_percentage / Decimal("100")).quantize(
-        Decimal("0.01")
-    )
-    net_amount = (amount - fee_amount).quantize(Decimal("0.01"))
+    fee_amount = (
+        amount * fee_percentage / Decimal("100")
+    ).quantize(Decimal("0.01"))
+
+    net_amount = (
+        amount - fee_amount
+    ).quantize(Decimal("0.01"))
 
     return fee_percentage, fee_amount, net_amount
 
@@ -1825,7 +2019,9 @@ def _withdrawal_fee_details(user, amount):
 @require_POST
 @transaction.atomic
 def request_withdrawal(request):
-    user = User.objects.select_for_update().get(pk=request.user.pk)
+    user = User.objects.select_for_update().get(
+        pk=request.user.pk
+    )
 
     if user.first_withdrawal_completed and not user.is_member:
         return JsonResponse(
@@ -1848,13 +2044,17 @@ def request_withdrawal(request):
         return JsonResponse(
             {
                 "success": False,
-                "message": "Withdrawal method and amount are required.",
+                "message": (
+                    "Withdrawal method and amount are required."
+                ),
             },
             status=400,
         )
 
     try:
-        amount = Decimal(amount_raw).quantize(Decimal("0.01"))
+        amount = Decimal(amount_raw).quantize(
+            Decimal("0.01")
+        )
     except Exception:
         return JsonResponse(
             {
@@ -1897,9 +2097,11 @@ def request_withdrawal(request):
             status=400,
         )
 
-    fee_percentage, fee_amount, net_amount = _withdrawal_fee_details(
-        user,
-        amount,
+    fee_percentage, fee_amount, net_amount = (
+        _withdrawal_fee_details(
+            user,
+            amount,
+        )
     )
 
     withdrawal = WithdrawalRequest.objects.create(
@@ -1942,37 +2144,145 @@ Approve after manual payment:
     html_content = f"""
     <div style="font-family:Arial,sans-serif;background:#f5f7fb;padding:30px;">
         <div style="max-width:620px;margin:auto;background:white;border-radius:18px;overflow:hidden;box-shadow:0 10px 30px rgba(0,0,0,.08);">
+
             <div style="background:linear-gradient(135deg,#2563eb,#7c3aed);color:white;padding:28px;">
-                <h1 style="margin:0;font-size:24px;">SQUEEB Withdrawal Request</h1>
-                <p style="margin:8px 0 0;">A user has requested a withdrawal.</p>
+                <h1 style="margin:0;font-size:24px;">
+                    SQUEEB Withdrawal Request
+                </h1>
+
+                <p style="margin:8px 0 0;">
+                    A user has requested a withdrawal.
+                </p>
             </div>
 
             <div style="padding:28px;">
                 <table style="width:100%;border-collapse:collapse;border:1px solid #e5e7eb;">
-                    <tr><td style="padding:12px;background:#f9fafb;font-weight:bold;">User</td><td style="padding:12px;">{user.username}</td></tr>
-                    <tr><td style="padding:12px;background:#f9fafb;font-weight:bold;">Email</td><td style="padding:12px;">{user.email}</td></tr>
-                    <tr><td style="padding:12px;background:#f9fafb;font-weight:bold;">Requested Amount</td><td style="padding:12px;font-weight:bold;">£{amount}</td></tr>
-                    <tr><td style="padding:12px;background:#f9fafb;font-weight:bold;">Fee</td><td style="padding:12px;">{fee_percentage}% (£{fee_amount})</td></tr>
-                    <tr><td style="padding:12px;background:#f9fafb;font-weight:bold;">Amount to Send</td><td style="padding:12px;font-weight:bold;color:#2563eb;">£{net_amount}</td></tr>
-                    <tr><td style="padding:12px;background:#f9fafb;font-weight:bold;">Method</td><td style="padding:12px;">{method}</td></tr>
-                    <tr><td style="padding:12px;background:#f9fafb;font-weight:bold;">Account Name</td><td style="padding:12px;">{withdrawal.account_name or "-"}</td></tr>
-                    <tr><td style="padding:12px;background:#f9fafb;font-weight:bold;">Bank Name</td><td style="padding:12px;">{withdrawal.bank_name or "-"}</td></tr>
-                    <tr><td style="padding:12px;background:#f9fafb;font-weight:bold;">Sort Code</td><td style="padding:12px;">{withdrawal.sort_code or "-"}</td></tr>
-                    <tr><td style="padding:12px;background:#f9fafb;font-weight:bold;">Account Number</td><td style="padding:12px;">{withdrawal.account_number or "-"}</td></tr>
-                    <tr><td style="padding:12px;background:#f9fafb;font-weight:bold;">PayPal Email</td><td style="padding:12px;">{withdrawal.paypal_email or "-"}</td></tr>
+                    <tr>
+                        <td style="padding:12px;background:#f9fafb;font-weight:bold;">
+                            User
+                        </td>
+
+                        <td style="padding:12px;">
+                            {user.username}
+                        </td>
+                    </tr>
+
+                    <tr>
+                        <td style="padding:12px;background:#f9fafb;font-weight:bold;">
+                            Email
+                        </td>
+
+                        <td style="padding:12px;">
+                            {user.email}
+                        </td>
+                    </tr>
+
+                    <tr>
+                        <td style="padding:12px;background:#f9fafb;font-weight:bold;">
+                            Requested Amount
+                        </td>
+
+                        <td style="padding:12px;font-weight:bold;">
+                            £{amount}
+                        </td>
+                    </tr>
+
+                    <tr>
+                        <td style="padding:12px;background:#f9fafb;font-weight:bold;">
+                            Fee
+                        </td>
+
+                        <td style="padding:12px;">
+                            {fee_percentage}% (£{fee_amount})
+                        </td>
+                    </tr>
+
+                    <tr>
+                        <td style="padding:12px;background:#f9fafb;font-weight:bold;">
+                            Amount to Send
+                        </td>
+
+                        <td style="padding:12px;font-weight:bold;color:#2563eb;">
+                            £{net_amount}
+                        </td>
+                    </tr>
+
+                    <tr>
+                        <td style="padding:12px;background:#f9fafb;font-weight:bold;">
+                            Method
+                        </td>
+
+                        <td style="padding:12px;">
+                            {method}
+                        </td>
+                    </tr>
+
+                    <tr>
+                        <td style="padding:12px;background:#f9fafb;font-weight:bold;">
+                            Account Name
+                        </td>
+
+                        <td style="padding:12px;">
+                            {withdrawal.account_name or "-"}
+                        </td>
+                    </tr>
+
+                    <tr>
+                        <td style="padding:12px;background:#f9fafb;font-weight:bold;">
+                            Bank Name
+                        </td>
+
+                        <td style="padding:12px;">
+                            {withdrawal.bank_name or "-"}
+                        </td>
+                    </tr>
+
+                    <tr>
+                        <td style="padding:12px;background:#f9fafb;font-weight:bold;">
+                            Sort Code
+                        </td>
+
+                        <td style="padding:12px;">
+                            {withdrawal.sort_code or "-"}
+                        </td>
+                    </tr>
+
+                    <tr>
+                        <td style="padding:12px;background:#f9fafb;font-weight:bold;">
+                            Account Number
+                        </td>
+
+                        <td style="padding:12px;">
+                            {withdrawal.account_number or "-"}
+                        </td>
+                    </tr>
+
+                    <tr>
+                        <td style="padding:12px;background:#f9fafb;font-weight:bold;">
+                            PayPal Email
+                        </td>
+
+                        <td style="padding:12px;">
+                            {withdrawal.paypal_email or "-"}
+                        </td>
+                    </tr>
                 </table>
 
                 <div style="margin-top:24px;text-align:center;">
-                    <a href="{approve_url}"
-                       style="display:inline-block;background:#2563eb;color:white;text-decoration:none;padding:14px 22px;border-radius:12px;font-weight:bold;">
+                    <a
+                        href="{approve_url}"
+                        style="display:inline-block;background:#2563eb;color:white;text-decoration:none;padding:14px 22px;border-radius:12px;font-weight:bold;"
+                    >
                         Mark as Paid & Deduct Balance
                     </a>
                 </div>
 
                 <p style="margin-top:20px;color:#64748b;font-size:13px;">
-                    Send exactly £{net_amount} to the user, then click the button.
+                    Send exactly £{net_amount} to the user,
+                    then click the button.
                 </p>
             </div>
+
         </div>
     </div>
     """
@@ -1983,7 +2293,12 @@ Approve after manual payment:
         from_email=settings.DEFAULT_FROM_EMAIL,
         to=[settings.ADMIN_EMAIL],
     )
-    email.attach_alternative(html_content, "text/html")
+
+    email.attach_alternative(
+        html_content,
+        "text/html",
+    )
+
     email.send()
 
     Notification.objects.create(
@@ -1991,14 +2306,52 @@ Approve after manual payment:
         title="Withdrawal submitted",
         message=(
             f"Your withdrawal request for £{amount} was submitted. "
-            f"After the {fee_percentage}% fee, you will receive £{net_amount}."
+            f"After the {fee_percentage}% fee, "
+            f"you will receive £{net_amount}."
         ),
+    )
+
+    send_account_email(
+        user=user,
+        subject="Your SQUEEB withdrawal request was submitted",
+        heading="Withdrawal request submitted",
+        message=(
+            "We received your withdrawal request. "
+            "It is now pending review and payment."
+        ),
+        details=[
+            {
+                "label": "Requested amount",
+                "value": f"£{amount}",
+            },
+            {
+                "label": "Withdrawal fee",
+                "value": (
+                    f"{fee_percentage}% "
+                    f"(£{fee_amount})"
+                ),
+            },
+            {
+                "label": "Amount to receive",
+                "value": f"£{net_amount}",
+            },
+            {
+                "label": "Method",
+                "value": method,
+            },
+            {
+                "label": "Status",
+                "value": "Pending",
+            },
+        ],
     )
 
     return JsonResponse(
         {
             "success": True,
-            "message": "Withdrawal request submitted successfully.",
+            "message": (
+                "Withdrawal request submitted successfully."
+            ),
             "amount": str(amount),
             "fee_percentage": str(fee_percentage),
             "fee_amount": str(fee_amount),
@@ -2010,7 +2363,9 @@ Approve after manual payment:
 @transaction.atomic
 def approve_withdrawal(request, token):
     withdrawal = get_object_or_404(
-        WithdrawalRequest.objects.select_for_update().select_related("user"),
+        WithdrawalRequest.objects
+        .select_for_update()
+        .select_related("user"),
         approval_token=token,
     )
 
@@ -2024,10 +2379,14 @@ def approve_withdrawal(request, token):
             "A rejected withdrawal cannot be marked as paid."
         )
 
-    user = User.objects.select_for_update().get(pk=withdrawal.user_id)
+    user = User.objects.select_for_update().get(
+        pk=withdrawal.user_id
+    )
 
     if user.balance < withdrawal.amount:
-        return HttpResponse("User does not have enough balance.")
+        return HttpResponse(
+            "User does not have enough balance."
+        )
 
     user.balance -= withdrawal.amount
 
@@ -2043,6 +2402,7 @@ def approve_withdrawal(request, token):
 
     withdrawal.status = "paid"
     withdrawal.paid_at = timezone.now()
+
     withdrawal.save(
         update_fields=[
             "status",
@@ -2059,8 +2419,43 @@ def approve_withdrawal(request, token):
         ),
     )
 
+    send_account_email(
+        user=user,
+        subject="Your SQUEEB withdrawal has been paid",
+        heading="Withdrawal paid",
+        message=(
+            "Your withdrawal has been processed successfully."
+        ),
+        details=[
+            {
+                "label": "Requested amount",
+                "value": f"£{withdrawal.amount}",
+            },
+            {
+                "label": "Withdrawal fee",
+                "value": (
+                    f"{withdrawal.fee_percentage}% "
+                    f"(£{withdrawal.fee_amount})"
+                ),
+            },
+            {
+                "label": "Amount received",
+                "value": f"£{withdrawal.net_amount}",
+            },
+            {
+                "label": "Method",
+                "value": withdrawal.method,
+            },
+            {
+                "label": "Status",
+                "value": "Paid",
+            },
+        ],
+    )
+
     return HttpResponse(
-        "Withdrawal marked as paid and user balance deducted successfully."
+        "Withdrawal marked as paid and user balance "
+        "deducted successfully."
     )
 
 
@@ -2084,6 +2479,83 @@ def withdrawals(request):
             ),
         },
     )
+
+
+@squeeb_admin_required
+@require_POST
+@transaction.atomic
+def reject_withdrawal(request, withdrawal_id):
+    withdrawal = get_object_or_404(
+        WithdrawalRequest.objects.select_for_update().select_related(
+            "user"
+        ),
+        id=withdrawal_id,
+    )
+
+    if withdrawal.status == "paid":
+        return JsonResponse(
+            {
+                "error": "A paid withdrawal cannot be rejected.",
+            },
+            status=400,
+        )
+
+    if withdrawal.status == "rejected":
+        return JsonResponse(
+            {
+                "error": "This withdrawal has already been rejected.",
+            },
+            status=400,
+        )
+
+    reason = request.POST.get(
+        "reason",
+        "The withdrawal could not be processed.",
+    ).strip()
+
+    withdrawal.status = "rejected"
+    withdrawal.save(update_fields=["status"])
+
+    Notification.objects.create(
+        user=withdrawal.user,
+        title="Withdrawal rejected",
+        message=(
+            f"Your withdrawal request for £{withdrawal.amount} "
+            f"was rejected. Reason: {reason}"
+        ),
+    )
+
+    send_account_email(
+        user=withdrawal.user,
+        subject="Your SQUEEB withdrawal was rejected",
+        heading="Withdrawal rejected",
+        message=(
+            "Unfortunately, we could not process your withdrawal request."
+        ),
+        details=[
+            {
+                "label": "Requested amount",
+                "value": f"£{withdrawal.amount}",
+            },
+            {
+                "label": "Method",
+                "value": withdrawal.method,
+            },
+            {
+                "label": "Reason",
+                "value": reason,
+            },
+            {
+                "label": "Status",
+                "value": "Rejected",
+            },
+        ],
+    )
+
+    return JsonResponse({
+        "success": True,
+        "message": "Withdrawal rejected.",
+    })
 
 
 @login_required
@@ -2543,6 +3015,30 @@ def approve_task_completion(request, completion_id):
         message=f"Your proof for '{completion.task.title}' was approved. £{reward} has been added to your balance."
     )
 
+    send_account_email(
+    user=worker,
+    subject="Your SQUEEB wallet has been credited",
+    heading="Task reward added",
+    message=(
+        f"Your proof for '{completion.task.title}' was approved "
+        "and your reward has been added to your wallet."
+    ),
+    details=[
+        {
+            "label": "Reward",
+            "value": f"£{reward}",
+        },
+        {
+            "label": "New balance",
+            "value": f"£{worker.balance}",
+        },
+        {
+            "label": "Status",
+            "value": "Approved",
+        },
+    ],
+)
+
     return JsonResponse({
         "success": True,
         "message": "Task approved and worker paid"
@@ -2629,82 +3125,230 @@ def task_submission_reviews_api(request, task_id):
 # ==========================
 @csrf_exempt
 @login_required
+@require_POST
+@transaction.atomic
 def pay_membership(request):
-    if request.method != "POST":
-        return JsonResponse({"error": "POST required"}, status=400)
-
     membership_fee = Decimal("10.00")
     referral_reward = Decimal("5.00")
-    user = request.user
 
-    if user.is_member:
-        return JsonResponse({"error": "Already a member."}, status=400)
-
-    if user.balance < membership_fee:
-        return JsonResponse({"error": "Insufficient balance."}, status=400)
-
-    user.balance -= membership_fee
-    user.is_member = True
-    user.save(update_fields=["balance", "is_member"])
-
-    Notification.objects.create(
-        user=user,
-        title="Membership Activated",
-        message="Your SQUEEB membership has been activated successfully."
+    user = User.objects.select_for_update().get(
+        pk=request.user.pk
     )
 
-    referral = Referral.objects.filter(
-        referred_user=user,
-        rewarded=False
-    ).first()
+    if user.is_member:
+        return JsonResponse(
+            {
+                "success": False,
+                "error": "Already a member.",
+            },
+            status=400,
+        )
+
+    if user.balance < membership_fee:
+        return JsonResponse(
+            {
+                "success": False,
+                "error": (
+                    "Insufficient balance. You need £10.00 "
+                    "to activate membership."
+                ),
+            },
+            status=400,
+        )
+
+    # Deduct the membership fee and activate membership.
+    user.balance -= membership_fee
+    user.is_member = True
+
+    user.save(
+        update_fields=[
+            "balance",
+            "is_member",
+        ]
+    )
+
+    referral = (
+        Referral.objects
+        .select_for_update()
+        .select_related("referrer")
+        .filter(
+            referred_user=user,
+            rewarded=False,
+        )
+        .first()
+    )
+
+    referral_reward_paid = False
+    referrer = None
 
     if referral:
-        referrer = referral.referrer
+        referrer = User.objects.select_for_update().get(
+            pk=referral.referrer_id
+        )
 
+        # Pay the person who made the referral.
         referrer.balance += referral_reward
         referrer.earnings += referral_reward
-        referrer.save(update_fields=["balance", "earnings"])
 
+        referrer.save(
+            update_fields=[
+                "balance",
+                "earnings",
+            ]
+        )
+
+        # Pay the referred user who activated membership.
         user.balance += referral_reward
         user.earnings += referral_reward
-        user.save(update_fields=["balance", "earnings"])
+
+        user.save(
+            update_fields=[
+                "balance",
+                "earnings",
+            ]
+        )
 
         referral.reward = referral_reward
         referral.rewarded = True
-        referral.save(update_fields=["reward", "rewarded"])
+
+        referral.save(
+            update_fields=[
+                "reward",
+                "rewarded",
+            ]
+        )
+
+        referral_reward_paid = True
 
         RecentActivity.objects.create(
             username=referrer.username,
             platform="referral",
-            message=f"@{referrer.username} earned £{referral_reward} from a referral",
-            amount=referral_reward
+            message=(
+                f"@{referrer.username} earned "
+                f"£{referral_reward} from a referral"
+            ),
+            amount=referral_reward,
         )
 
         RecentActivity.objects.create(
             username=user.username,
             platform="referral",
-            message=f"@{user.username} earned £{referral_reward} referral bonus",
-            amount=referral_reward
+            message=(
+                f"@{user.username} earned "
+                f"£{referral_reward} referral bonus"
+            ),
+            amount=referral_reward,
         )
 
         Notification.objects.create(
             user=referrer,
             title="Referral Reward Earned",
-            message=f"You earned £{referral_reward} because {user.username} activated membership."
+            message=(
+                f"You earned £{referral_reward} because "
+                f"{user.username} activated membership."
+            ),
         )
 
         Notification.objects.create(
             user=user,
             title="Referral Bonus Earned",
-            message=f"You earned £{referral_reward} for activating membership through a referral."
+            message=(
+                f"You earned £{referral_reward} for activating "
+                "membership through a referral."
+            ),
         )
 
-    return JsonResponse({
-        "message": "Membership activated!",
-        "new_balance": str(user.balance),
-        "is_member": True
-    })
+        send_account_email(
+            user=referrer,
+            subject="You earned a SQUEEB referral reward",
+            heading="Referral reward credited",
+            message=(
+                f"{user.username} activated SQUEEB Membership "
+                "using your referral."
+            ),
+            details=[
+                {
+                    "label": "Referral reward",
+                    "value": f"£{referral_reward}",
+                },
+                {
+                    "label": "New wallet balance",
+                    "value": f"£{referrer.balance}",
+                },
+            ],
+        )
 
+        send_account_email(
+            user=user,
+            subject="Your SQUEEB referral bonus was credited",
+            heading="Referral bonus credited",
+            message=(
+                "You received a referral bonus after activating "
+                "your SQUEEB Membership."
+            ),
+            details=[
+                {
+                    "label": "Referral bonus",
+                    "value": f"£{referral_reward}",
+                },
+                {
+                    "label": "New wallet balance",
+                    "value": f"£{user.balance}",
+                },
+            ],
+        )
+
+    Notification.objects.create(
+        user=user,
+        title="Membership Activated",
+        message=(
+            "Your SQUEEB membership has been activated successfully."
+        ),
+    )
+
+    # Send this after referral processing so the email shows
+    # the user's final balance.
+    send_account_email(
+        user=user,
+        subject="Your SQUEEB membership is active",
+        heading="Membership activated",
+        message=(
+            "Your membership has been activated successfully. "
+            "You can now make future withdrawals with a reduced 10% fee."
+        ),
+        details=[
+            {
+                "label": "Membership fee",
+                "value": f"£{membership_fee}",
+            },
+            {
+                "label": "Withdrawal fee",
+                "value": "10%",
+            },
+            {
+                "label": "Referral bonus",
+                "value": (
+                    f"£{referral_reward}"
+                    if referral_reward_paid
+                    else "Not applicable"
+                ),
+            },
+            {
+                "label": "New wallet balance",
+                "value": f"£{user.balance}",
+            },
+        ],
+    )
+
+    return JsonResponse(
+        {
+            "success": True,
+            "message": "Membership activated successfully.",
+            "new_balance": str(user.balance),
+            "is_member": True,
+            "referral_reward_paid": referral_reward_paid,
+        }
+    )
 
 @login_required
 def more_page(request):

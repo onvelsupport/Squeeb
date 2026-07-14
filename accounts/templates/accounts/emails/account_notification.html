@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>{{ heading }}</title>
+</head>
+
+<body style="margin:0;padding:0;background:#f4f7fb;font-family:Arial,Helvetica,sans-serif;color:#111827;">
+
+    <div style="padding:32px 16px;">
+
+        <div style="max-width:620px;margin:0 auto;background:#ffffff;border-radius:20px;overflow:hidden;box-shadow:0 12px 35px rgba(15,23,42,.08);">
+
+            <div style="padding:28px;background:linear-gradient(135deg,#2563eb,#7c3aed);color:#ffffff;">
+                <h1 style="margin:0;font-size:26px;">
+                    SQUEEB
+                </h1>
+
+                <p style="margin:8px 0 0;color:#dbeafe;">
+                    Account notification
+                </p>
+            </div>
+
+            <div style="padding:30px;">
+
+                <p style="margin:0 0 18px;">
+                    Hi {{ user.username }},
+                </p>
+
+                <h2 style="margin:0 0 16px;font-size:24px;color:#111827;">
+                    {{ heading }}
+                </h2>
+
+                <p style="margin:0 0 22px;color:#475569;line-height:1.7;">
+                    {{ message }}
+                </p>
+
+                {% if details %}
+                    <div style="margin-bottom:24px;border:1px solid #e5e7eb;border-radius:14px;overflow:hidden;">
+
+                        {% for detail in details %}
+                            <div style="display:flex;justify-content:space-between;gap:20px;padding:13px 16px;border-bottom:1px solid #e5e7eb;">
+                                <span style="color:#64748b;">
+                                    {{ detail.label }}
+                                </span>
+
+                                <strong style="color:#111827;text-align:right;">
+                                    {{ detail.value }}
+                                </strong>
+                            </div>
+                        {% endfor %}
+
+                    </div>
+                {% endif %}
+
+                {% if action_url and action_text %}
+                    <div style="margin:26px 0;text-align:center;">
+
+                        <a
+                            href="{{ action_url }}"
+                            style="display:inline-block;padding:14px 22px;background:#2563eb;color:#ffffff;text-decoration:none;border-radius:12px;font-weight:700;"
+                        >
+                            {{ action_text }}
+                        </a>
+
+                    </div>
+                {% endif %}
+
+                <p style="margin:26px 0 0;color:#64748b;font-size:13px;line-height:1.6;">
+                    If you did not recognise this activity, contact SQUEEB
+                    support immediately and secure your account.
+                </p>
+
+            </div>
+
+            <div style="padding:20px 30px;background:#f8fafc;color:#64748b;font-size:12px;text-align:center;">
+                © SQUEEB. This is an automated account email.
+            </div>
+
+        </div>
+
+    </div>
+
+</body>
+</html>
