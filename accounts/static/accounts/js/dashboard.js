@@ -135,8 +135,22 @@ document.addEventListener("DOMContentLoaded", () => {
 
             const membershipBanner = document.getElementById("membershipBanner");
 
+            const rawMembershipValue =
+                data.is_member ??
+                data.membership_active ??
+                data.has_membership ??
+                data.is_active_member ??
+                false;
+
+            const isMember =
+                rawMembershipValue === true ||
+                rawMembershipValue === 1 ||
+                String(rawMembershipValue).toLowerCase() === "true" ||
+                String(rawMembershipValue) === "1";
+
             if (membershipBanner) {
-                membershipBanner.style.display = data.is_member ? "none" : "";
+                membershipBanner.hidden = isMember;
+                membershipBanner.style.display = isMember ? "none" : "";
             }
 
         } catch (err) {
