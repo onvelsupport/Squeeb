@@ -43,6 +43,65 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
 
+    function lockBodyScroll() {
+        document.body.classList.add("modal-open");
+    }
+
+    function unlockBodyScroll() {
+        const visibleModal = Array.from(
+            document.querySelectorAll(".modal-bg, .choice-modal-bg")
+        ).some((modal) => {
+            const style = window.getComputedStyle(modal);
+            return style.display !== "none" && style.visibility !== "hidden";
+        });
+
+        if (!visibleModal) {
+            document.body.classList.remove("modal-open");
+        }
+    }
+
+    function showModal(modal) {
+        if (!modal) return;
+
+        modal.style.display = "flex";
+        modal.setAttribute("aria-hidden", "false");
+        lockBodyScroll();
+    }
+
+    function hideModal(modal) {
+        if (!modal) return;
+
+        modal.style.display = "none";
+        modal.setAttribute("aria-hidden", "true");
+
+        window.requestAnimationFrame(unlockBodyScroll);
+    }
+
+    function initialiseMobileTaskToggle() {
+        const taskSection = document.querySelector(".tasks-section");
+        const toggleButton = document.getElementById("mobileTaskToggle");
+
+        if (!taskSection || !toggleButton) return;
+
+        const label = toggleButton.querySelector("span");
+
+        toggleButton.addEventListener("click", () => {
+            const expanded = taskSection.classList.toggle("mobile-expanded");
+
+            toggleButton.setAttribute(
+                "aria-expanded",
+                String(expanded)
+            );
+
+            if (label) {
+                label.textContent = expanded
+                    ? "Show fewer task types"
+                    : "Show all task types";
+            }
+        });
+    }
+
+
     // ==========================================================
     // NAVIGATION ELEMENTS
     // ==========================================================
@@ -370,12 +429,12 @@ function openFundModal() {
 
     updateFundingSummary();
 
-    fundModal.style.display = "flex";
+    showModal(fundModal);
     fundAmountInput?.focus();
 }
 
 function closeFundModal() {
-    if (fundModal) fundModal.style.display = "none";
+    hideModal(fundModal);
 }
 
 fundMethods.forEach(button => {
@@ -489,13 +548,13 @@ fundSubmitBtn?.addEventListener("click", async () => {
         if (sortCodeInput) sortCodeInput.value = "";
         if (accountNumberInput) accountNumberInput.value = "";
 
-        withdrawModal.style.display = "flex";
+        showModal(withdrawModal);
 
         withdrawAmountInput?.focus();
     }
 
     function closeWithdrawModal() {
-        if (withdrawModal) withdrawModal.style.display = "none";
+        hideModal(withdrawModal);
     }
 
     withdrawBtn?.addEventListener("click", openWithdrawModal);
@@ -659,7 +718,7 @@ fundSubmitBtn?.addEventListener("click", async () => {
 
 }
 
-            taskModal.style.display = "flex";
+            showModal(taskModal);
         });
     });
 
@@ -678,7 +737,7 @@ fundSubmitBtn?.addEventListener("click", async () => {
     });
 
     closeTaskModal?.addEventListener("click", () => {
-        if (taskModal) taskModal.style.display = "none";
+        hideModal(taskModal);
     });
 
     submitTaskBtn?.addEventListener("click", async () => {
@@ -730,7 +789,7 @@ fundSubmitBtn?.addEventListener("click", async () => {
             setText("balanceAmount", money(data.new_balance));
 
             if (taskModal) {
-                taskModal.style.display = "none";
+                hideModal(taskModal);
             }
 
             loadUser();
@@ -778,18 +837,18 @@ campaignParticipants?.addEventListener("input", updateCampaignBudget);
 
 
 openCampaignBtn?.addEventListener("click", () => {
-    campaignModal.style.display = "flex";
+    showModal(campaignModal);
 });
 
 
 campaignClose?.addEventListener("click", () => {
-    campaignModal.style.display = "none";
+    hideModal(campaignModal);
 });
 
 
 window.addEventListener("click", (e) => {
     if (e.target === campaignModal) {
-        campaignModal.style.display = "none";
+        hideModal(campaignModal);
     }
 });
 
@@ -839,7 +898,7 @@ createCampaignBtn?.addEventListener("click", async () => {
 
         alert("Campaign created successfully!");
 
-        campaignModal.style.display = "none";
+        hideModal(campaignModal);
 
         campaignTitle.value = "";
         campaignDescription.value = "";
@@ -950,6 +1009,34 @@ if (mobileMenuBtn && mobileDropdown) {
             taskModal.style.display = "none";
         }
     });
+
+
+    // ==========================================================
+    // KEYBOARD AND MOBILE UI
+    // ==========================================================
+
+    document.addEventListener("keydown", (event) => {
+        if (event.key !== "Escape") return;
+
+        [
+            fundModal,
+            withdrawModal,
+            taskModal,
+            campaignModal
+        ].forEach((modal) => {
+            if (
+                modal &&
+                window.getComputedStyle(modal).display !== "none"
+            ) {
+                hideModal(modal);
+            }
+        });
+
+        closeNotificationPanel();
+        mobileDropdown?.classList.remove("show");
+    });
+
+    initialiseMobileTaskToggle();
 
 
     // ==========================================================

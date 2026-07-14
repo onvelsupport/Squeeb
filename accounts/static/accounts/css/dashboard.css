@@ -2265,3 +2265,451 @@ a{
         font-size:14px !important;
     }
 }
+
+/* Compact responsive additions for the existing SQUEEB dashboard. */
+
+.mobile-task-toggle {
+    display: none;
+}
+
+@media (max-width: 768px) {
+    .dashboard-page {
+        padding: 12px !important;
+    }
+
+    .dashboard-main {
+        display: flex !important;
+        flex-direction: column !important;
+        gap: 12px !important;
+        width: 100% !important;
+        max-width: none !important;
+    }
+
+    /* Shorter welcome area */
+    .hero-section {
+        display: flex !important;
+        align-items: center !important;
+        justify-content: space-between !important;
+        gap: 12px !important;
+        min-height: auto !important;
+        padding: 14px !important;
+        border-radius: 16px !important;
+    }
+
+    .hero-section .eyebrow {
+        margin: 0 0 3px !important;
+        font-size: 10px !important;
+    }
+
+    .hero-section h1 {
+        margin: 0 !important;
+        font-size: 21px !important;
+        line-height: 1.2 !important;
+    }
+
+    .hero-text {
+        display: none !important;
+    }
+
+    .profile-pill {
+        flex: 0 0 auto !important;
+        min-width: 0 !important;
+        padding: 6px !important;
+        border-radius: 999px !important;
+    }
+
+    .profile-pill img {
+        width: 38px !important;
+        height: 38px !important;
+        margin: 0 !important;
+        object-fit: cover !important;
+        border-radius: 50% !important;
+    }
+
+    .profile-pill > div {
+        display: none !important;
+    }
+
+    /* Wallet first, with the two stats below it */
+    .dashboard-grid {
+        display: grid !important;
+        grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+        gap: 8px !important;
+    }
+
+    .wallet-card {
+        grid-column: 1 / -1 !important;
+        min-height: auto !important;
+        padding: 17px !important;
+        border-radius: 17px !important;
+    }
+
+    .wallet-top {
+        align-items: flex-start !important;
+    }
+
+    .wallet-top p {
+        margin: 0 0 4px !important;
+        font-size: 11px !important;
+    }
+
+    .wallet-top h2 {
+        margin: 0 !important;
+        font-size: 30px !important;
+        line-height: 1 !important;
+    }
+
+    .wallet-icon {
+        width: 40px !important;
+        height: 40px !important;
+        border-radius: 12px !important;
+        font-size: 17px !important;
+    }
+
+    .wallet-earnings-row {
+        margin-top: 13px !important;
+        padding-top: 11px !important;
+        font-size: 12px !important;
+    }
+
+    .wallet-actions {
+        display: grid !important;
+        grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+        gap: 8px !important;
+        margin-top: 13px !important;
+    }
+
+    .wallet-actions button {
+        min-height: 42px !important;
+        padding: 9px !important;
+        border-radius: 11px !important;
+        font-size: 12px !important;
+    }
+
+    .stats-card {
+        min-height: 92px !important;
+        padding: 13px !important;
+        border-radius: 15px !important;
+    }
+
+    .stats-card p {
+        margin: 0 !important;
+        font-size: 11px !important;
+    }
+
+    .stats-card h3 {
+        margin: 3px 0 !important;
+        font-size: 23px !important;
+    }
+
+    .stats-card span {
+        display: none !important;
+    }
+
+    /* Quick actions become compact app-style buttons */
+    .quick-actions {
+        padding: 14px !important;
+        border-radius: 17px !important;
+    }
+
+    .section-heading {
+        margin-bottom: 10px !important;
+    }
+
+    .section-heading h2 {
+        margin: 0 !important;
+        font-size: 17px !important;
+    }
+
+    .section-heading p {
+        display: none !important;
+    }
+
+    .quick-grid {
+        display: grid !important;
+        grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+        gap: 8px !important;
+    }
+
+    .quick-card {
+        display: grid !important;
+        grid-template-columns: 36px 1fr !important;
+        grid-template-rows: auto auto !important;
+        align-items: center !important;
+        gap: 0 9px !important;
+        min-height: 72px !important;
+        padding: 11px !important;
+        border-radius: 13px !important;
+        text-align: left !important;
+    }
+
+    .quick-card > i {
+        grid-row: 1 / 3 !important;
+        display: grid !important;
+        place-items: center !important;
+        width: 36px !important;
+        height: 36px !important;
+        margin: 0 !important;
+        border-radius: 11px !important;
+        font-size: 15px !important;
+    }
+
+    .quick-card h3 {
+        margin: 0 !important;
+        font-size: 12px !important;
+        line-height: 1.2 !important;
+    }
+
+    .quick-card p {
+        margin: 2px 0 0 !important;
+        overflow: hidden !important;
+        color: inherit !important;
+        font-size: 9px !important;
+        line-height: 1.25 !important;
+        opacity: 0.72 !important;
+        display: -webkit-box !important;
+        -webkit-line-clamp: 2 !important;
+        -webkit-box-orient: vertical !important;
+    }
+
+    /* Smaller membership notice */
+    .membership-banner {
+        display: grid !important;
+        grid-template-columns: 1fr auto !important;
+        align-items: center !important;
+        gap: 10px !important;
+        min-height: auto !important;
+        padding: 14px !important;
+        border-radius: 16px !important;
+    }
+
+    .membership-banner p {
+        margin: 0 0 2px !important;
+        font-size: 9px !important;
+    }
+
+    .membership-banner h2 {
+        margin: 0 !important;
+        font-size: 13px !important;
+        line-height: 1.3 !important;
+    }
+
+    .membership-banner span {
+        display: none !important;
+    }
+
+    .membership-banner .pay-btn {
+        min-height: 38px !important;
+        padding: 9px 11px !important;
+        border-radius: 10px !important;
+        font-size: 10px !important;
+        white-space: nowrap !important;
+    }
+
+    /* Social task cards: first two shown initially */
+    .tasks-section {
+        padding: 14px !important;
+        border-radius: 17px !important;
+    }
+
+    .task-list {
+        display: grid !important;
+        gap: 8px !important;
+    }
+
+    .task-card {
+        display: grid !important;
+        grid-template-columns: 42px minmax(0, 1fr) auto !important;
+        align-items: center !important;
+        gap: 10px !important;
+        min-height: 88px !important;
+        padding: 11px !important;
+        border-radius: 14px !important;
+    }
+
+    .task-list .task-card:nth-child(n + 3) {
+        display: none !important;
+    }
+
+    .tasks-section.mobile-expanded .task-list .task-card {
+        display: grid !important;
+    }
+
+    .task-icon {
+        width: 42px !important;
+        height: 42px !important;
+        margin: 0 !important;
+        border-radius: 12px !important;
+    }
+
+    .task-icon img {
+        width: 24px !important;
+        height: 24px !important;
+        object-fit: contain !important;
+    }
+
+    .task-info {
+        min-width: 0 !important;
+    }
+
+    .task-label {
+        display: none !important;
+    }
+
+    .task-info h3 {
+        margin: 0 !important;
+        overflow: hidden !important;
+        font-size: 12px !important;
+        line-height: 1.3 !important;
+        display: -webkit-box !important;
+        -webkit-line-clamp: 2 !important;
+        -webkit-box-orient: vertical !important;
+    }
+
+    .task-info > p {
+        display: none !important;
+    }
+
+    .platforms {
+        display: flex !important;
+        gap: 3px !important;
+        margin-top: 6px !important;
+    }
+
+    .platforms img {
+        width: 15px !important;
+        height: 15px !important;
+    }
+
+    .task-action {
+        min-width: 74px !important;
+        text-align: right !important;
+    }
+
+    .task-action > strong {
+        display: block !important;
+        font-size: 13px !important;
+    }
+
+    .task-action > span {
+        display: block !important;
+        margin: 1px 0 7px !important;
+        font-size: 8px !important;
+    }
+
+    .select-btn {
+        min-height: 32px !important;
+        padding: 7px 9px !important;
+        border-radius: 9px !important;
+        font-size: 9px !important;
+        white-space: nowrap !important;
+    }
+
+    .mobile-task-toggle {
+        width: 100%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 7px;
+        min-height: 42px;
+        margin-top: 10px;
+        color: #475569;
+        background: #f8fafc;
+        border: 1px solid #e5e7eb;
+        border-radius: 11px;
+        font-size: 11px;
+        font-weight: 700;
+        cursor: pointer;
+    }
+
+    .mobile-task-toggle i {
+        transition: transform 0.2s ease;
+    }
+
+    .mobile-task-toggle[aria-expanded="true"] i {
+        transform: rotate(180deg);
+    }
+
+    /* Mobile modals */
+    .modal-bg {
+        padding: 12px !important;
+        overflow-y: auto !important;
+    }
+
+    .modal-card,
+    .task-action-container {
+        width: 100% !important;
+        max-width: 520px !important;
+        max-height: calc(100vh - 24px) !important;
+        overflow-y: auto !important;
+        padding: 18px !important;
+        border-radius: 18px !important;
+    }
+
+    .fund-methods {
+        display: grid !important;
+        grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+        gap: 8px !important;
+    }
+
+    .fund-method {
+        min-height: 95px !important;
+        padding: 11px 7px !important;
+    }
+
+    .fund-method strong {
+        font-size: 11px !important;
+    }
+
+    .fund-method span {
+        font-size: 9px !important;
+    }
+
+    .task-action-header {
+        gap: 10px !important;
+    }
+
+    .task-action-header h2 {
+        font-size: 17px !important;
+    }
+
+    .task-total-bar {
+        position: sticky !important;
+        bottom: -18px !important;
+        z-index: 3 !important;
+        margin: 14px -18px -18px !important;
+        padding: 13px 18px !important;
+        background: #fff !important;
+        border-top: 1px solid #e5e7eb !important;
+    }
+}
+
+@media (max-width: 390px) {
+    .quick-card {
+        grid-template-columns: 31px 1fr !important;
+        gap: 0 7px !important;
+        padding: 9px !important;
+    }
+
+    .quick-card > i {
+        width: 31px !important;
+        height: 31px !important;
+    }
+
+    .task-card {
+        grid-template-columns: 38px minmax(0, 1fr) !important;
+    }
+
+    .task-action {
+        grid-column: 2 !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: space-between !important;
+        width: 100% !important;
+        text-align: left !important;
+    }
+
+    .task-action > span {
+        display: none !important;
+    }
+}
