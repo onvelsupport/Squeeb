@@ -43,6 +43,52 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
 
+    async function parseJsonResponse(response) {
+        const contentType = response.headers.get("content-type") || "";
+
+        if (!contentType.includes("application/json")) {
+            return {};
+        }
+
+        try {
+            return await response.json();
+        } catch (error) {
+            console.error("JSON PARSE ERROR:", error);
+            return {};
+        }
+    }
+
+    function escapeHtml(value) {
+        return String(value ?? "")
+            .replaceAll("&", "&amp;")
+            .replaceAll("<", "&lt;")
+            .replaceAll(">", "&gt;")
+            .replaceAll('"', "&quot;")
+            .replaceAll("'", "&#039;");
+    }
+
+    function openModal(modal) {
+        if (!modal) return;
+
+        modal.style.display = "flex";
+        document.body.style.overflow = "hidden";
+    }
+
+    function closeModal(modal) {
+        if (!modal) return;
+
+        modal.style.display = "none";
+
+        const anyOpenModal = Array.from(
+            document.querySelectorAll(".modal-bg")
+        ).some((item) => item.style.display === "flex");
+
+        if (!anyOpenModal) {
+            document.body.style.overflow = "";
+        }
+    }
+
+
     // ==========================================================
     // NAVIGATION ELEMENTS
     // ==========================================================
@@ -75,7 +121,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 return;
             }
 
-            const data = await res.json();
+            const data = await parseJsonResponse(res);
 
             setText("usernameDisplay", data.username || "User");
             setText("usernameTag", "@" + (data.username || "user"));
@@ -90,7 +136,7 @@ document.addEventListener("DOMContentLoaded", () => {
             const membershipBanner = document.getElementById("membershipBanner");
 
             if (membershipBanner) {
-                membershipBanner.style.display = data.is_member ? "none" : "flex";
+                membershipBanner.style.display = data.is_member ? "none" : "";
             }
 
         } catch (err) {
@@ -111,7 +157,8 @@ document.addEventListener("DOMContentLoaded", () => {
                 method: "POST",
                 credentials: "same-origin",
                 headers: {
-                    "Content-Type": "application/json"
+                    "Content-Type": "application/json",
+                    "X-CSRFToken": getCookie("csrftoken")
                 }
             });
         } catch (err) {
@@ -157,19 +204,34 @@ document.addEventListener("DOMContentLoaded", () => {
                 return;
             }
 
-            data.results.forEach(item => {
-                searchResults.innerHTML += `
-                    <a href="${item.url}" class="search-item">
-                        <strong>${item.name}</strong>
-                        <div class="search-type">${item.type}</div>
+            data.results.forEach((item) => {
+                const safeUrl = escapeHtml(item.url || "#");
+                const safeName = escapeHtml(item.name || "Result");
+                const safeType = escapeHtml(item.type || "");
+
+                searchResults.insertAdjacentHTML("beforeend", `
+                    <a href="${safeUrl}" class="search-item">
+                        <strong>${safeName}</strong>
+                        <div class="search-type">${safeType}</div>
                     </a>
-                `;
+                `);
             });
 
             searchResults.style.display = "block";
 
         } catch (err) {
             console.error("SEARCH ERROR:", err);
+        }
+    });
+
+    document.addEventListener("click", (event) => {
+        if (
+            searchInput &&
+            searchResults &&
+            !searchInput.contains(event.target) &&
+            !searchResults.contains(event.target)
+        ) {
+            searchResults.style.display = "none";
         }
     });
 
@@ -208,7 +270,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 return;
             }
 
-            const data = await response.json();
+            const data = await parseJsonResponse(response);
 
             if (notificationCount) {
                 if (data.unread_count > 0) {
@@ -226,19 +288,22 @@ document.addEventListener("DOMContentLoaded", () => {
                 return;
             }
 
-            notificationList.innerHTML = data.notifications.map(notification => {
-    const link = notification.link || "#";
+            notificationList.innerHTML = data.notifications.map((notification) => {
+                const link = escapeHtml(notification.link || "#");
+                const title = escapeHtml(notification.title || "Notification");
+                const message = escapeHtml(notification.message || "");
+                const createdAt = escapeHtml(notification.created_at || "");
 
-    return `
-        <a href="${link}" class="notification-item ${notification.is_read ? "" : "unread"}">
-            <div class="notification-content">
-                <h4>${notification.title}</h4>
-                <p>${notification.message}</p>
-                <span class="notification-date">${notification.created_at}</span>
-            </div>
-        </a>
-    `;
-}).join("");
+                return `
+                    <a href="${link}" class="notification-item ${notification.is_read ? "" : "unread"}">
+                        <div class="notification-content">
+                            <h4>${title}</h4>
+                            <p>${message}</p>
+                            <span class="notification-date">${createdAt}</span>
+                        </div>
+                    </a>
+                `;
+            }).join("");
 
         } catch (error) {
             console.error("NOTIFICATION ERROR:", error);
@@ -370,12 +435,12 @@ function openFundModal() {
 
     updateFundingSummary();
 
-    fundModal.style.display = "flex";
+    openModal(fundModal);
     fundAmountInput?.focus();
 }
 
 function closeFundModal() {
-    if (fundModal) fundModal.style.display = "none";
+    closeModal(fundModal);
 }
 
 fundMethods.forEach(button => {
@@ -425,7 +490,8 @@ fundSubmitBtn?.addEventListener("click", async () => {
             method: "POST",
             credentials: "same-origin",
             headers: {
-                "Content-Type": "application/json"
+                "Content-Type": "application/json",
+                "X-CSRFToken": getCookie("csrftoken")
             },
             body: JSON.stringify({
                 amount,
@@ -489,13 +555,13 @@ fundSubmitBtn?.addEventListener("click", async () => {
         if (sortCodeInput) sortCodeInput.value = "";
         if (accountNumberInput) accountNumberInput.value = "";
 
-        withdrawModal.style.display = "flex";
+        openModal(withdrawModal);
 
         withdrawAmountInput?.focus();
     }
 
     function closeWithdrawModal() {
-        if (withdrawModal) withdrawModal.style.display = "none";
+        closeModal(withdrawModal);
     }
 
     withdrawBtn?.addEventListener("click", openWithdrawModal);
@@ -537,7 +603,8 @@ fundSubmitBtn?.addEventListener("click", async () => {
                 method: "POST",
                 credentials: "same-origin",
                 headers: {
-                    "Content-Type": "application/json"
+                    "Content-Type": "application/json",
+                    "X-CSRFToken": getCookie("csrftoken")
                 },
                 body: JSON.stringify({
                     amount,
@@ -546,7 +613,7 @@ fundSubmitBtn?.addEventListener("click", async () => {
                 })
             });
 
-            const data = await res.json();
+            const data = await parseJsonResponse(res);
 
             if (!res.ok) {
                 if (withdrawMsg) {
@@ -659,7 +726,10 @@ fundSubmitBtn?.addEventListener("click", async () => {
 
 }
 
-            taskModal.style.display = "flex";
+            if (taskLink) taskLink.value = "";
+            if (taskPlatform && taskType !== "subscribe") taskPlatform.value = "";
+
+            openModal(taskModal);
         });
     });
 
@@ -678,7 +748,7 @@ fundSubmitBtn?.addEventListener("click", async () => {
     });
 
     closeTaskModal?.addEventListener("click", () => {
-        if (taskModal) taskModal.style.display = "none";
+        closeModal(taskModal);
     });
 
     submitTaskBtn?.addEventListener("click", async () => {
@@ -708,7 +778,8 @@ fundSubmitBtn?.addEventListener("click", async () => {
                 method: "POST",
                 credentials: "same-origin",
                 headers: {
-                    "Content-Type": "application/json"
+                    "Content-Type": "application/json",
+                    "X-CSRFToken": getCookie("csrftoken")
                 },
                 body: JSON.stringify({
                     platform,
@@ -718,7 +789,7 @@ fundSubmitBtn?.addEventListener("click", async () => {
                 })
             });
 
-            const data = await res.json();
+            const data = await parseJsonResponse(res);
 
             if (!res.ok) {
                 alert(data.error || "Something went wrong.");
@@ -766,11 +837,13 @@ const campaignBudget = document.getElementById("campaignBudget");
 
 function updateCampaignBudget() {
 
-    const reward = parseFloat(campaignReward.value) || 0;
-    const participants = parseInt(campaignParticipants.value) || 0;
+    const reward = parseFloat(campaignReward?.value) || 0;
+    const participants = parseInt(campaignParticipants?.value || "0", 10) || 0;
 
-    campaignBudget.textContent =
-        "£" + (reward * participants).toFixed(2);
+    if (campaignBudget) {
+        campaignBudget.textContent =
+            "£" + (reward * participants).toFixed(2);
+    }
 }
 
 campaignReward?.addEventListener("input", updateCampaignBudget);
@@ -778,18 +851,18 @@ campaignParticipants?.addEventListener("input", updateCampaignBudget);
 
 
 openCampaignBtn?.addEventListener("click", () => {
-    campaignModal.style.display = "flex";
+    openModal(campaignModal);
 });
 
 
 campaignClose?.addEventListener("click", () => {
-    campaignModal.style.display = "none";
+    closeModal(campaignModal);
 });
 
 
 window.addEventListener("click", (e) => {
     if (e.target === campaignModal) {
-        campaignModal.style.display = "none";
+        closeModal(campaignModal);
     }
 });
 
@@ -798,16 +871,16 @@ createCampaignBtn?.addEventListener("click", async () => {
 
     const form = new FormData();
 
-    form.append("title", campaignTitle.value);
-    form.append("description", campaignDescription.value);
-    form.append("reward", campaignReward.value);
-    form.append("platform", campaignPlatform.value);
-    form.append("max_participants", campaignParticipants.value);
-    form.append("start_date", campaignStartDate.value);
-    form.append("end_date", campaignEndDate.value);
-    form.append("status", campaignStatus.value);
+    form.append("title", campaignTitle?.value.trim() || "");
+    form.append("description", campaignDescription?.value.trim() || "");
+    form.append("reward", campaignReward?.value || "");
+    form.append("platform", campaignPlatform?.value || "");
+    form.append("max_participants", campaignParticipants?.value || "");
+    form.append("start_date", campaignStartDate?.value || "");
+    form.append("end_date", campaignEndDate?.value || "");
+    form.append("status", campaignStatus?.value || "draft");
 
-    if (campaignImage.files.length) {
+    if (campaignImage?.files?.length) {
         form.append("image", campaignImage.files[0]);
     }
 
@@ -830,7 +903,7 @@ createCampaignBtn?.addEventListener("click", async () => {
 
         });
 
-        const data = await response.json();
+        const data = await parseJsonResponse(response);
 
         if (!response.ok) {
             alert(data.error || "Unable to create campaign.");
@@ -839,7 +912,7 @@ createCampaignBtn?.addEventListener("click", async () => {
 
         alert("Campaign created successfully!");
 
-        campaignModal.style.display = "none";
+        closeModal(campaignModal);
 
         campaignTitle.value = "";
         campaignDescription.value = "";
@@ -873,9 +946,14 @@ createCampaignBtn?.addEventListener("click", async () => {
     // MEMBERSHIP ACTIVATION
     // ==========================================================
 
-    const membershipBtn = document.getElementById("membershipBtn");
+    const membershipBtn = document.getElementById("activateMembershipBtn") || document.getElementById("membershipBtn");
 
-    membershipBtn?.addEventListener("click", async () => {
+    membershipBtn?.addEventListener("click", async (event) => {
+        if (membershipBtn.tagName === "A") {
+            return;
+        }
+
+        event.preventDefault();
         membershipBtn.disabled = true;
         membershipBtn.textContent = "Activating...";
 
@@ -884,11 +962,12 @@ createCampaignBtn?.addEventListener("click", async () => {
                 method: "POST",
                 credentials: "same-origin",
                 headers: {
-                    "Content-Type": "application/json"
+                    "Content-Type": "application/json",
+                    "X-CSRFToken": getCookie("csrftoken")
                 }
             });
 
-            const data = await res.json();
+            const data = await parseJsonResponse(res);
 
             if (!res.ok) {
                 alert(data.error || "Membership payment failed.");
@@ -949,6 +1028,45 @@ if (mobileMenuBtn && mobileDropdown) {
         if (taskModal && e.target === taskModal) {
             taskModal.style.display = "none";
         }
+    });
+
+
+    // ==========================================================
+    // MOBILE TASK EXPANSION
+    // ==========================================================
+
+    const tasksSection = document.querySelector(".tasks-section");
+    const mobileTaskToggle = document.getElementById("mobileTaskToggle");
+
+    mobileTaskToggle?.addEventListener("click", () => {
+        if (!tasksSection) return;
+
+        const expanded = tasksSection.classList.toggle("mobile-expanded");
+        mobileTaskToggle.setAttribute("aria-expanded", String(expanded));
+
+        const label = mobileTaskToggle.querySelector("span");
+
+        if (label) {
+            label.textContent = expanded
+                ? "Show fewer social tasks"
+                : "View all social tasks";
+        }
+    });
+
+
+    // ==========================================================
+    // ESCAPE KEY / MODAL ACCESSIBILITY
+    // ==========================================================
+
+    document.addEventListener("keydown", (event) => {
+        if (event.key !== "Escape") return;
+
+        closeNotificationPanel();
+        closeModal(fundModal);
+        closeModal(withdrawModal);
+        closeModal(taskModal);
+        closeModal(campaignModal);
+        mobileDropdown?.classList.remove("show");
     });
 
 
