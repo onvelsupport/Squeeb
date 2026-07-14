@@ -65,6 +65,60 @@ document.addEventListener("DOMContentLoaded", () => {
         return div.innerHTML;
     }
 
+
+    function getCookie(name) {
+        let cookieValue = null;
+
+        if (document.cookie && document.cookie !== "") {
+            const cookies = document.cookie.split(";");
+
+            for (let cookie of cookies) {
+                cookie = cookie.trim();
+
+                if (cookie.startsWith(`${name}=`)) {
+                    cookieValue = decodeURIComponent(
+                        cookie.substring(name.length + 1)
+                    );
+
+                    break;
+                }
+            }
+        }
+
+        return cookieValue;
+    }
+
+    function normaliseBoolean(value) {
+        return (
+            value === true ||
+            value === 1 ||
+            String(value).toLowerCase() === "true" ||
+            String(value) === "1"
+        );
+    }
+
+    async function parseJsonResponse(response) {
+        const contentType = response.headers.get("content-type") || "";
+
+        if (!contentType.includes("application/json")) {
+            return {};
+        }
+
+        try {
+            return await response.json();
+        } catch (error) {
+            console.error("JSON PARSE ERROR:", error);
+            return {};
+        }
+    }
+
+    function openTaskModal() {
+        if (!taskModal) return;
+
+        taskModal.style.display = "flex";
+        document.body.style.overflow = "hidden";
+    }
+
     // ==========================================================
     // USER INFORMATION
     // ==========================================================
@@ -97,7 +151,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 return;
             }
 
-            const user = await response.json();
+            const user = await parseJsonResponse(response);
 
             setText(
                 "usernameDisplay",
@@ -151,14 +205,54 @@ document.addEventListener("DOMContentLoaded", () => {
     // ==========================================================
 
     function updateWithdrawalPanel(user) {
+        const rawMembershipValue =
+            user.is_member ??
+            user.membership_active ??
+            user.has_membership ??
+            user.is_active_member ??
+            false;
+
+        const isMember = normaliseBoolean(rawMembershipValue);
+        const firstWithdrawalCompleted = normaliseBoolean(
+            user.first_withdrawal_completed
+        );
+
+        /*
+         * Active membership must take priority, even when the
+         * first-withdrawal field is missing or returned as a string.
+         */
+        if (isMember) {
+            if (withdrawalMessage) {
+                withdrawalMessage.textContent =
+                    "Membership is active. All future withdrawals " +
+                    "will have a reduced 10% fee.";
+            }
+
+            if (withdrawalFee) {
+                withdrawalFee.textContent = "10%";
+            }
+
+            if (activateMembershipBtn) {
+                activateMembershipBtn.hidden = true;
+                activateMembershipBtn.style.display = "none";
+            }
+
+            if (membershipActiveBadge) {
+                membershipActiveBadge.hidden = false;
+                membershipActiveBadge.style.display = "flex";
+            }
+
+            return;
+        }
+
         /*
          * Before the first successful withdrawal:
          * - No membership required
          * - 20% withdrawal fee
          */
-        if (!user.first_withdrawal_completed) {
+        if (!firstWithdrawalCompleted) {
             if (withdrawalMessage) {
-                withdrawalMessage.innerHTML =
+                withdrawalMessage.textContent =
                     "Your first withdrawal is available without " +
                     "membership. A 20% withdrawal fee will apply.";
             }
@@ -168,10 +262,12 @@ document.addEventListener("DOMContentLoaded", () => {
             }
 
             if (activateMembershipBtn) {
+                activateMembershipBtn.hidden = true;
                 activateMembershipBtn.style.display = "none";
             }
 
             if (membershipActiveBadge) {
+                membershipActiveBadge.hidden = true;
                 membershipActiveBadge.style.display = "none";
             }
 
@@ -179,41 +275,14 @@ document.addEventListener("DOMContentLoaded", () => {
         }
 
         /*
-         * After the first successful withdrawal:
-         * - Tasks remain available
-         * - Membership is required before another withdrawal
-         */
-        if (!user.is_member) {
-            if (withdrawalMessage) {
-                withdrawalMessage.innerHTML =
-                    "Your first withdrawal has been completed. " +
-                    "Activate SQUEEB Membership before requesting " +
-                    "another withdrawal.";
-            }
-
-            if (withdrawalFee) {
-                withdrawalFee.textContent = "10%";
-            }
-
-            if (activateMembershipBtn) {
-                activateMembershipBtn.style.display = "block";
-            }
-
-            if (membershipActiveBadge) {
-                membershipActiveBadge.style.display = "none";
-            }
-
-            return;
-        }
-
-        /*
-         * Active members can make future withdrawals
-         * with a reduced 10% fee.
+         * After the first withdrawal, users without membership
+         * are shown the activation button.
          */
         if (withdrawalMessage) {
-            withdrawalMessage.innerHTML =
-                "Membership is active. All future withdrawals " +
-                "will have a reduced 10% fee.";
+            withdrawalMessage.textContent =
+                "Your first withdrawal has been completed. " +
+                "Activate SQUEEB Membership before requesting " +
+                "another withdrawal.";
         }
 
         if (withdrawalFee) {
@@ -221,11 +290,13 @@ document.addEventListener("DOMContentLoaded", () => {
         }
 
         if (activateMembershipBtn) {
-            activateMembershipBtn.style.display = "none";
+            activateMembershipBtn.hidden = false;
+            activateMembershipBtn.style.display = "block";
         }
 
         if (membershipActiveBadge) {
-            membershipActiveBadge.style.display = "flex";
+            membershipActiveBadge.hidden = true;
+            membershipActiveBadge.style.display = "none";
         }
     }
 
@@ -261,7 +332,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 }
             });
 
-            const data = await response.json();
+            const data = await parseJsonResponse(response);
 
             if (!response.ok) {
                 taskList.innerHTML = `
@@ -446,7 +517,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 }
             });
 
-            const data = await response.json();
+            const data = await parseJsonResponse(response);
 
             if (!response.ok) {
                 alert(
@@ -559,7 +630,7 @@ document.addEventListener("DOMContentLoaded", () => {
             }
 
             if (taskModal) {
-                taskModal.style.display = "flex";
+                openTaskModal();
             }
 
         } catch (error) {
@@ -642,11 +713,14 @@ document.addEventListener("DOMContentLoaded", () => {
         try {
             const response = await fetch(endpoint, {
                 method: "POST",
-                credentials: "include",
+                credentials: "same-origin",
+                headers: {
+                    "X-CSRFToken": getCookie("csrftoken")
+                },
                 body: formData
             });
 
-            const data = await response.json();
+            const data = await parseJsonResponse(response);
 
             if (!response.ok) {
                 alert(
@@ -671,7 +745,6 @@ document.addEventListener("DOMContentLoaded", () => {
             selectedTaskType = "task";
 
             await loadUser();
-            await loadTasks();
             await loadSubmissions();
             await loadRecentActivities();
 
@@ -716,7 +789,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 return;
             }
 
-            const data = await response.json();
+            const data = await parseJsonResponse(response);
 
             allSubmissions = data.submissions || [];
 
@@ -999,7 +1072,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 return;
             }
 
-            const data = await response.json();
+            const data = await parseJsonResponse(response);
 
             activityList.innerHTML = "";
 
@@ -1076,12 +1149,13 @@ document.addEventListener("DOMContentLoaded", () => {
                         headers: {
                             "Accept": "application/json",
                             "X-Requested-With":
-                                "XMLHttpRequest"
+                                "XMLHttpRequest",
+                            "X-CSRFToken": getCookie("csrftoken")
                         }
                     }
                 );
 
-                const data = await response.json();
+                const data = await parseJsonResponse(response);
 
                 if (!response.ok) {
                     alert(
@@ -1131,6 +1205,8 @@ document.addEventListener("DOMContentLoaded", () => {
         if (taskModal) {
             taskModal.style.display = "none";
         }
+
+        document.body.style.overflow = "";
 
         selectedTaskId = null;
         selectedTaskType = "task";
@@ -1196,12 +1272,20 @@ document.addEventListener("DOMContentLoaded", () => {
     loadSubmissions();
     loadRecentActivities();
 
+    window.addEventListener("pageshow", loadUser);
+
+    document.addEventListener("visibilitychange", () => {
+        if (!document.hidden) {
+            loadUser();
+        }
+    });
+
     /*
      * Refresh recent activity periodically without reloading
      * the page.
      */
     setInterval(
         loadRecentActivities,
-        5000
+        30000
     );
 });
