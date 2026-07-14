@@ -17,38 +17,18 @@ class WithdrawalRequest(models.Model):
         on_delete=models.CASCADE,
         related_name="withdrawal_requests",
     )
-
     amount = models.DecimalField(max_digits=10, decimal_places=2)
-    fee_percentage = models.DecimalField(
-        max_digits=5,
-        decimal_places=2,
-        default=0,
-    )
-    fee_amount = models.DecimalField(
-        max_digits=10,
-        decimal_places=2,
-        default=0,
-    )
-    net_amount = models.DecimalField(
-        max_digits=10,
-        decimal_places=2,
-        default=0,
-    )
-
+    fee_percentage = models.DecimalField(max_digits=5, decimal_places=2, default=0)
+    fee_amount = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+    net_amount = models.DecimalField(max_digits=10, decimal_places=2, default=0)
     method = models.CharField(max_length=50)
     account_name = models.CharField(max_length=255, blank=True, null=True)
     bank_name = models.CharField(max_length=255, blank=True, null=True)
     sort_code = models.CharField(max_length=20, blank=True, null=True)
     account_number = models.CharField(max_length=20, blank=True, null=True)
     paypal_email = models.EmailField(blank=True, null=True)
-
-    status = models.CharField(
-        max_length=20,
-        choices=STATUS_CHOICES,
-        default="pending",
-    )
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default="pending")
     approval_token = models.UUIDField(default=uuid.uuid4, editable=False)
-
     created_at = models.DateTimeField(auto_now_add=True)
     paid_at = models.DateTimeField(blank=True, null=True)
 
@@ -60,16 +40,17 @@ class WithdrawalRequest(models.Model):
             f"{self.status}"
         )
 
+
 class Follow(models.Model):
     follower = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE,
-        related_name="following_set"
+        related_name="following_set",
     )
     following = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE,
-        related_name="followers_set"
+        related_name="followers_set",
     )
     created_at = models.DateTimeField(auto_now_add=True)
 
@@ -78,32 +59,17 @@ class Follow(models.Model):
 
     def __str__(self):
         return f"{self.follower.username} follows {self.following.username}"
-    
+
 
 class User(AbstractUser):
     balance = models.DecimalField(max_digits=10, decimal_places=2, default=0)
     earnings = models.DecimalField(max_digits=10, decimal_places=2, default=0)
     tasks_completed = models.IntegerField(default=0)
     referrals = models.IntegerField(default=0)
-
     is_member = models.BooleanField(default=False)
-
-    first_withdrawal_completed = models.BooleanField(
-        default=False
-    )
-
-    country = models.CharField(
-        max_length=100,
-        blank=True,
-        default=""
-    )
-
-    referral_code = models.CharField(
-        max_length=20,
-        unique=True,
-        blank=True,
-        null=True
-    )
+    first_withdrawal_completed = models.BooleanField(default=False)
+    country = models.CharField(max_length=100, blank=True, default="")
+    referral_code = models.CharField(max_length=20, unique=True, blank=True, null=True)
 
     def save(self, *args, **kwargs):
         self.username = self.username.lower()
@@ -116,12 +82,10 @@ class User(AbstractUser):
 
 class Task(models.Model):
     creator = models.ForeignKey(User, on_delete=models.CASCADE, null=True, blank=True)
-
     title = models.CharField(max_length=255)
     cost_per_action = models.DecimalField(max_digits=10, decimal_places=2, default=0)
     worker_reward = models.DecimalField(max_digits=10, decimal_places=2, default=0)
     available = models.IntegerField(default=0)
-
     icon = models.CharField(max_length=255, default="task.png")
     short_desc = models.CharField(max_length=255, default="")
     platforms = models.CharField(max_length=120, default="")
@@ -185,7 +149,7 @@ class Task(models.Model):
                 "Click the link below.",
                 "Repost, retweet or share the post.",
                 "Take a screenshot showing the repost.",
-                ],
+            ],
         }
 
         return instructions_map.get(self.task_type, [self.instructions])
@@ -209,43 +173,19 @@ class AdminCampaign(models.Model):
 
     title = models.CharField(max_length=200)
     description = models.TextField()
-
-    image = models.ImageField(
-        upload_to="campaigns/",
-        blank=True,
-        null=True
-    )
-
-    reward = models.DecimalField(
-        max_digits=10,
-        decimal_places=2
-    )
-
-    platform = models.CharField(
-        max_length=30,
-        choices=PLATFORM_CHOICES
-    )
-
+    image = models.ImageField(upload_to="campaigns/", blank=True, null=True)
+    reward = models.DecimalField(max_digits=10, decimal_places=2)
+    platform = models.CharField(max_length=30, choices=PLATFORM_CHOICES)
     max_participants = models.PositiveIntegerField()
-
     participants = models.PositiveIntegerField(default=0)
-
-    status = models.CharField(
-        max_length=20,
-        choices=STATUS_CHOICES,
-        default="draft"
-    )
-
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default="draft")
     start_date = models.DateField()
-
     end_date = models.DateField()
-
     created_by = models.ForeignKey(
         User,
         on_delete=models.CASCADE,
-        related_name="admin_campaigns"
+        related_name="admin_campaigns",
     )
-
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
@@ -273,40 +213,20 @@ class CampaignSubmission(models.Model):
     campaign = models.ForeignKey(
         AdminCampaign,
         on_delete=models.CASCADE,
-        related_name="submissions"
+        related_name="submissions",
     )
-
     user = models.ForeignKey(
         User,
         on_delete=models.CASCADE,
-        related_name="campaign_submissions"
+        related_name="campaign_submissions",
     )
-
     username = models.CharField(max_length=100)
-
     video_link = models.URLField()
-
-    screenshot = models.ImageField(
-        upload_to="campaign_proofs/"
-    )
-
+    screenshot = models.ImageField(upload_to="campaign_proofs/")
     note = models.TextField(blank=True)
-
-    status = models.CharField(
-        max_length=20,
-        choices=STATUS_CHOICES,
-        default="pending"
-    )
-
-    rejection_reason = models.TextField(
-        blank=True
-    )
-
-    reviewed_at = models.DateTimeField(
-        null=True,
-        blank=True
-    )
-
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default="pending")
+    rejection_reason = models.TextField(blank=True)
+    reviewed_at = models.DateTimeField(null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
@@ -329,7 +249,6 @@ class RecentActivity(models.Model):
 
     def __str__(self):
         return self.message
-    
 
 
 class TaskCompletion(models.Model):
@@ -341,17 +260,9 @@ class TaskCompletion(models.Model):
 
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     task = models.ForeignKey(Task, on_delete=models.CASCADE)
-
     proof = models.ImageField(upload_to="task_proofs/", null=True, blank=True)
-
-    status = models.CharField(
-        max_length=20,
-        choices=STATUS_CHOICES,
-        default="pending"
-    )
-
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default="pending")
     reward_amount = models.DecimalField(max_digits=10, decimal_places=2, default=0)
-
     completed_at = models.DateTimeField(auto_now_add=True)
     reviewed_at = models.DateTimeField(blank=True, null=True)
 
@@ -376,26 +287,18 @@ class FundingPayment(models.Model):
     )
 
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="funding_payments")
-
     amount = models.DecimalField(max_digits=10, decimal_places=2)
-
     fee = models.DecimalField(max_digits=10, decimal_places=2, default=0)
     total_charged = models.DecimalField(max_digits=10, decimal_places=2, default=0)
-
     method = models.CharField(max_length=20, choices=METHOD_CHOICES, default="card")
     reference = models.CharField(max_length=50, blank=True, null=True)
-
     stripe_session_id = models.CharField(max_length=255, unique=True, blank=True, null=True)
-
     status = models.CharField(max_length=30, choices=STATUS_CHOICES, default="pending")
-
     created_at = models.DateTimeField(auto_now_add=True)
     paid_at = models.DateTimeField(blank=True, null=True)
 
     def __str__(self):
         return f"{self.user.username} - £{self.amount} - {self.method} - {self.status}"
-
-
 
 
 class Product(models.Model):
@@ -417,12 +320,11 @@ class ProductImage(models.Model):
     image = models.ImageField(upload_to="products/")
 
 
-
 class Notification(models.Model):
     user = models.ForeignKey(
         User,
         on_delete=models.CASCADE,
-        related_name="notifications"
+        related_name="notifications",
     )
     title = models.CharField(max_length=150)
     message = models.TextField()
@@ -435,53 +337,117 @@ class Notification(models.Model):
 
     def __str__(self):
         return f"{self.user.username} - {self.title}"
-    
-
-
 
 
 class ProductMessage(models.Model):
     product = models.ForeignKey(Product, on_delete=models.CASCADE, related_name="messages")
-    sender = models.ForeignKey(User, on_delete=models.CASCADE, related_name="sent_product_messages")
-    receiver = models.ForeignKey(User, on_delete=models.CASCADE, related_name="received_product_messages")
+    sender = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        related_name="sent_product_messages",
+    )
+    receiver = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        related_name="received_product_messages",
+    )
     message = models.TextField()
     created_at = models.DateTimeField(auto_now_add=True)
     is_read = models.BooleanField(default=False)
 
     def __str__(self):
         return f"{self.sender} to {self.receiver} - {self.product.title}"
-    
-
 
 
 class Referral(models.Model):
     referrer = models.ForeignKey(
         User,
         on_delete=models.CASCADE,
-        related_name="referrals_made"
+        related_name="referrals_made",
     )
-
     referred_user = models.OneToOneField(
         User,
         on_delete=models.CASCADE,
-        related_name="referred_by"
+        related_name="referred_by",
     )
-
     code = models.CharField(max_length=20)
-
-    reward = models.DecimalField(
-        max_digits=10,
-        decimal_places=2,
-        default=0
-    )
-
+    reward = models.DecimalField(max_digits=10, decimal_places=2, default=0)
     rewarded = models.BooleanField(default=False)
-
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
         return f"{self.referrer.username} referred {self.referred_user.username}"
-    
+
+
+class Newsletter(models.Model):
+    AUDIENCE_CHOICES = [
+        ("all", "All active users"),
+        ("members", "Members only"),
+        ("non_members", "Non-members only"),
+        ("staff", "Staff users only"),
+    ]
+
+    STATUS_CHOICES = [
+        ("draft", "Draft"),
+        ("sending", "Sending"),
+        ("sent", "Sent"),
+        ("failed", "Failed"),
+    ]
+
+    subject = models.CharField(max_length=200)
+    heading = models.CharField(max_length=200)
+    message = models.TextField(
+        help_text="Main newsletter message. Line breaks are preserved."
+    )
+    audience = models.CharField(
+        max_length=20,
+        choices=AUDIENCE_CHOICES,
+        default="all",
+    )
+    action_text = models.CharField(max_length=100, blank=True)
+    action_url = models.URLField(blank=True)
+    status = models.CharField(
+        max_length=20,
+        choices=STATUS_CHOICES,
+        default="draft",
+        editable=False,
+    )
+    sent_count = models.PositiveIntegerField(default=0, editable=False)
+    failed_count = models.PositiveIntegerField(default=0, editable=False)
+    skipped_count = models.PositiveIntegerField(default=0, editable=False)
+    created_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="created_newsletters",
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+    sent_at = models.DateTimeField(null=True, blank=True)
+
+    class Meta:
+        ordering = ["-created_at"]
+
+    def __str__(self):
+        return self.subject
+
+    def get_recipients(self):
+        users = User.objects.filter(
+            is_active=True,
+        ).exclude(
+            email="",
+        ).exclude(
+            email__isnull=True,
+        )
+
+        if self.audience == "members":
+            users = users.filter(is_member=True)
+        elif self.audience == "non_members":
+            users = users.filter(is_member=False)
+        elif self.audience == "staff":
+            users = users.filter(is_staff=True)
+
+        return users.order_by("id")
 
 
 def generate_referral_code():

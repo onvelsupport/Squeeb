@@ -1,0 +1,14 @@
+Hi {{ user.first_name|default:user.username|default:"there" }},
+
+{{ newsletter.heading }}
+
+{{ newsletter.message }}
+
+{% if newsletter.action_url and newsletter.action_text %}
+{{ newsletter.action_text }}:
+{{ newsletter.action_url }}
+{% endif %}
+
+SQUEEB
+You received this email because you have a SQUEEB account.
+© 2026 SQUEEB. All rights reserved.
