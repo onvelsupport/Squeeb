@@ -76,6 +76,7 @@ from .views import (
     admin_campaign_submissions,
     approve_campaign_submission,
     reject_campaign_submission,
+    influencer_terms,
 )
 
 
@@ -274,6 +275,13 @@ urlpatterns = [
         transaction_history_api,
         name="transaction_history_api",
     ),
+
+
+    path(
+    "influencer-terms/",
+    influencer_terms,
+    name="influencer_terms",
+),
 
     # ==========================================================
     # USER PROFILES AND FOLLOWING

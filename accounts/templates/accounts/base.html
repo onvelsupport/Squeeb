@@ -150,23 +150,7 @@
     {% endblock %}
 </main>
 
-{% block extra_js %}
-{% endblock %}
-
-{% if user.is_authenticated %}
-    <script src="{% static 'accounts/js/dashboard.js' %}"></script>
-{% else %}
-    <script>
-        const menuBtn = document.getElementById("menuBtn");
-        const navMenu = document.getElementById("navMenu");
-
-        if (menuBtn && navMenu) {
-            menuBtn.addEventListener("click", function () {
-                navMenu.classList.toggle("active");
-            });
-        }
-    </script>
-{% endif %}
+</main>
 
 
 <!-- ====================== FOOTER ====================== -->
@@ -178,7 +162,10 @@
         <div class="footer-brand">
 
             <a href="{% if user.is_authenticated %}{% url 'dashboard' %}{% else %}{% url 'home' %}{% endif %}">
-                <img src="{% static 'accounts/img/logo2.png' %}" alt="Squeeb">
+                <img
+                    src="{% static 'accounts/img/logo2.png' %}"
+                    alt="Squeeb"
+                >
             </a>
 
             <p>
@@ -186,13 +173,25 @@
             </p>
 
             <div class="social-links">
-                <a href="#"><i class="fab fa-facebook-f"></i></a>
-                <a href="#"><i class="fab fa-x-twitter"></i></a>
-                <a href="#"><i class="fab fa-instagram"></i></a>
-                <a href="#"><i class="fab fa-tiktok"></i></a>
+                <a href="#" aria-label="Squeeb on Facebook">
+                    <i class="fab fa-facebook-f"></i>
+                </a>
+
+                <a href="#" aria-label="Squeeb on X">
+                    <i class="fab fa-x-twitter"></i>
+                </a>
+
+                <a href="#" aria-label="Squeeb on Instagram">
+                    <i class="fab fa-instagram"></i>
+                </a>
+
+                <a href="#" aria-label="Squeeb on TikTok">
+                    <i class="fab fa-tiktok"></i>
+                </a>
             </div>
 
         </div>
+
 
         {% if user.is_authenticated %}
 
@@ -209,6 +208,7 @@
 
         </div>
 
+
         <div class="footer-column">
 
             <h4>Marketplace</h4>
@@ -219,6 +219,7 @@
             <a href="{% url 'seller_history' %}">Sold Items</a>
 
         </div>
+
 
         <div class="footer-column">
 
@@ -239,10 +240,11 @@
 
             <a href="{% url 'about' %}">About</a>
             <a href="{% url 'support' %}">Support</a>
-            <a href="#">Contact Us</a>
+            <a href="{% url 'support' %}">Contact Us</a>
             <a href="#">Careers</a>
 
         </div>
+
 
         <div class="footer-column">
 
@@ -252,6 +254,7 @@
             <a href="{% url 'sell' %}">Sell Products</a>
 
         </div>
+
 
         <div class="footer-column">
 
@@ -264,25 +267,104 @@
 
         {% endif %}
 
+
         <div class="footer-column">
 
             <h4>Legal</h4>
 
-            <a href="{% url 'privacy_policy' %}">Privacy Policy</a>
-            <a href="{% url 'terms_conditions' %}">Terms & Conditions</a>
-            <a href="{% url 'refund_policy' %}">Refund Policy</a>
-            <a href="{% url 'cookie_policy' %}">Cookies Policy</a>
-            <a href="{% url 'acceptable_use' %}">Acceptable Use Policy</a>
+            <a href="{% url 'privacy_policy' %}">
+                Privacy Policy
+            </a>
+
+            <a href="{% url 'terms_conditions' %}">
+                Terms & Conditions
+            </a>
+
+            <a href="{% url 'influencer_terms' %}">
+                Influencer Terms
+            </a>
+
+            <a href="{% url 'refund_policy' %}">
+                Refund Policy
+            </a>
+
+            <a href="{% url 'cookie_policy' %}">
+                Cookies Policy
+            </a>
+
+            <a href="{% url 'acceptable_use' %}">
+                Acceptable Use Policy
+            </a>
+
         </div>
 
     </div>
 
+
     <div class="footer-bottom">
         <p>
-            © 2026 Squeeb. All rights reserved.
+            &copy; {% now "Y" %} Squeeb. All rights reserved.
         </p>
     </div>
 
 </footer>
+
+
+<!-- ====================== SHARED JAVASCRIPT ====================== -->
+
+{% if user.is_authenticated %}
+
+<script src="{% static 'accounts/js/dashboard.js' %}"></script>
+
+{% else %}
+
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        const menuBtn = document.getElementById("menuBtn");
+        const navMenu = document.getElementById("navMenu");
+
+        if (!menuBtn || !navMenu) {
+            return;
+        }
+
+        menuBtn.addEventListener("click", function () {
+            const isOpen = navMenu.classList.toggle("active");
+
+            menuBtn.setAttribute(
+                "aria-expanded",
+                isOpen ? "true" : "false"
+            );
+
+            const icon = menuBtn.querySelector("i");
+
+            if (icon) {
+                icon.classList.toggle("fa-bars", !isOpen);
+                icon.classList.toggle("fa-xmark", isOpen);
+            }
+        });
+
+        navMenu.querySelectorAll("a").forEach(function (link) {
+            link.addEventListener("click", function () {
+                navMenu.classList.remove("active");
+                menuBtn.setAttribute("aria-expanded", "false");
+
+                const icon = menuBtn.querySelector("i");
+
+                if (icon) {
+                    icon.classList.add("fa-bars");
+                    icon.classList.remove("fa-xmark");
+                }
+            });
+        });
+    });
+</script>
+
+{% endif %}
+
+
+<!-- Page-specific JavaScript -->
+{% block extra_js %}
+{% endblock %}
+
 </body>
 </html>

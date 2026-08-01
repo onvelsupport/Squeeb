@@ -1683,6 +1683,11 @@ def api_edit_profile(request):
     
 
 
+
+def influencer_terms(request):
+    return render(request, "accounts/influencer_terms.html")
+
+
 @csrf_exempt
 @login_required
 def create_cart_checkout(request):
