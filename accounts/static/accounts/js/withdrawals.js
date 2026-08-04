@@ -1,5 +1,6 @@
 document.addEventListener("DOMContentLoaded", () => {
-    const MINIMUM_WITHDRAWAL = 10;
+    const PAYPAL_MINIMUM_WITHDRAWAL = 10;
+    const NIGERIA_BANK_MINIMUM_WITHDRAWAL = 5;
 
     let currentFeePercentage = 20;
     let allWithdrawals = [];
@@ -508,11 +509,16 @@ document.addEventListener("DOMContentLoaded", () => {
             byId(amountInputId)?.value || 0
         );
 
-        if (!Number.isFinite(amount) || amount < MINIMUM_WITHDRAWAL) {
-            message.textContent = "Minimum withdrawal amount is £10.";
-            message.className = "withdraw-msg error";
-            return;
-        }
+        const minimumAmount = modalId === "bankModal"
+    ? NIGERIA_BANK_MINIMUM_WITHDRAWAL
+    : PAYPAL_MINIMUM_WITHDRAWAL;
+
+if (!Number.isFinite(amount) || amount < minimumAmount) {
+    message.textContent =
+        `Minimum withdrawal amount is £${minimumAmount.toFixed(2)}.`;
+    message.className = "withdraw-msg error";
+    return;
+}
 
         if (amount > availableBalance) {
             message.textContent = "Your available balance is too low.";

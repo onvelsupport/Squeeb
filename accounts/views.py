@@ -2180,14 +2180,34 @@ def request_withdrawal(request):
             status=400,
         )
 
-    if amount < Decimal("10.00"):
-        return JsonResponse(
+    if method == "Bank":
+        if not _is_nigeria_country(user.country):
+            return JsonResponse(
             {
                 "success": False,
-                "message": "Minimum withdrawal amount is £10.",
+                "message": (
+                    "Bank withdrawals are currently available "
+                    "to Nigerian users only."
+                ),
             },
-            status=400,
+            status=403,
         )
+        minimum_withdrawal = Decimal("5.00")
+    else:
+        minimum_withdrawal = Decimal("10.00")
+
+
+    if amount < minimum_withdrawal:
+        return JsonResponse(
+        {
+            "success": False,
+            "message": (
+                f"Minimum withdrawal amount is "
+                f"£{minimum_withdrawal:.2f}."
+            ),
+        },
+        status=400,
+    )
 
     if user.balance < amount:
         return JsonResponse(
