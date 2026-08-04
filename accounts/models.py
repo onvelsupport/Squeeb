@@ -21,13 +21,38 @@ class WithdrawalRequest(models.Model):
     fee_percentage = models.DecimalField(max_digits=5, decimal_places=2, default=0)
     fee_amount = models.DecimalField(max_digits=10, decimal_places=2, default=0)
     net_amount = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+
     method = models.CharField(max_length=50)
+
+    # Bank / payout details
+    country = models.CharField(max_length=100, blank=True, default="")
     account_name = models.CharField(max_length=255, blank=True, null=True)
     bank_name = models.CharField(max_length=255, blank=True, null=True)
     sort_code = models.CharField(max_length=20, blank=True, null=True)
     account_number = models.CharField(max_length=20, blank=True, null=True)
+
+    # Exchange-rate snapshot used for Nigerian bank withdrawals.
+    payout_currency = models.CharField(max_length=3, blank=True, default="")
+    exchange_rate = models.DecimalField(
+        max_digits=18,
+        decimal_places=6,
+        blank=True,
+        null=True,
+    )
+    payout_amount = models.DecimalField(
+        max_digits=18,
+        decimal_places=2,
+        blank=True,
+        null=True,
+    )
+
     paypal_email = models.EmailField(blank=True, null=True)
-    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default="pending")
+
+    status = models.CharField(
+        max_length=20,
+        choices=STATUS_CHOICES,
+        default="pending",
+    )
     approval_token = models.UUIDField(default=uuid.uuid4, editable=False)
     created_at = models.DateTimeField(auto_now_add=True)
     paid_at = models.DateTimeField(blank=True, null=True)
@@ -36,7 +61,7 @@ class WithdrawalRequest(models.Model):
         return (
             f"{self.user.username} - "
             f"£{self.amount} requested - "
-            f"£{self.net_amount} payable - "
+            f"{self.method} - "
             f"{self.status}"
         )
 

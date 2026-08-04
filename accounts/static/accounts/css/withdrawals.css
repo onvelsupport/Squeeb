@@ -861,3 +861,113 @@ body.modal-open {
         font-size: 13px;
     }
 }
+
+/* ==========================================================
+   NIGERIA BANK WITHDRAWAL
+   ========================================================== */
+
+.method-status.available {
+    color: #166534;
+    background: #dcfce7;
+}
+
+.modal-method-icon.bank {
+    display: grid;
+    place-items: center;
+    width: 54px;
+    height: 54px;
+    margin-bottom: 14px;
+    color: #166534;
+    background: #f0fdf4;
+    border-radius: 16px;
+    font-size: 22px;
+}
+
+.nigeria-only-badge {
+    width: fit-content;
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    margin: 2px 0 18px;
+    padding: 7px 10px;
+    color: #166534;
+    background: #f0fdf4;
+    border: 1px solid #bbf7d0;
+    border-radius: 999px;
+    font-size: 11px;
+    font-weight: 800;
+}
+
+.withdraw-modal select {
+    width: 100%;
+    min-height: 48px;
+    margin: 7px 0 16px;
+    padding: 0 13px;
+    color: var(--withdraw-text);
+    background: #fff;
+    border: 1px solid var(--withdraw-border);
+    border-radius: 12px;
+    outline: none;
+    font: inherit;
+}
+
+.withdraw-modal select:focus {
+    border-color: #93c5fd;
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+}
+
+.bank-calculation {
+    margin-bottom: 10px;
+}
+
+.naira-row strong {
+    color: #15803d;
+    font-size: 19px;
+}
+
+.refresh-rate-btn {
+    width: 100%;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    margin: 0 0 18px;
+    padding: 10px 12px;
+    color: #1d4ed8;
+    background: #eff6ff;
+    border: 1px solid #bfdbfe;
+    border-radius: 11px;
+    font-size: 12px;
+    font-weight: 800;
+    cursor: pointer;
+}
+
+.refresh-rate-btn:hover {
+    background: #dbeafe;
+}
+
+.refresh-rate-btn:disabled {
+    opacity: 0.6;
+    cursor: wait;
+}
+
+.rate-attribution {
+    margin: -4px 0 16px;
+    color: var(--withdraw-muted);
+    font-size: 10px;
+    text-align: center;
+}
+
+.rate-attribution a {
+    color: inherit;
+}
+
+@media (max-width: 640px) {
+    .nigeria-only-badge {
+        margin-bottom: 14px;
+    }
+
+    .naira-row strong {
+        font-size: 17px;
+    }
+}

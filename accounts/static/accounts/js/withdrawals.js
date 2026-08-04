@@ -1,16 +1,30 @@
 document.addEventListener("DOMContentLoaded", () => {
     const MINIMUM_WITHDRAWAL = 10;
+
     let currentFeePercentage = 20;
     let allWithdrawals = [];
     let availableBalance = 0;
+    let currentGbpNgnRate = 0;
+    let bankWithdrawalAvailable = false;
 
     const byId = (id) => document.getElementById(id);
 
     const money = (value) => {
         const amount = Number.parseFloat(value || 0);
+
         return new Intl.NumberFormat("en-GB", {
             style: "currency",
             currency: "GBP",
+        }).format(Number.isFinite(amount) ? amount : 0);
+    };
+
+    const naira = (value) => {
+        const amount = Number.parseFloat(value || 0);
+
+        return new Intl.NumberFormat("en-NG", {
+            style: "currency",
+            currency: "NGN",
+            maximumFractionDigits: 2,
         }).format(Number.isFinite(amount) ? amount : 0);
     };
 
@@ -34,6 +48,11 @@ document.addEventListener("DOMContentLoaded", () => {
         return cookie ? decodeURIComponent(cookie.split("=")[1]) : "";
     };
 
+    const isNigeriaCountry = (country) => {
+        const value = String(country || "").trim().toLowerCase();
+        return ["ng", "nga", "nigeria"].includes(value);
+    };
+
     const getErrorMessage = async (response) => {
         try {
             const data = await response.json();
@@ -51,7 +70,10 @@ document.addEventListener("DOMContentLoaded", () => {
         modal.setAttribute("aria-hidden", "false");
         document.body.classList.add("modal-open");
 
-        const firstInput = modal.querySelector("input:not([type='hidden'])");
+        const firstInput = modal.querySelector(
+            "input:not([type='hidden']), select"
+        );
+
         window.setTimeout(() => firstInput?.focus(), 50);
     }
 
@@ -64,6 +86,43 @@ document.addEventListener("DOMContentLoaded", () => {
         document.body.classList.remove("modal-open");
     }
 
+    function setBankAvailability(available) {
+        bankWithdrawalAvailable = Boolean(available);
+
+        const button = byId("openBankModal");
+        const status = byId("bankOptionStatus");
+
+        if (!button || !status) return;
+
+        if (bankWithdrawalAvailable) {
+            button.disabled = false;
+            button.setAttribute("aria-disabled", "false");
+            button.classList.remove("disabled");
+            button.classList.add("active");
+
+            setText(
+                "bankOptionDescription",
+                `Nigeria · Fee ${currentFeePercentage}% · Paid in NGN`
+            );
+
+            status.textContent = "Available";
+            status.className = "method-status available";
+        } else {
+            button.disabled = true;
+            button.setAttribute("aria-disabled", "true");
+            button.classList.remove("active");
+            button.classList.add("disabled");
+
+            setText(
+                "bankOptionDescription",
+                "Temporarily unavailable in your country"
+            );
+
+            status.textContent = "Unavailable";
+            status.className = "method-status unavailable";
+        }
+    }
+
     function updateFeeDisplay(fee) {
         currentFeePercentage = Number.parseFloat(fee) || 0;
         const label = `${currentFeePercentage}%`;
@@ -72,8 +131,17 @@ document.addEventListener("DOMContentLoaded", () => {
         setText("currentWithdrawalFee", label);
         setText("paypalOptionFee", label);
         setText("paypalFeePercentage", label);
+        setText("bankFeePercentage", label);
+
+        if (bankWithdrawalAvailable) {
+            setText(
+                "bankOptionDescription",
+                `Nigeria · Fee ${currentFeePercentage}% · Paid in NGN`
+            );
+        }
 
         calculatePaypalWithdrawal();
+        calculateBankWithdrawal();
     }
 
     function calculatePaypalWithdrawal() {
@@ -86,6 +154,90 @@ document.addEventListener("DOMContentLoaded", () => {
         setText("paypalRequestedAmount", money(safeAmount));
         setText("paypalFeeAmount", money(feeAmount));
         setText("paypalNetAmount", money(netAmount));
+    }
+
+    function calculateBankWithdrawal() {
+        const amount = Number.parseFloat(
+            byId("bankWithdrawalAmount")?.value || 0
+        );
+
+        const safeAmount = Number.isFinite(amount) ? amount : 0;
+        const feeAmount = safeAmount * (currentFeePercentage / 100);
+        const netGbp = Math.max(0, safeAmount - feeAmount);
+        const payout = netGbp * currentGbpNgnRate;
+
+        setText("bankRequestedAmount", money(safeAmount));
+        setText("bankFeeAmount", money(feeAmount));
+        setText("bankNetGbpAmount", money(netGbp));
+        setText("bankNairaAmount", naira(payout));
+    }
+
+    async function loadExchangeRate(showMessage = false) {
+        const rateElement = byId("bankExchangeRate");
+        const refreshButton = byId("refreshExchangeRate");
+
+        if (rateElement) rateElement.textContent = "Loading...";
+
+        if (refreshButton) {
+            refreshButton.disabled = true;
+        }
+
+        try {
+            const response = await fetch("/api/exchange-rate/gbp-ngn/", {
+                credentials: "same-origin",
+                headers: {
+                    Accept: "application/json",
+                },
+            });
+
+            const data = await response.json();
+
+            if (!response.ok || data.success === false) {
+                throw new Error(
+                    data.message || "Unable to load the exchange rate."
+                );
+            }
+
+            currentGbpNgnRate = Number.parseFloat(data.rate || 0) || 0;
+
+            setText(
+                "bankExchangeRate",
+                `£1 = ${naira(currentGbpNgnRate)}`
+            );
+
+            calculateBankWithdrawal();
+
+            if (showMessage) {
+                const message = byId("bankWithdrawForm")?.querySelector(
+                    ".withdraw-msg"
+                );
+
+                if (message) {
+                    message.textContent = "Exchange rate refreshed.";
+                    message.className = "withdraw-msg success";
+                }
+            }
+        } catch (error) {
+            console.error("EXCHANGE RATE ERROR:", error);
+            currentGbpNgnRate = 0;
+
+            if (rateElement) {
+                rateElement.textContent = "Unavailable";
+            }
+
+            const message = byId("bankWithdrawForm")?.querySelector(
+                ".withdraw-msg"
+            );
+
+            if (message) {
+                message.textContent = error.message;
+                message.className = "withdraw-msg error";
+            }
+        } finally {
+            if (refreshButton) {
+                refreshButton.disabled = false;
+            }
+        }
     }
 
     function updateMembershipState(user) {
@@ -141,7 +293,9 @@ document.addEventListener("DOMContentLoaded", () => {
         try {
             const response = await fetch("/api/user-info/", {
                 credentials: "same-origin",
-                headers: { Accept: "application/json" },
+                headers: {
+                    Accept: "application/json",
+                },
             });
 
             if (!response.ok) return;
@@ -162,11 +316,20 @@ document.addEventListener("DOMContentLoaded", () => {
             updateMembershipState(user);
 
             const paypalEmail = byId("paypalEmail");
+
             if (paypalEmail && !paypalEmail.value && user.email) {
                 paypalEmail.value = user.email;
             }
+
+            const nigeriaUser = isNigeriaCountry(user.country);
+            setBankAvailability(nigeriaUser);
+
+            if (nigeriaUser) {
+                await loadExchangeRate();
+            }
         } catch (error) {
             console.error("USER INFO ERROR:", error);
+            setBankAvailability(false);
         }
     }
 
@@ -184,6 +347,9 @@ document.addEventListener("DOMContentLoaded", () => {
             netAmount: Number.parseFloat(
                 item.net_amount ?? item.net ?? item.amount ?? 0
             ) || 0,
+            payoutCurrency: item.payout_currency || "",
+            payoutAmount: Number.parseFloat(item.payout_amount || 0) || 0,
+            exchangeRate: Number.parseFloat(item.exchange_rate || 0) || 0,
             status: String(item.status || "pending").toLowerCase(),
             createdAt:
                 item.created_at ||
@@ -212,25 +378,35 @@ document.addEventListener("DOMContentLoaded", () => {
             return;
         }
 
-        list.innerHTML = filtered.map((item) => `
-            <article class="withdraw-history-item">
-                <div>
-                    <h3>${escapeHtml(item.method)}</h3>
-                    <p>${escapeHtml(item.createdAt || "Date unavailable")}</p>
-                    <p>
-                        Fee ${escapeHtml(item.feePercentage)}%
-                        · Net ${money(item.netAmount)}
-                    </p>
-                    <span class="status-badge ${escapeHtml(item.status)}">
-                        ${escapeHtml(item.status)}
-                    </span>
-                </div>
+        list.innerHTML = filtered.map((item) => {
+            const payoutLine = (
+                item.method === "Bank" &&
+                item.payoutCurrency === "NGN" &&
+                item.payoutAmount > 0
+            )
+                ? `Estimated payout ${naira(item.payoutAmount)}`
+                : `Net ${money(item.netAmount)}`;
 
-                <div class="withdraw-history-amount">
-                    <strong>${money(item.amount)}</strong>
-                </div>
-            </article>
-        `).join("");
+            return `
+                <article class="withdraw-history-item">
+                    <div>
+                        <h3>${escapeHtml(item.method)}</h3>
+                        <p>${escapeHtml(item.createdAt || "Date unavailable")}</p>
+                        <p>
+                            Fee ${escapeHtml(item.feePercentage)}%
+                            · ${escapeHtml(payoutLine)}
+                        </p>
+                        <span class="status-badge ${escapeHtml(item.status)}">
+                            ${escapeHtml(item.status)}
+                        </span>
+                    </div>
+
+                    <div class="withdraw-history-amount">
+                        <strong>${money(item.amount)}</strong>
+                    </div>
+                </article>
+            `;
+        }).join("");
     }
 
     async function loadWithdrawals() {
@@ -239,7 +415,9 @@ document.addEventListener("DOMContentLoaded", () => {
         try {
             const response = await fetch("/api/withdrawal-history/", {
                 credentials: "same-origin",
-                headers: { Accept: "application/json" },
+                headers: {
+                    Accept: "application/json",
+                },
             });
 
             if (!response.ok) {
@@ -315,20 +493,20 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     }
 
-    async function submitPaypalWithdrawal(event) {
-        event.preventDefault();
-
-        const form = event.currentTarget;
+    async function submitWithdrawalForm(
+        form,
+        modalId,
+        amountInputId,
+        successCalculationReset
+    ) {
         const message = form.querySelector(".withdraw-msg");
         const submitButton = form.querySelector(
             ".submit-withdrawal-btn"
         );
 
         const amount = Number.parseFloat(
-            byId("paypalWithdrawalAmount")?.value || 0
+            byId(amountInputId)?.value || 0
         );
-
-        const paypalEmail = byId("paypalEmail")?.value.trim() || "";
 
         if (!Number.isFinite(amount) || amount < MINIMUM_WITHDRAWAL) {
             message.textContent = "Minimum withdrawal amount is £10.";
@@ -342,13 +520,8 @@ document.addEventListener("DOMContentLoaded", () => {
             return;
         }
 
-        if (!paypalEmail) {
-            message.textContent = "Enter your PayPal email address.";
-            message.className = "withdraw-msg error";
-            return;
-        }
-
         submitButton.disabled = true;
+        const originalText = submitButton.textContent;
         submitButton.textContent = "Submitting...";
         message.textContent = "";
         message.className = "withdraw-msg";
@@ -381,31 +554,122 @@ document.addEventListener("DOMContentLoaded", () => {
                 );
             }
 
-            message.textContent =
-                data.message ||
-                "Withdrawal request submitted successfully.";
+            if (
+                modalId === "bankModal" &&
+                data.payout_currency === "NGN"
+            ) {
+                message.textContent =
+                    `Withdrawal submitted. Estimated payout: ${
+                        naira(data.payout_amount)
+                    }.`;
+            } else {
+                message.textContent =
+                    data.message ||
+                    "Withdrawal request submitted successfully.";
+            }
 
             message.className = "withdraw-msg success";
 
             form.reset();
-            calculatePaypalWithdrawal();
+            successCalculationReset();
 
-            await Promise.all([loadUser(), loadWithdrawals()]);
+            await Promise.all([
+                loadUser(),
+                loadWithdrawals(),
+            ]);
 
             window.setTimeout(() => {
-                closeModal("paypalModal");
+                closeModal(modalId);
                 message.textContent = "";
                 message.className = "withdraw-msg";
-            }, 1200);
+            }, 1400);
         } catch (error) {
             console.error("WITHDRAWAL SUBMIT ERROR:", error);
             message.textContent = error.message;
             message.className = "withdraw-msg error";
         } finally {
             submitButton.disabled = false;
-            submitButton.textContent = "Submit Withdrawal";
+            submitButton.textContent = originalText;
         }
     }
+
+    async function submitPaypalWithdrawal(event) {
+        event.preventDefault();
+
+        const paypalEmail = byId("paypalEmail")?.value.trim() || "";
+        const message = event.currentTarget.querySelector(".withdraw-msg");
+
+        if (!paypalEmail) {
+            message.textContent = "Enter your PayPal email address.";
+            message.className = "withdraw-msg error";
+            return;
+        }
+
+        await submitWithdrawalForm(
+            event.currentTarget,
+            "paypalModal",
+            "paypalWithdrawalAmount",
+            calculatePaypalWithdrawal
+        );
+    }
+
+    async function submitBankWithdrawal(event) {
+        event.preventDefault();
+
+        const form = event.currentTarget;
+        const message = form.querySelector(".withdraw-msg");
+
+        if (!bankWithdrawalAvailable) {
+            message.textContent =
+                "Bank withdrawals are currently available in Nigeria only.";
+            message.className = "withdraw-msg error";
+            return;
+        }
+
+        if (!currentGbpNgnRate) {
+            message.textContent =
+                "The GBP to NGN exchange rate is unavailable. Refresh the rate and try again.";
+            message.className = "withdraw-msg error";
+            return;
+        }
+
+        const accountNumber = (
+            byId("bankAccountNumber")?.value || ""
+        ).replace(/\s+/g, "");
+
+        if (!/^\d{10}$/.test(accountNumber)) {
+            message.textContent =
+                "Enter a valid 10-digit Nigerian bank account number.";
+            message.className = "withdraw-msg error";
+            return;
+        }
+
+        await submitWithdrawalForm(
+            form,
+            "bankModal",
+            "bankWithdrawalAmount",
+            calculateBankWithdrawal
+        );
+    }
+
+    byId("openBankModal")?.addEventListener("click", async () => {
+        if (!bankWithdrawalAvailable) return;
+
+        const message = byId("bankWithdrawForm")?.querySelector(
+            ".withdraw-msg"
+        );
+
+        if (message) {
+            message.textContent = "";
+            message.className = "withdraw-msg";
+        }
+
+        openModal("bankModal");
+
+        if (!currentGbpNgnRate) {
+            await loadExchangeRate();
+        }
+    });
 
     byId("openPaypalModal")?.addEventListener("click", () => {
         const message = byId("paypalWithdrawForm")?.querySelector(
@@ -428,7 +692,9 @@ document.addEventListener("DOMContentLoaded", () => {
 
     document.querySelectorAll(".modal-overlay").forEach((modal) => {
         modal.addEventListener("click", (event) => {
-            if (event.target === modal) closeModal(modal.id);
+            if (event.target === modal) {
+                closeModal(modal.id);
+            }
         });
     });
 
@@ -445,9 +711,24 @@ document.addEventListener("DOMContentLoaded", () => {
         calculatePaypalWithdrawal
     );
 
+    byId("bankWithdrawalAmount")?.addEventListener(
+        "input",
+        calculateBankWithdrawal
+    );
+
+    byId("refreshExchangeRate")?.addEventListener(
+        "click",
+        () => loadExchangeRate(true)
+    );
+
     byId("paypalWithdrawForm")?.addEventListener(
         "submit",
         submitPaypalWithdrawal
+    );
+
+    byId("bankWithdrawForm")?.addEventListener(
+        "submit",
+        submitBankWithdrawal
     );
 
     byId("activateMembershipBtn")?.addEventListener("click", () => {
@@ -457,10 +738,15 @@ document.addEventListener("DOMContentLoaded", () => {
     byId("historyToggle")?.addEventListener("click", (event) => {
         const button = event.currentTarget;
         const content = byId("historyContent");
-        const expanded = button.getAttribute("aria-expanded") === "true";
+        const expanded = (
+            button.getAttribute("aria-expanded") === "true"
+        );
 
         button.setAttribute("aria-expanded", String(!expanded));
-        if (content) content.hidden = expanded;
+
+        if (content) {
+            content.hidden = expanded;
+        }
     });
 
     document.querySelectorAll(".withdraw-tab").forEach((tab) => {

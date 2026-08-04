@@ -3,6 +3,8 @@
 # ==========================================================
 
 import json
+import urllib.error
+import urllib.request
 from decimal import Decimal
 from functools import wraps
 
@@ -30,6 +32,7 @@ from django.contrib.auth import (
 )
 
 from django.contrib.auth.decorators import login_required
+from django.core.cache import cache
 from django.core.mail import EmailMultiAlternatives, send_mail
 from django.db import transaction
 from django.http import HttpResponse, JsonResponse
@@ -1949,6 +1952,7 @@ def mark_as_sold(request, product_id):
 # ==========================
 from .models import Follow, TaskCompletion, Referral
 
+
 @login_required
 def user_info(request):
     followers_count = Follow.objects.filter(
@@ -1970,6 +1974,8 @@ def user_info(request):
 
     return JsonResponse({
         "username": request.user.username,
+        "email": request.user.email,
+        "country": request.user.country,
         "balance": str(request.user.balance),
         "earnings": str(request.user.earnings),
 
@@ -1979,20 +1985,20 @@ def user_info(request):
         "tasks_completed": approved_tasks_count,
         "referrals": referrals_count,
 
-        # Membership status
         "is_member": request.user.is_member,
-
-        # Needed by the new earnings dashboard.
-        # False = first withdrawal not completed.
-        # True = first withdrawal completed.
         "first_withdrawal_completed": (
             request.user.first_withdrawal_completed
         ),
     })
 
+
 # ==========================
 # WITHDRAWAL
 # ==========================
+
+GBP_NGN_RATE_CACHE_KEY = "squeeb_gbp_ngn_rate"
+GBP_NGN_RATE_CACHE_SECONDS = 60 * 60
+
 
 def _withdrawal_fee_details(user, amount):
     """
@@ -2018,6 +2024,102 @@ def _withdrawal_fee_details(user, amount):
     ).quantize(Decimal("0.01"))
 
     return fee_percentage, fee_amount, net_amount
+
+
+def _is_nigeria_country(country):
+    value = (country or "").strip().lower()
+    return value in {"ng", "nga", "nigeria"}
+
+
+def _get_gbp_ngn_rate():
+    """
+    Fetch the GBP -> NGN reference rate server-side and cache it.
+
+    ExchangeRate-API's open endpoint currently updates once per day.
+    We cache for one hour to avoid unnecessary external requests.
+    """
+    cached_rate = cache.get(GBP_NGN_RATE_CACHE_KEY)
+
+    if cached_rate:
+        return Decimal(str(cached_rate))
+
+    request = urllib.request.Request(
+        "https://open.er-api.com/v6/latest/GBP",
+        headers={
+            "Accept": "application/json",
+            "User-Agent": "SQUEEB/1.0",
+        },
+    )
+
+    try:
+        with urllib.request.urlopen(request, timeout=8) as response:
+            payload = json.loads(response.read().decode("utf-8"))
+    except (
+        urllib.error.URLError,
+        urllib.error.HTTPError,
+        TimeoutError,
+        json.JSONDecodeError,
+    ) as exc:
+        raise RuntimeError(
+            "The exchange-rate service is temporarily unavailable."
+        ) from exc
+
+    if payload.get("result") != "success":
+        raise RuntimeError(
+            "The exchange-rate service returned an invalid response."
+        )
+
+    ngn_rate = payload.get("rates", {}).get("NGN")
+
+    if ngn_rate is None:
+        raise RuntimeError(
+            "The GBP to NGN exchange rate is temporarily unavailable."
+        )
+
+    rate = Decimal(str(ngn_rate)).quantize(Decimal("0.000001"))
+    cache.set(
+        GBP_NGN_RATE_CACHE_KEY,
+        str(rate),
+        GBP_NGN_RATE_CACHE_SECONDS,
+    )
+    return rate
+
+
+@login_required
+def gbp_ngn_exchange_rate(request):
+    if not _is_nigeria_country(request.user.country):
+        return JsonResponse(
+            {
+                "success": False,
+                "bank_withdrawal_available": False,
+                "message": (
+                    "Bank withdrawals are temporarily unavailable "
+                    "in your country."
+                ),
+            },
+            status=403,
+        )
+
+    try:
+        rate = _get_gbp_ngn_rate()
+    except RuntimeError as exc:
+        return JsonResponse(
+            {
+                "success": False,
+                "message": str(exc),
+            },
+            status=503,
+        )
+
+    return JsonResponse(
+        {
+            "success": True,
+            "base": "GBP",
+            "currency": "NGN",
+            "rate": str(rate),
+            "bank_withdrawal_available": True,
+        }
+    )
 
 
 @login_required
@@ -2052,6 +2154,15 @@ def request_withdrawal(request):
                 "message": (
                     "Withdrawal method and amount are required."
                 ),
+            },
+            status=400,
+        )
+
+    if method not in {"PayPal", "Bank"}:
+        return JsonResponse(
+            {
+                "success": False,
+                "message": "Invalid withdrawal method.",
             },
             status=400,
         )
@@ -2109,6 +2220,100 @@ def request_withdrawal(request):
         )
     )
 
+    account_name = ""
+    bank_name = ""
+    account_number = ""
+    paypal_email = ""
+    country = ""
+    payout_currency = ""
+    exchange_rate = None
+    payout_amount = None
+
+    if method == "Bank":
+        if not _is_nigeria_country(user.country):
+            return JsonResponse(
+                {
+                    "success": False,
+                    "message": (
+                        "Bank withdrawals are currently available "
+                        "to Nigerian users only."
+                    ),
+                },
+                status=403,
+            )
+
+        account_name = request.POST.get(
+            "account_name",
+            "",
+        ).strip()
+
+        bank_name = request.POST.get(
+            "bank_name",
+            "",
+        ).strip()
+
+        account_number = request.POST.get(
+            "account_number",
+            "",
+        ).replace(" ", "").strip()
+
+        if not account_name or not bank_name or not account_number:
+            return JsonResponse(
+                {
+                    "success": False,
+                    "message": (
+                        "Account name, bank and account number "
+                        "are required."
+                    ),
+                },
+                status=400,
+            )
+
+        if not account_number.isdigit() or len(account_number) != 10:
+            return JsonResponse(
+                {
+                    "success": False,
+                    "message": (
+                        "Enter a valid 10-digit Nigerian "
+                        "bank account number."
+                    ),
+                },
+                status=400,
+            )
+
+        try:
+            exchange_rate = _get_gbp_ngn_rate()
+        except RuntimeError as exc:
+            return JsonResponse(
+                {
+                    "success": False,
+                    "message": str(exc),
+                },
+                status=503,
+            )
+
+        payout_amount = (
+            net_amount * exchange_rate
+        ).quantize(Decimal("0.01"))
+
+        country = "Nigeria"
+        payout_currency = "NGN"
+
+    else:
+        paypal_email = request.POST.get(
+            "paypal_email",
+            "",
+        ).strip()
+
+        if not paypal_email or "@" not in paypal_email:
+            return JsonResponse(
+                {
+                    "success": False,
+                    "message": "Enter a valid PayPal email address.",
+                },
+                status=400,
+            )
+
     withdrawal = WithdrawalRequest.objects.create(
         user=user,
         amount=amount,
@@ -2116,11 +2321,14 @@ def request_withdrawal(request):
         fee_amount=fee_amount,
         net_amount=net_amount,
         method=method,
-        account_name=request.POST.get("account_name"),
-        bank_name=request.POST.get("bank_name"),
-        sort_code=request.POST.get("sort_code"),
-        account_number=request.POST.get("account_number"),
-        paypal_email=request.POST.get("paypal_email"),
+        country=country,
+        account_name=account_name or None,
+        bank_name=bank_name or None,
+        account_number=account_number or None,
+        paypal_email=paypal_email or None,
+        payout_currency=payout_currency,
+        exchange_rate=exchange_rate,
+        payout_amount=payout_amount,
     )
 
     approve_url = request.build_absolute_uri(
@@ -2129,6 +2337,14 @@ def request_withdrawal(request):
             args=[withdrawal.approval_token],
         )
     )
+
+    if method == "Bank":
+        payout_summary = (
+            f"₦{withdrawal.payout_amount:,.2f} "
+            f"at £1 = ₦{withdrawal.exchange_rate:,.2f}"
+        )
+    else:
+        payout_summary = f"£{net_amount}"
 
     subject = "New SQUEEB Withdrawal Request"
 
@@ -2139,22 +2355,82 @@ User: {user.username}
 Email: {user.email}
 Requested amount: £{amount}
 Fee: {fee_percentage}% (£{fee_amount})
-Amount to send: £{net_amount}
+Net after fee: £{net_amount}
 Method: {method}
+Payout: {payout_summary}
+Bank: {withdrawal.bank_name or "-"}
+Account name: {withdrawal.account_name or "-"}
+Account number: {withdrawal.account_number or "-"}
+PayPal: {withdrawal.paypal_email or "-"}
 
 Approve after manual payment:
 {approve_url}
 """
 
+    bank_rows = ""
+
+    if method == "Bank":
+        bank_rows = f"""
+        <tr>
+            <td style="padding:12px;background:#f9fafb;font-weight:bold;">
+                Country
+            </td>
+            <td style="padding:12px;">Nigeria</td>
+        </tr>
+        <tr>
+            <td style="padding:12px;background:#f9fafb;font-weight:bold;">
+                Bank
+            </td>
+            <td style="padding:12px;">{withdrawal.bank_name}</td>
+        </tr>
+        <tr>
+            <td style="padding:12px;background:#f9fafb;font-weight:bold;">
+                Account Name
+            </td>
+            <td style="padding:12px;">{withdrawal.account_name}</td>
+        </tr>
+        <tr>
+            <td style="padding:12px;background:#f9fafb;font-weight:bold;">
+                Account Number
+            </td>
+            <td style="padding:12px;">{withdrawal.account_number}</td>
+        </tr>
+        <tr>
+            <td style="padding:12px;background:#f9fafb;font-weight:bold;">
+                Exchange Rate
+            </td>
+            <td style="padding:12px;">
+                £1 = ₦{withdrawal.exchange_rate:,.2f}
+            </td>
+        </tr>
+        <tr>
+            <td style="padding:12px;background:#f9fafb;font-weight:bold;">
+                Naira Payout
+            </td>
+            <td style="padding:12px;font-weight:bold;color:#15803d;">
+                ₦{withdrawal.payout_amount:,.2f}
+            </td>
+        </tr>
+        """
+    else:
+        bank_rows = f"""
+        <tr>
+            <td style="padding:12px;background:#f9fafb;font-weight:bold;">
+                PayPal Email
+            </td>
+            <td style="padding:12px;">
+                {withdrawal.paypal_email}
+            </td>
+        </tr>
+        """
+
     html_content = f"""
     <div style="font-family:Arial,sans-serif;background:#f5f7fb;padding:30px;">
         <div style="max-width:620px;margin:auto;background:white;border-radius:18px;overflow:hidden;box-shadow:0 10px 30px rgba(0,0,0,.08);">
-
             <div style="background:linear-gradient(135deg,#2563eb,#7c3aed);color:white;padding:28px;">
                 <h1 style="margin:0;font-size:24px;">
                     SQUEEB Withdrawal Request
                 </h1>
-
                 <p style="margin:8px 0 0;">
                     A user has requested a withdrawal.
                 </p>
@@ -2166,111 +2442,45 @@ Approve after manual payment:
                         <td style="padding:12px;background:#f9fafb;font-weight:bold;">
                             User
                         </td>
-
-                        <td style="padding:12px;">
-                            {user.username}
-                        </td>
+                        <td style="padding:12px;">{user.username}</td>
                     </tr>
-
                     <tr>
                         <td style="padding:12px;background:#f9fafb;font-weight:bold;">
                             Email
                         </td>
-
-                        <td style="padding:12px;">
-                            {user.email}
-                        </td>
+                        <td style="padding:12px;">{user.email}</td>
                     </tr>
-
                     <tr>
                         <td style="padding:12px;background:#f9fafb;font-weight:bold;">
-                            Requested Amount
+                            Requested
                         </td>
-
                         <td style="padding:12px;font-weight:bold;">
                             £{amount}
                         </td>
                     </tr>
-
                     <tr>
                         <td style="padding:12px;background:#f9fafb;font-weight:bold;">
                             Fee
                         </td>
-
                         <td style="padding:12px;">
                             {fee_percentage}% (£{fee_amount})
                         </td>
                     </tr>
-
                     <tr>
                         <td style="padding:12px;background:#f9fafb;font-weight:bold;">
-                            Amount to Send
+                            Net GBP
                         </td>
-
-                        <td style="padding:12px;font-weight:bold;color:#2563eb;">
+                        <td style="padding:12px;">
                             £{net_amount}
                         </td>
                     </tr>
-
                     <tr>
                         <td style="padding:12px;background:#f9fafb;font-weight:bold;">
                             Method
                         </td>
-
-                        <td style="padding:12px;">
-                            {method}
-                        </td>
+                        <td style="padding:12px;">{method}</td>
                     </tr>
-
-                    <tr>
-                        <td style="padding:12px;background:#f9fafb;font-weight:bold;">
-                            Account Name
-                        </td>
-
-                        <td style="padding:12px;">
-                            {withdrawal.account_name or "-"}
-                        </td>
-                    </tr>
-
-                    <tr>
-                        <td style="padding:12px;background:#f9fafb;font-weight:bold;">
-                            Bank Name
-                        </td>
-
-                        <td style="padding:12px;">
-                            {withdrawal.bank_name or "-"}
-                        </td>
-                    </tr>
-
-                    <tr>
-                        <td style="padding:12px;background:#f9fafb;font-weight:bold;">
-                            Sort Code
-                        </td>
-
-                        <td style="padding:12px;">
-                            {withdrawal.sort_code or "-"}
-                        </td>
-                    </tr>
-
-                    <tr>
-                        <td style="padding:12px;background:#f9fafb;font-weight:bold;">
-                            Account Number
-                        </td>
-
-                        <td style="padding:12px;">
-                            {withdrawal.account_number or "-"}
-                        </td>
-                    </tr>
-
-                    <tr>
-                        <td style="padding:12px;background:#f9fafb;font-weight:bold;">
-                            PayPal Email
-                        </td>
-
-                        <td style="padding:12px;">
-                            {withdrawal.paypal_email or "-"}
-                        </td>
-                    </tr>
+                    {bank_rows}
                 </table>
 
                 <div style="margin-top:24px;text-align:center;">
@@ -2283,11 +2493,9 @@ Approve after manual payment:
                 </div>
 
                 <p style="margin-top:20px;color:#64748b;font-size:13px;">
-                    Send exactly £{net_amount} to the user,
-                    then click the button.
+                    Make the payment manually first, then mark it as paid.
                 </p>
             </div>
-
         </div>
     </div>
     """
@@ -2298,23 +2506,66 @@ Approve after manual payment:
         from_email=settings.DEFAULT_FROM_EMAIL,
         to=[settings.ADMIN_EMAIL],
     )
-
     email.attach_alternative(
         html_content,
         "text/html",
     )
-
     email.send()
+
+    if method == "Bank":
+        notification_message = (
+            f"Your Nigerian bank withdrawal for £{amount} was submitted. "
+            f"Estimated payout: ₦{payout_amount:,.2f}."
+        )
+        receive_value = f"₦{payout_amount:,.2f}"
+    else:
+        notification_message = (
+            f"Your withdrawal request for £{amount} was submitted. "
+            f"After the {fee_percentage}% fee, "
+            f"you will receive £{net_amount}."
+        )
+        receive_value = f"£{net_amount}"
 
     Notification.objects.create(
         user=user,
         title="Withdrawal submitted",
-        message=(
-            f"Your withdrawal request for £{amount} was submitted. "
-            f"After the {fee_percentage}% fee, "
-            f"you will receive £{net_amount}."
-        ),
+        message=notification_message,
     )
+
+    email_details = [
+        {
+            "label": "Requested amount",
+            "value": f"£{amount}",
+        },
+        {
+            "label": "Withdrawal fee",
+            "value": (
+                f"{fee_percentage}% "
+                f"(£{fee_amount})"
+            ),
+        },
+        {
+            "label": "Amount to receive",
+            "value": receive_value,
+        },
+        {
+            "label": "Method",
+            "value": method,
+        },
+        {
+            "label": "Status",
+            "value": "Pending",
+        },
+    ]
+
+    if method == "Bank":
+        email_details.insert(
+            3,
+            {
+                "label": "Exchange rate",
+                "value": f"£1 = ₦{exchange_rate:,.2f}",
+            },
+        )
 
     send_account_email(
         user=user,
@@ -2324,31 +2575,7 @@ Approve after manual payment:
             "We received your withdrawal request. "
             "It is now pending review and payment."
         ),
-        details=[
-            {
-                "label": "Requested amount",
-                "value": f"£{amount}",
-            },
-            {
-                "label": "Withdrawal fee",
-                "value": (
-                    f"{fee_percentage}% "
-                    f"(£{fee_amount})"
-                ),
-            },
-            {
-                "label": "Amount to receive",
-                "value": f"£{net_amount}",
-            },
-            {
-                "label": "Method",
-                "value": method,
-            },
-            {
-                "label": "Status",
-                "value": "Pending",
-            },
-        ],
+        details=email_details,
     )
 
     return JsonResponse(
@@ -2361,6 +2588,17 @@ Approve after manual payment:
             "fee_percentage": str(fee_percentage),
             "fee_amount": str(fee_amount),
             "net_amount": str(net_amount),
+            "exchange_rate": (
+                str(exchange_rate)
+                if exchange_rate is not None
+                else None
+            ),
+            "payout_currency": payout_currency or "GBP",
+            "payout_amount": (
+                str(payout_amount)
+                if payout_amount is not None
+                else str(net_amount)
+            ),
         }
     )
 
@@ -2407,7 +2645,6 @@ def approve_withdrawal(request, token):
 
     withdrawal.status = "paid"
     withdrawal.paid_at = timezone.now()
-
     withdrawal.save(
         update_fields=[
             "status",
@@ -2415,12 +2652,21 @@ def approve_withdrawal(request, token):
         ]
     )
 
+    if (
+        withdrawal.method == "Bank"
+        and withdrawal.payout_currency == "NGN"
+        and withdrawal.payout_amount is not None
+    ):
+        received_text = f"₦{withdrawal.payout_amount:,.2f}"
+    else:
+        received_text = f"£{withdrawal.net_amount}"
+
     Notification.objects.create(
         user=user,
         title="Withdrawal paid",
         message=(
-            f"Your withdrawal has been paid. "
-            f"You received £{withdrawal.net_amount} after fees."
+            "Your withdrawal has been paid. "
+            f"You received {received_text} after fees."
         ),
     )
 
@@ -2445,7 +2691,7 @@ def approve_withdrawal(request, token):
             },
             {
                 "label": "Amount received",
-                "value": f"£{withdrawal.net_amount}",
+                "value": received_text,
             },
             {
                 "label": "Method",
@@ -2591,6 +2837,18 @@ def withdrawal_history_api(request):
                 "net_amount": str(withdrawal.net_amount),
                 "method": withdrawal.method,
                 "status": withdrawal.status,
+                "country": withdrawal.country,
+                "payout_currency": withdrawal.payout_currency,
+                "exchange_rate": (
+                    str(withdrawal.exchange_rate)
+                    if withdrawal.exchange_rate is not None
+                    else None
+                ),
+                "payout_amount": (
+                    str(withdrawal.payout_amount)
+                    if withdrawal.payout_amount is not None
+                    else None
+                ),
                 "created_at": withdrawal.created_at.strftime(
                     "%d %b %Y, %I:%M %p"
                 ),
@@ -2613,6 +2871,10 @@ def withdrawal_history_api(request):
                 and not request.user.is_member
             ),
             "is_member": request.user.is_member,
+            "country": request.user.country,
+            "nigeria_bank_available": _is_nigeria_country(
+                request.user.country
+            ),
         }
     )
 

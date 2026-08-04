@@ -97,10 +97,17 @@
 
                 <span class="method-copy">
                     <strong>Bank</strong>
-                    <small>Coming soon</small>
+                    <small id="bankOptionDescription">
+                        Checking availability...
+                    </small>
                 </span>
 
-                <span class="method-status unavailable">Unavailable</span>
+                <span
+                    class="method-status unavailable"
+                    id="bankOptionStatus"
+                >
+                    Checking
+                </span>
             </button>
 
             <button
@@ -188,7 +195,12 @@
 </div>
 
 <div class="modal-overlay" id="bankModal" aria-hidden="true">
-    <div class="withdraw-modal" role="dialog" aria-modal="true">
+    <div
+        class="withdraw-modal"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="bankModalTitle"
+    >
         <button
             type="button"
             class="close-modal"
@@ -198,8 +210,164 @@
             &times;
         </button>
 
-        <h2>Bank Withdrawal</h2>
-        <p>Bank withdrawals are temporarily unavailable.</p>
+        <div class="modal-method-icon bank">
+            <i class="fa fa-building-columns"></i>
+        </div>
+
+        <h2 id="bankModalTitle">Nigerian Bank Withdrawal</h2>
+        <p>
+            Withdraw your SQUEEB balance to a Nigerian bank account in Naira.
+        </p>
+
+        <div class="nigeria-only-badge">
+            <span>🇳🇬</span>
+            Available in Nigeria
+        </div>
+
+        <form id="bankWithdrawForm">
+            {% csrf_token %}
+            <input type="hidden" name="method" value="Bank">
+
+            <label for="bankWithdrawalAmount">Withdrawal Amount</label>
+
+            <div class="amount-input-wrap">
+                <span>£</span>
+                <input
+                    type="number"
+                    id="bankWithdrawalAmount"
+                    name="amount"
+                    min="10"
+                    step="0.01"
+                    placeholder="10.00"
+                    inputmode="decimal"
+                    required
+                >
+            </div>
+
+            <small class="field-hint">
+                Minimum withdrawal amount is <strong>£10.00</strong>.
+            </small>
+
+            <div class="withdrawal-calculation bank-calculation">
+                <div>
+                    <span>Requested</span>
+                    <strong id="bankRequestedAmount">£0.00</strong>
+                </div>
+
+                <div>
+                    <span>
+                        Fee (<span id="bankFeePercentage">20%</span>)
+                    </span>
+                    <strong id="bankFeeAmount">£0.00</strong>
+                </div>
+
+                <div>
+                    <span>Amount converted</span>
+                    <strong id="bankNetGbpAmount">£0.00</strong>
+                </div>
+
+                <div>
+                    <span>GBP → NGN rate</span>
+                    <strong id="bankExchangeRate">Loading...</strong>
+                </div>
+
+                <div class="withdrawal-net-row naira-row">
+                    <span>Estimated Naira payout</span>
+                    <strong id="bankNairaAmount">₦0.00</strong>
+                </div>
+            </div>
+
+            <button
+                type="button"
+                class="refresh-rate-btn"
+                id="refreshExchangeRate"
+            >
+                <i class="fa fa-rotate"></i>
+                Refresh exchange rate
+            </button>
+
+            <label for="bankName">Bank</label>
+            <select id="bankName" name="bank_name" required>
+                <option value="">Select your bank</option>
+                <option value="Access Bank">Access Bank</option>
+                <option value="Citibank Nigeria">Citibank Nigeria</option>
+                <option value="Ecobank Nigeria">Ecobank Nigeria</option>
+                <option value="Fidelity Bank">Fidelity Bank</option>
+                <option value="First Bank of Nigeria">First Bank of Nigeria</option>
+                <option value="First City Monument Bank">First City Monument Bank</option>
+                <option value="Globus Bank">Globus Bank</option>
+                <option value="Guaranty Trust Bank">Guaranty Trust Bank</option>
+                <option value="Jaiz Bank">Jaiz Bank</option>
+                <option value="Keystone Bank">Keystone Bank</option>
+                <option value="Kuda Bank">Kuda Bank</option>
+                <option value="Moniepoint Microfinance Bank">Moniepoint Microfinance Bank</option>
+                <option value="Opay">Opay</option>
+                <option value="PalmPay">PalmPay</option>
+                <option value="Polaris Bank">Polaris Bank</option>
+                <option value="Providus Bank">Providus Bank</option>
+                <option value="Stanbic IBTC Bank">Stanbic IBTC Bank</option>
+                <option value="Standard Chartered Bank Nigeria">Standard Chartered Bank Nigeria</option>
+                <option value="Sterling Bank">Sterling Bank</option>
+                <option value="United Bank for Africa">United Bank for Africa</option>
+                <option value="Unity Bank">Unity Bank</option>
+                <option value="Wema Bank">Wema Bank</option>
+                <option value="Zenith Bank">Zenith Bank</option>
+            </select>
+
+            <label for="bankAccountNumber">Account Number</label>
+            <input
+                type="text"
+                id="bankAccountNumber"
+                name="account_number"
+                inputmode="numeric"
+                pattern="[0-9]{10}"
+                maxlength="10"
+                placeholder="0123456789"
+                autocomplete="off"
+                required
+            >
+
+            <label for="bankAccountName">Account Name</label>
+            <input
+                type="text"
+                id="bankAccountName"
+                name="account_name"
+                maxlength="255"
+                placeholder="Name on the bank account"
+                autocomplete="name"
+                required
+            >
+
+            <div class="withdrawal-warning">
+                <i class="fa fa-circle-info"></i>
+                <p>
+                    The Naira figure is an estimate based on the exchange rate
+                    locked when you submit the withdrawal. Check your Nigerian
+                    bank details carefully before confirming.
+                </p>
+            </div>
+
+            <p class="rate-attribution">
+                Rates by
+                <a
+                    href="https://www.exchangerate-api.com"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                >
+                    Exchange Rate API
+                </a>
+            </p>
+
+            <button
+                type="submit"
+                class="submit-withdrawal-btn"
+                id="bankSubmitButton"
+            >
+                Submit Bank Withdrawal
+            </button>
+
+            <p class="withdraw-msg" role="status"></p>
+        </form>
     </div>
 </div>
 

@@ -25,6 +25,7 @@ from .views import (
     edit_profile,
     forgot_password_api,
     forgot_password_page,
+    gbp_ngn_exchange_rate,
     get_campaign,
     get_single_task,
     get_tasks,
@@ -562,6 +563,12 @@ path(
         "api/withdrawal-history/",
         withdrawal_history_api,
         name="withdrawal_history_api",
+    ),
+
+    path(
+        "api/exchange-rate/gbp-ngn/",
+        gbp_ngn_exchange_rate,
+        name="gbp_ngn_exchange_rate",
     ),
 
     # ==========================================================
