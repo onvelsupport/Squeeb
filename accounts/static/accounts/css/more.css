@@ -4,272 +4,447 @@
     box-sizing:border-box;
 }
 
+:root{
+    --more-bg:#f5f6f9;
+    --more-card:#ffffff;
+    --more-text:#12141b;
+    --more-muted:#717683;
+    --more-border:#e7e9ef;
+    --more-blue:#315efb;
+    --more-soft:#eef2ff;
+    --more-navy-1:#12182d;
+    --more-navy-2:#24356f;
+}
+
 body{
-    background:#f4f7fc;
+    background:var(--more-bg);
+    color:var(--more-text);
     font-family:Arial, Helvetica, sans-serif;
-    color:#111827;
 }
 
 a{
-    text-decoration:none;
     color:inherit;
+    text-decoration:none;
 }
 
-/* ================= PAGE ================= */
+.more-app-page{
+    min-height:100vh;
+    background:
+        radial-gradient(
+            circle at top left,
+            rgba(49,94,251,.06),
+            transparent 22rem
+        ),
+        var(--more-bg);
+}
 
-.settings-page{
-    width:92%;
-    max-width:1400px;
+.more-app-main{
+    width:min(94%,1100px);
     margin:auto;
-    padding:40px 0 70px;
+    padding:28px 0 58px;
 }
 
-/* ================= HERO ================= */
 
-.settings-hero{
-    background:linear-gradient(135deg,#0f172a,#2563eb,#7c3aed);
-    color:white;
-    border-radius:32px;
-    padding:40px;
-    display:flex;
-    justify-content:space-between;
-    align-items:center;
-    gap:30px;
-    margin-bottom:35px;
+/* =====================================
+   PROFILE / ACCOUNT CARD
+===================================== */
+
+.more-account-card{
+    position:relative;
+    overflow:hidden;
+    padding:23px;
+    border-radius:25px;
+    color:#fff;
+    background:
+        radial-gradient(
+            circle at 88% 10%,
+            rgba(93,116,255,.34),
+            transparent 18rem
+        ),
+        linear-gradient(
+            135deg,
+            var(--more-navy-1),
+            var(--more-navy-2)
+        );
+    box-shadow:0 20px 48px rgba(20,29,63,.15);
 }
 
-.profile-box{
-    display:flex;
-    align-items:center;
-    gap:25px;
-}
-
-.profile-box img{
-    width:90px;
-    height:90px;
+.more-account-card::after{
+    content:"";
+    position:absolute;
+    width:210px;
+    height:210px;
+    right:-70px;
+    top:-110px;
+    border:1px solid rgba(255,255,255,.08);
     border-radius:50%;
+}
+
+.more-profile-row,
+.more-account-note{
+    position:relative;
+    z-index:1;
+}
+
+.more-profile-row{
+    display:grid;
+    grid-template-columns:auto minmax(0,1fr) auto;
+    align-items:center;
+    gap:13px;
+}
+
+.more-avatar-wrap{
+    position:relative;
+}
+
+.more-avatar-wrap img{
+    display:block;
+    width:58px;
+    height:58px;
+    border-radius:17px;
     object-fit:cover;
-    border:4px solid rgba(255,255,255,.2);
+    border:2px solid rgba(255,255,255,.18);
 }
 
-.eyebrow{
-    color:#bfdbfe;
-    font-size:13px;
-    font-weight:700;
-    text-transform:uppercase;
-    margin-bottom:8px;
+.more-avatar-wrap span{
+    position:absolute;
+    right:-1px;
+    bottom:-1px;
+    width:13px;
+    height:13px;
+    border:3px solid #1d2752;
+    border-radius:50%;
+    background:#61dda0;
 }
 
-.profile-box h1{
-    font-size:38px;
-    margin-bottom:5px;
+.more-profile-copy{
+    min-width:0;
 }
 
-.profile-box span{
-    color:#dbeafe;
+.more-kicker{
+    display:block;
+    margin-bottom:3px;
+    color:#9eafff;
+    font-size:8px;
+    font-weight:900;
+    letter-spacing:.12em;
 }
 
-.back-btn{
-    background:white;
-    color:#111827;
-    padding:15px 24px;
-    border-radius:16px;
-    font-weight:bold;
+.more-profile-copy h1{
+    margin:0;
+    overflow-wrap:anywhere;
+    font-size:24px;
+    line-height:1.1;
+    letter-spacing:-.025em;
+}
+
+.more-profile-copy p{
+    margin-top:3px;
+    color:rgba(255,255,255,.6);
+    font-size:10px;
+}
+
+.more-edit-btn{
+    min-height:38px;
+    padding:0 12px;
+    border-radius:11px;
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+    gap:7px;
+    background:#fff;
+    color:#171a23;
+    font-size:9px;
+    font-weight:900;
+}
+
+.more-account-note{
     display:flex;
     align-items:center;
-    gap:10px;
+    gap:8px;
+    margin-top:18px;
+    padding-top:14px;
+    border-top:1px solid rgba(255,255,255,.12);
+    color:rgba(255,255,255,.62);
+    font-size:9px;
 }
 
-/* ================= SETTINGS GRID ================= */
+
+/* =====================================
+   SECTIONS
+===================================== */
+
+.more-section{
+    margin-top:27px;
+}
+
+.more-section-heading{
+    margin-bottom:10px;
+}
+
+.more-section-heading > span{
+    display:block;
+    margin-bottom:4px;
+    color:var(--more-blue);
+    font-size:8px;
+    font-weight:900;
+    letter-spacing:.12em;
+}
+
+.more-section-heading h2{
+    margin:0;
+    font-size:19px;
+    letter-spacing:-.02em;
+}
+
+
+/* =====================================
+   SETTING ROWS
+===================================== */
 
 .settings-grid{
     display:grid;
-    grid-template-columns:repeat(3,1fr);
-    gap:25px;
+    grid-template-columns:repeat(2,minmax(0,1fr));
+    gap:8px;
 }
 
 .setting-card{
-    background:white;
-    border-radius:28px;
-    padding:30px;
-    display:flex;
-    gap:20px;
-    align-items:flex-start;
-    transition:.25s;
-    box-shadow:0 10px 25px rgba(0,0,0,.05);
+    min-width:0;
+    min-height:70px;
+    padding:11px;
+    border:1px solid var(--more-border);
+    border-radius:16px;
+    display:grid;
+    grid-template-columns:auto minmax(0,1fr) auto;
+    align-items:center;
+    gap:10px;
+    background:#fff;
+    transition:.18s ease;
 }
 
 .setting-card:hover{
-    transform:translateY(-5px);
-    box-shadow:0 18px 40px rgba(0,0,0,.08);
+    transform:translateY(-1px);
+    border-color:#cfd7f4;
+    box-shadow:0 10px 22px rgba(17,19,24,.045);
 }
 
-.setting-card i{
-    width:60px;
-    height:60px;
-    min-width:60px;
-    border-radius:18px;
-    background:#eff6ff;
-    color:#2563eb;
-    display:flex;
-    align-items:center;
-    justify-content:center;
-    font-size:22px;
-}
-
-.setting-card h3{
-    margin-bottom:10px;
-    font-size:19px;
-}
-
-.setting-card p{
-    color:#64748b;
-    line-height:1.7;
+.setting-icon{
+    width:39px;
+    height:39px;
+    min-width:39px;
+    border-radius:12px;
+    display:grid;
+    place-items:center;
+    background:var(--more-soft);
+    color:var(--more-blue);
     font-size:14px;
 }
 
-/* ================= DANGER ZONE ================= */
-
-.danger-zone{
-    margin-top:40px;
-    background:white;
-    padding:35px;
-    border-radius:30px;
-    display:flex;
-    justify-content:space-between;
-    align-items:center;
-    box-shadow:0 10px 25px rgba(0,0,0,.05);
+.setting-copy{
+    min-width:0;
 }
 
-.danger-zone h2{
-    margin-bottom:10px;
+.setting-copy strong,
+.setting-copy small{
+    display:block;
 }
 
-.danger-zone p{
+.setting-copy strong{
+    color:var(--more-text);
+    font-size:11px;
+}
+
+.setting-copy small{
+    margin-top:3px;
+    overflow:hidden;
+    text-overflow:ellipsis;
+    white-space:nowrap;
+    color:var(--more-muted);
+    font-size:8px;
+}
+
+.setting-arrow{
+    color:#a3a8b2;
+    font-size:8px;
+}
+
+.setting-badge{
+    padding:5px 7px;
+    border-radius:999px;
+    background:#f1f5f9;
     color:#64748b;
+    font-size:7px;
+    font-weight:900;
+    text-transform:uppercase;
 }
 
-.danger-btn{
-    background:#dc2626;
-    color:white;
-    padding:18px 28px;
-    border-radius:18px;
-    font-weight:bold;
-    display:flex;
+
+/* =====================================
+   LOGOUT
+===================================== */
+
+.more-logout-card{
+    margin-top:27px;
+    padding:14px;
+    border:1px solid #fecaca;
+    border-radius:17px;
+    display:grid;
+    grid-template-columns:minmax(0,1fr) auto;
     align-items:center;
-    gap:10px;
+    gap:12px;
+    background:#fff;
 }
 
-/* ================= RESPONSIVE ================= */
-
-@media(max-width:1100px){
-    .settings-grid{
-        grid-template-columns:repeat(2,1fr);
-    }
+.more-logout-card > div > span,
+.more-logout-card > div > strong,
+.more-logout-card > div > small{
+    display:block;
 }
 
-@media(max-width:900px){
-    .settings-page{
-        width:94%;
-        padding:22px 0 60px;
+.more-logout-card > div > span{
+    margin-bottom:3px;
+    color:#dc2626;
+    font-size:8px;
+    font-weight:900;
+    letter-spacing:.1em;
+}
+
+.more-logout-card > div > strong{
+    font-size:11px;
+}
+
+.more-logout-card > div > small{
+    margin-top:3px;
+    color:var(--more-muted);
+    font-size:8px;
+}
+
+.more-logout-btn{
+    min-height:36px;
+    padding:0 11px;
+    border-radius:10px;
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+    gap:7px;
+    background:#dc2626;
+    color:#fff;
+    font-size:9px;
+    font-weight:900;
+}
+
+
+/* =====================================
+   MOBILE
+===================================== */
+
+@media(max-width:700px){
+
+    .more-app-main{
+        width:calc(100% - 20px);
+        padding:16px 0 44px;
     }
 
-    .settings-hero{
-        padding:22px;
-        border-radius:24px;
-        margin-bottom:22px;
-        flex-direction:column;
-        align-items:flex-start;
-        gap:18px;
+    .more-account-card{
+        padding:17px;
+        border-radius:21px;
     }
 
-    .profile-box{
-        gap:16px;
+    .more-profile-row{
+        gap:10px;
     }
 
-    .profile-box img{
-        width:64px;
-        height:64px;
-        border-width:3px;
+    .more-avatar-wrap img{
+        width:50px;
+        height:50px;
+        border-radius:15px;
     }
 
-    .profile-box h1{
-        font-size:28px;
-        line-height:1.15;
+    .more-profile-copy h1{
+        font-size:20px;
     }
 
-    .back-btn{
-        width:100%;
-        justify-content:center;
-        padding:14px;
-        border-radius:16px;
+    .more-edit-btn{
+        width:35px;
+        height:35px;
+        min-height:35px;
+        padding:0;
+        border-radius:11px;
+    }
+
+    .more-edit-btn span{
+        display:none;
+    }
+
+    .more-account-note{
+        margin-top:14px;
+        padding-top:12px;
+        font-size:8px;
+    }
+
+    .more-section{
+        margin-top:23px;
+    }
+
+    .more-section-heading h2{
+        font-size:17px;
     }
 
     .settings-grid{
         grid-template-columns:1fr;
-        gap:14px;
+        gap:7px;
     }
 
     .setting-card{
-        padding:18px;
-        border-radius:22px;
-        gap:14px;
-        align-items:center;
+        min-height:64px;
+        padding:10px;
+        border-radius:14px;
     }
 
-    .setting-card i{
-        width:48px;
-        height:48px;
-        min-width:48px;
-        border-radius:16px;
-        font-size:18px;
-    }
-
-    .setting-card h3{
-        font-size:17px;
-        margin-bottom:4px;
-    }
-
-    .setting-card p{
+    .setting-icon{
+        width:36px;
+        height:36px;
+        min-width:36px;
+        border-radius:11px;
         font-size:13px;
-        line-height:1.4;
     }
 
-    .danger-zone{
-        padding:22px;
-        border-radius:24px;
-        flex-direction:column;
-        align-items:flex-start;
-        gap:18px;
-        margin-top:24px;
+    .setting-copy strong{
+        font-size:10px;
     }
 
-    .danger-btn{
-        width:100%;
-        justify-content:center;
-        padding:15px;
+    .setting-copy small{
+        font-size:8px;
     }
 
-    input,
-    textarea,
-    select{
-        font-size:16px !important;
+    .more-logout-card{
+        margin-top:23px;
+        padding:12px;
+        border-radius:15px;
+    }
+
+    .more-logout-btn{
+        min-height:33px;
+        padding:0 9px;
+        font-size:8px;
     }
 }
 
-@media(max-width:420px){
-    .profile-box{
-        flex-direction:column;
-        align-items:flex-start;
+@media(max-width:360px){
+
+    .more-account-note{
+        display:none;
     }
 
-    .profile-box h1{
-        font-size:26px;
+    .more-profile-copy h1{
+        font-size:18px;
     }
 
-    .settings-hero,
-    .setting-card,
-    .danger-zone{
-        padding:18px;
+    .more-logout-card{
+        grid-template-columns:1fr;
+    }
+
+    .more-logout-btn{
+        width:100%;
     }
 }
