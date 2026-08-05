@@ -3924,3 +3924,1340 @@ a{
         min-height: 130px;
     }
 }
+
+
+/* ==========================================================
+   SQUEEB DASHBOARD V2 — FINAL MOBILE OVERRIDES
+   Must stay at the END of this stylesheet.
+========================================================== */
+
+@media (max-width: 768px) {
+
+    /* Cancel legacy dashboard padding/flex rules */
+    .dashboard-page.dashboard-v2 {
+        padding: 0 !important;
+        overflow-x: hidden !important;
+    }
+
+    .dashboard-v2 .dashboard-v2-main {
+        display: block !important;
+        width: calc(100% - 24px) !important;
+        max-width: none !important;
+        margin: 0 auto !important;
+        padding: 12px 0 48px !important;
+    }
+
+    /* HERO */
+    .dashboard-v2 .v2-hero {
+        display: grid !important;
+        grid-template-columns: 1fr !important;
+        gap: 22px !important;
+        min-height: 0 !important;
+        padding: 24px 20px !important;
+        border-radius: 24px !important;
+        margin: 0 !important;
+    }
+
+    .dashboard-v2 .v2-kicker {
+        margin-bottom: 14px !important;
+        font-size: 11px !important;
+    }
+
+    .dashboard-v2 .v2-hero h1 {
+        margin: 0 !important;
+        max-width: 100% !important;
+        font-size: clamp(34px, 10vw, 44px) !important;
+        line-height: 1 !important;
+        letter-spacing: -.045em !important;
+        overflow-wrap: anywhere !important;
+    }
+
+    .dashboard-v2 .v2-hero-copy > p {
+        display: block !important;
+        margin-top: 14px !important;
+        max-width: 100% !important;
+        font-size: 13px !important;
+        line-height: 1.55 !important;
+    }
+
+    .dashboard-v2 .v2-hero-actions {
+        display: grid !important;
+        grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+        gap: 9px !important;
+        margin-top: 20px !important;
+    }
+
+    .dashboard-v2 .v2-primary-btn,
+    .dashboard-v2 .v2-secondary-btn {
+        width: 100% !important;
+        min-height: 46px !important;
+        padding: 0 12px !important;
+        border-radius: 13px !important;
+        font-size: 12px !important;
+        white-space: nowrap !important;
+    }
+
+    .dashboard-v2 .v2-profile-card {
+        width: 100% !important;
+        max-width: none !important;
+        padding: 13px !important;
+        border-radius: 17px !important;
+    }
+
+    .dashboard-v2 .v2-avatar-wrap img {
+        width: 46px !important;
+        height: 46px !important;
+        border-radius: 14px !important;
+    }
+
+    /* WALLET + STATS */
+    .dashboard-v2 .v2-overview-grid {
+        display: grid !important;
+        grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+        gap: 10px !important;
+        margin: 12px 0 34px !important;
+    }
+
+    .dashboard-v2 .v2-wallet-card {
+        grid-column: 1 / -1 !important;
+        padding: 20px !important;
+        border-radius: 21px !important;
+    }
+
+    .dashboard-v2 .v2-wallet-card > h2 {
+        margin: 15px 0 20px !important;
+        font-size: 38px !important;
+        line-height: 1 !important;
+    }
+
+    .dashboard-v2 .v2-wallet-bottom {
+        display: flex !important;
+        flex-direction: row !important;
+        align-items: flex-end !important;
+        justify-content: space-between !important;
+        gap: 10px !important;
+    }
+
+    .dashboard-v2 .v2-wallet-bottom a {
+        flex-shrink: 0 !important;
+        font-size: 11px !important;
+    }
+
+    .dashboard-v2 .v2-stat-card {
+        min-height: 145px !important;
+        padding: 16px !important;
+        border-radius: 19px !important;
+    }
+
+    .dashboard-v2 .v2-stat-icon {
+        width: 39px !important;
+        height: 39px !important;
+        border-radius: 12px !important;
+        font-size: 14px !important;
+    }
+
+    .dashboard-v2 .v2-stat-card strong {
+        margin: 4px 0 !important;
+        font-size: 27px !important;
+    }
+
+    .dashboard-v2 .v2-stat-card span {
+        font-size: 11px !important;
+    }
+
+    .dashboard-v2 .v2-stat-card small {
+        font-size: 10px !important;
+    }
+
+    /* SECTION HEADINGS */
+    .dashboard-v2 .v2-section {
+        margin-bottom: 34px !important;
+        padding: 0 !important;
+    }
+
+    .dashboard-v2 .v2-section-heading {
+        display: flex !important;
+        align-items: flex-end !important;
+        justify-content: space-between !important;
+        gap: 12px !important;
+        margin-bottom: 14px !important;
+    }
+
+    .dashboard-v2 .v2-section-heading h2 {
+        font-size: 23px !important;
+        line-height: 1.1 !important;
+    }
+
+    .dashboard-v2 .v2-section-heading p {
+        display: block !important;
+        margin-top: 6px !important;
+        font-size: 12px !important;
+        line-height: 1.45 !important;
+    }
+
+    /* QUICK ACTIONS — compact 2-column app tiles */
+    .dashboard-v2 .v2-action-grid {
+        display: grid !important;
+        grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+        gap: 9px !important;
+    }
+
+    .dashboard-v2 .v2-action-card {
+        display: flex !important;
+        flex-direction: column !important;
+        align-items: flex-start !important;
+        justify-content: space-between !important;
+        gap: 11px !important;
+        min-width: 0 !important;
+        min-height: 130px !important;
+        padding: 15px !important;
+        border-radius: 18px !important;
+    }
+
+    .dashboard-v2 .v2-action-icon {
+        width: 40px !important;
+        height: 40px !important;
+        border-radius: 12px !important;
+        flex: 0 0 auto !important;
+    }
+
+    .dashboard-v2 .v2-action-card > div:nth-child(2) {
+        width: 100% !important;
+        min-width: 0 !important;
+    }
+
+    .dashboard-v2 .v2-action-card strong {
+        font-size: 13px !important;
+        line-height: 1.2 !important;
+    }
+
+    .dashboard-v2 .v2-action-card span {
+        margin-top: 4px !important;
+        font-size: 10px !important;
+        line-height: 1.35 !important;
+    }
+
+    .dashboard-v2 .v2-action-card > .fa-arrow-right {
+        position: absolute !important;
+        visibility: hidden !important;
+    }
+
+    /* MEMBERSHIP */
+    .dashboard-v2 .v2-membership {
+        display: grid !important;
+        grid-template-columns: auto minmax(0, 1fr) !important;
+        gap: 12px !important;
+        padding: 18px !important;
+        margin-bottom: 34px !important;
+        border-radius: 20px !important;
+    }
+
+    .dashboard-v2 .v2-membership-icon {
+        width: 45px !important;
+        height: 45px !important;
+        border-radius: 14px !important;
+    }
+
+    .dashboard-v2 .v2-membership-copy {
+        min-width: 0 !important;
+    }
+
+    .dashboard-v2 .v2-membership-copy h2 {
+        margin: 4px 0 !important;
+        font-size: 16px !important;
+        line-height: 1.25 !important;
+    }
+
+    .dashboard-v2 .v2-membership-copy p {
+        display: block !important;
+        font-size: 11px !important;
+        line-height: 1.45 !important;
+    }
+
+    .dashboard-v2 .v2-membership-btn {
+        grid-column: 1 / -1 !important;
+        width: 100% !important;
+        min-height: 44px !important;
+        border-radius: 13px !important;
+        font-size: 12px !important;
+    }
+
+    /* TASKS — override legacy nth-child hiding and old 3-column card */
+    .dashboard-v2 .v2-task-grid {
+        display: grid !important;
+        grid-template-columns: 1fr !important;
+        gap: 10px !important;
+    }
+
+    .dashboard-v2 .v2-task-grid .v2-task-card,
+    .dashboard-v2 .v2-task-grid .v2-task-card:nth-child(n + 3),
+    .dashboard-v2 .v2-task-section.mobile-expanded .v2-task-grid .v2-task-card {
+        display: flex !important;
+    }
+
+    .dashboard-v2 .v2-task-card {
+        flex-direction: column !important;
+        min-height: 0 !important;
+        padding: 17px !important;
+        border-radius: 19px !important;
+        gap: 0 !important;
+    }
+
+    .dashboard-v2 .v2-task-top {
+        display: flex !important;
+        flex-direction: row !important;
+        align-items: center !important;
+        justify-content: space-between !important;
+        width: 100% !important;
+    }
+
+    .dashboard-v2 .v2-task-icon {
+        display: grid !important;
+        width: 45px !important;
+        height: 45px !important;
+        min-width: 45px !important;
+        border-radius: 13px !important;
+    }
+
+    .dashboard-v2 .v2-task-icon img {
+        width: 24px !important;
+        height: 24px !important;
+    }
+
+    .dashboard-v2 .v2-task-label {
+        display: inline-flex !important;
+        padding: 6px 9px !important;
+        font-size: 9px !important;
+    }
+
+    .dashboard-v2 .v2-task-info {
+        display: block !important;
+        width: 100% !important;
+        padding: 15px 0 14px !important;
+        min-width: 0 !important;
+    }
+
+    .dashboard-v2 .v2-task-info h3 {
+        display: block !important;
+        margin: 0 0 7px !important;
+        overflow: visible !important;
+        font-size: 16px !important;
+        line-height: 1.25 !important;
+        -webkit-line-clamp: unset !important;
+    }
+
+    .dashboard-v2 .v2-task-info > p {
+        display: block !important;
+        min-height: 0 !important;
+        margin: 0 !important;
+        color: var(--sq-muted) !important;
+        font-size: 11px !important;
+        line-height: 1.5 !important;
+    }
+
+    .dashboard-v2 .v2-platforms {
+        display: flex !important;
+        gap: 6px !important;
+        margin-top: 13px !important;
+    }
+
+    .dashboard-v2 .v2-platforms img {
+        width: 22px !important;
+        height: 22px !important;
+        padding: 3px !important;
+    }
+
+    .dashboard-v2 .v2-task-action {
+        display: flex !important;
+        flex-direction: row !important;
+        align-items: center !important;
+        justify-content: space-between !important;
+        width: 100% !important;
+        min-width: 0 !important;
+        padding-top: 13px !important;
+        text-align: left !important;
+    }
+
+    .dashboard-v2 .v2-task-action > div {
+        display: flex !important;
+        flex-direction: column !important;
+    }
+
+    .dashboard-v2 .v2-task-action strong {
+        display: block !important;
+        font-size: 17px !important;
+    }
+
+    .dashboard-v2 .v2-task-action span {
+        display: block !important;
+        margin: 1px 0 0 !important;
+        font-size: 9px !important;
+    }
+
+    .dashboard-v2 .v2-task-action .select-btn {
+        width: auto !important;
+        min-width: 96px !important;
+        min-height: 39px !important;
+        padding: 0 13px !important;
+        border-radius: 11px !important;
+        font-size: 11px !important;
+    }
+
+    /* No "view all" is needed because V2 shows all task cards cleanly */
+    .dashboard-v2 .mobile-task-toggle {
+        display: none !important;
+    }
+
+    /* FUND + TASK MODALS */
+    #fundModal,
+    #taskActionModal,
+    #campaignModal {
+        align-items: flex-end !important;
+        padding: 0 !important;
+    }
+
+    #fundModal .fund-modal-card,
+    #taskActionModal .task-action-container,
+    #campaignModal .task-action-container {
+        width: 100% !important;
+        max-width: none !important;
+        max-height: 92dvh !important;
+        margin: 0 !important;
+        padding: 21px 18px calc(20px + env(safe-area-inset-bottom)) !important;
+        border-radius: 24px 24px 0 0 !important;
+        overflow-y: auto !important;
+    }
+
+    #fundModal .modal-title {
+        font-size: 23px !important;
+    }
+
+    #fundModal .fund-methods {
+        grid-template-columns: 1fr !important;
+    }
+
+    #fundModal .fund-method {
+        min-height: 88px !important;
+        padding: 14px !important;
+    }
+
+    #fundModal .fund-gbp-input {
+        width: 100% !important;
+    }
+
+    #fundAmountInput {
+        height: 54px !important;
+        margin-bottom: 14px !important;
+    }
+
+    #fundModal .fund-summary {
+        padding: 16px !important;
+        border-radius: 17px !important;
+    }
+
+    .task-action-header {
+        align-items: flex-start !important;
+    }
+
+    .task-action-header h2 {
+        font-size: 18px !important;
+        line-height: 1.2 !important;
+    }
+
+    .task-total-bar {
+        position: sticky !important;
+        bottom: calc(-20px - env(safe-area-inset-bottom)) !important;
+        margin: 16px -18px calc(-20px - env(safe-area-inset-bottom)) !important;
+        padding: 13px 18px calc(13px + env(safe-area-inset-bottom)) !important;
+        gap: 10px !important;
+    }
+
+    .task-total-bar h3 {
+        font-size: 20px !important;
+    }
+
+    .submit-task-btn {
+        min-width: 145px !important;
+    }
+}
+
+@media (max-width: 430px) {
+    .dashboard-v2 .dashboard-v2-main {
+        width: calc(100% - 20px) !important;
+    }
+
+    .dashboard-v2 .v2-hero {
+        padding: 22px 17px !important;
+        border-radius: 21px !important;
+    }
+
+    .dashboard-v2 .v2-hero h1 {
+        font-size: 35px !important;
+    }
+
+    .dashboard-v2 .v2-hero-actions {
+        grid-template-columns: 1fr !important;
+    }
+
+    .dashboard-v2 .v2-overview-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    }
+
+    .dashboard-v2 .v2-wallet-bottom {
+        flex-direction: row !important;
+        align-items: flex-end !important;
+    }
+
+    .dashboard-v2 .v2-wallet-bottom a {
+        font-size: 10px !important;
+    }
+
+    .dashboard-v2 .v2-action-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    }
+
+    .dashboard-v2 .v2-action-card {
+        min-height: 122px !important;
+        padding: 13px !important;
+    }
+
+    .dashboard-v2 .v2-section-heading h2 {
+        font-size: 21px !important;
+    }
+
+    .dashboard-v2 .v2-task-card {
+        padding: 15px !important;
+    }
+
+    .dashboard-v2 .v2-task-action .select-btn {
+        min-width: 88px !important;
+    }
+}
+
+@media (max-width: 350px) {
+    .dashboard-v2 .v2-overview-grid,
+    .dashboard-v2 .v2-action-grid {
+        grid-template-columns: 1fr !important;
+    }
+
+    .dashboard-v2 .v2-wallet-card {
+        grid-column: auto !important;
+    }
+
+    .dashboard-v2 .v2-stat-card {
+        min-height: 115px !important;
+    }
+}
+
+
+/* ==========================================================
+   SQUEEB APP DASHBOARD — COMPACT LAYOUT
+   Keep at the END of this stylesheet
+========================================================== */
+
+.squeeb-app-dashboard {
+    --app-bg: #f5f6f9;
+    --app-card: #ffffff;
+    --app-text: #12141b;
+    --app-muted: #717683;
+    --app-line: #e7e9ef;
+    --app-blue: #315efb;
+    --app-navy-1: #12182d;
+    --app-navy-2: #24356f;
+
+    background:
+        radial-gradient(circle at top left, rgba(49,94,251,.06), transparent 22rem),
+        var(--app-bg);
+    color: var(--app-text);
+}
+
+.squeeb-app-dashboard .squeeb-app-main {
+    width: min(94%, 1280px);
+    margin: 0 auto;
+    padding: 34px 0 64px;
+}
+
+/* WELCOME */
+.squeeb-app-dashboard .app-welcome-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 18px;
+    margin-bottom: 18px;
+}
+
+.squeeb-app-dashboard .app-eyebrow {
+    display: block;
+    margin-bottom: 7px;
+    color: var(--app-blue);
+    font-size: 11px;
+    font-weight: 900;
+    letter-spacing: .12em;
+}
+
+.squeeb-app-dashboard .app-welcome-row h1 {
+    margin: 0;
+    font-size: clamp(28px, 4vw, 42px);
+    line-height: 1.05;
+    letter-spacing: -.035em;
+}
+
+.squeeb-app-dashboard .app-welcome-row p {
+    margin-top: 7px;
+    color: var(--app-muted);
+    font-size: 14px;
+}
+
+.squeeb-app-dashboard .app-avatar-link {
+    position: relative;
+    flex: 0 0 auto;
+}
+
+.squeeb-app-dashboard .app-avatar-link img {
+    width: 54px;
+    height: 54px;
+    border-radius: 17px;
+    object-fit: cover;
+    border: 3px solid #fff;
+    box-shadow: 0 8px 24px rgba(17,19,24,.08);
+}
+
+.squeeb-app-dashboard .app-avatar-status {
+    position: absolute;
+    right: -1px;
+    bottom: -1px;
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    border: 3px solid #fff;
+    background: #61dda0;
+}
+
+/* WALLET */
+.squeeb-app-dashboard .app-wallet-card {
+    position: relative;
+    overflow: hidden;
+    padding: 28px;
+    border-radius: 28px;
+    background:
+        radial-gradient(circle at 88% 14%, rgba(93,116,255,.35), transparent 19rem),
+        linear-gradient(135deg, var(--app-navy-1), var(--app-navy-2));
+    color: #fff;
+    box-shadow: 0 22px 50px rgba(20,29,63,.16);
+}
+
+.squeeb-app-dashboard .app-wallet-card::after {
+    content: "";
+    position: absolute;
+    right: -70px;
+    top: -100px;
+    width: 240px;
+    height: 240px;
+    border-radius: 50%;
+    border: 1px solid rgba(255,255,255,.08);
+}
+
+.squeeb-app-dashboard .app-wallet-head,
+.squeeb-app-dashboard .app-wallet-meta,
+.squeeb-app-dashboard .app-wallet-actions {
+    position: relative;
+    z-index: 1;
+}
+
+.squeeb-app-dashboard .app-wallet-head {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 18px;
+}
+
+.squeeb-app-dashboard .app-wallet-head span,
+.squeeb-app-dashboard .app-wallet-meta span {
+    color: rgba(255,255,255,.65);
+    font-size: 12px;
+    font-weight: 700;
+}
+
+.squeeb-app-dashboard .app-wallet-head h2 {
+    margin: 10px 0 0;
+    font-size: clamp(38px, 5vw, 58px);
+    line-height: 1;
+    letter-spacing: -.045em;
+    overflow-wrap: anywhere;
+}
+
+.squeeb-app-dashboard .app-wallet-icon {
+    width: 48px;
+    height: 48px;
+    border-radius: 15px;
+    display: grid;
+    place-items: center;
+    background: rgba(255,255,255,.12);
+    border: 1px solid rgba(255,255,255,.12);
+    color: #fff;
+}
+
+.squeeb-app-dashboard .app-wallet-meta {
+    margin-top: 24px;
+    padding-top: 18px;
+    border-top: 1px solid rgba(255,255,255,.12);
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 18px;
+}
+
+.squeeb-app-dashboard .app-wallet-meta strong {
+    display: block;
+    margin-top: 4px;
+    font-size: 18px;
+}
+
+.squeeb-app-dashboard .app-wallet-meta a {
+    color: rgba(255,255,255,.78);
+    font-size: 12px;
+    font-weight: 800;
+}
+
+.squeeb-app-dashboard .app-wallet-actions {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0,1fr));
+    gap: 10px;
+    margin-top: 22px;
+}
+
+.squeeb-app-dashboard .app-wallet-btn {
+    min-height: 48px;
+    border-radius: 14px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 9px;
+    border: 0;
+    cursor: pointer;
+    font-size: 13px;
+    font-weight: 800;
+}
+
+.squeeb-app-dashboard .app-wallet-btn-primary {
+    background: #fff;
+    color: #151824;
+}
+
+.squeeb-app-dashboard .app-wallet-btn-secondary {
+    background: rgba(255,255,255,.09);
+    color: #fff;
+    border: 1px solid rgba(255,255,255,.14);
+}
+
+/* STATS */
+.squeeb-app-dashboard .app-stat-grid {
+    display: grid;
+    grid-template-columns: repeat(2,minmax(0,1fr));
+    gap: 12px;
+    margin: 12px 0 34px;
+}
+
+.squeeb-app-dashboard .app-stat-card {
+    min-width: 0;
+    padding: 18px;
+    border: 1px solid var(--app-line);
+    border-radius: 20px;
+    background: #fff;
+    display: flex;
+    align-items: center;
+    gap: 13px;
+}
+
+.squeeb-app-dashboard .app-stat-icon {
+    width: 43px;
+    height: 43px;
+    min-width: 43px;
+    border-radius: 13px;
+    display: grid;
+    place-items: center;
+    background: #eef2ff;
+    color: var(--app-blue);
+}
+
+.squeeb-app-dashboard .app-stat-card span,
+.squeeb-app-dashboard .app-stat-card small {
+    display: block;
+    color: var(--app-muted);
+}
+
+.squeeb-app-dashboard .app-stat-card span {
+    font-size: 11px;
+    font-weight: 800;
+}
+
+.squeeb-app-dashboard .app-stat-card strong {
+    display: block;
+    margin: 3px 0;
+    font-size: 26px;
+    line-height: 1;
+}
+
+.squeeb-app-dashboard .app-stat-card small {
+    font-size: 10px;
+}
+
+/* SECTIONS */
+.squeeb-app-dashboard .app-section {
+    margin-bottom: 34px;
+}
+
+.squeeb-app-dashboard .app-section-heading {
+    margin-bottom: 14px;
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 16px;
+}
+
+.squeeb-app-dashboard .app-section-heading > div > span {
+    display: block;
+    margin-bottom: 5px;
+    color: var(--app-blue);
+    font-size: 10px;
+    font-weight: 900;
+    letter-spacing: .12em;
+}
+
+.squeeb-app-dashboard .app-section-heading h2 {
+    margin: 0;
+    font-size: 24px;
+    letter-spacing: -.03em;
+}
+
+.squeeb-app-dashboard .app-section-heading > small {
+    color: var(--app-muted);
+    font-size: 11px;
+}
+
+/* QUICK ACTIONS */
+.squeeb-app-dashboard .app-quick-grid {
+    display: grid;
+    grid-template-columns: repeat(4,minmax(0,1fr));
+    gap: 12px;
+}
+
+.squeeb-app-dashboard .app-quick-card {
+    min-height: 126px;
+    padding: 17px;
+    border: 1px solid var(--app-line);
+    border-radius: 20px;
+    background: #fff;
+    color: var(--app-text);
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    justify-content: flex-end;
+    transition: .2s ease;
+}
+
+.squeeb-app-dashboard .app-quick-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 14px 30px rgba(17,19,24,.06);
+}
+
+.squeeb-app-dashboard .app-quick-icon {
+    width: 42px;
+    height: 42px;
+    border-radius: 13px;
+    display: grid;
+    place-items: center;
+    margin-bottom: auto;
+    background: #f3f5f8;
+    color: #252936;
+}
+
+.squeeb-app-dashboard .app-quick-card strong {
+    margin-top: 16px;
+    font-size: 13px;
+}
+
+.squeeb-app-dashboard .app-quick-card > span {
+    margin-top: 4px;
+    color: var(--app-muted);
+    font-size: 10px;
+}
+
+.squeeb-app-dashboard .app-admin-card {
+    border-style: dashed;
+}
+
+/* MEMBERSHIP */
+.squeeb-app-dashboard .app-membership-card {
+    margin-bottom: 34px;
+    padding: 16px;
+    border: 1px solid #dfe4fb;
+    border-radius: 20px;
+    background: linear-gradient(110deg,#eff3ff,#fff);
+    display: grid;
+    grid-template-columns: auto minmax(0,1fr) auto;
+    align-items: center;
+    gap: 13px;
+}
+
+.squeeb-app-dashboard .app-membership-icon {
+    width: 44px;
+    height: 44px;
+    border-radius: 13px;
+    display: grid;
+    place-items: center;
+    background: #1c2a66;
+    color: #fff;
+}
+
+.squeeb-app-dashboard .app-membership-copy {
+    min-width: 0;
+}
+
+.squeeb-app-dashboard .app-membership-copy > span,
+.squeeb-app-dashboard .app-membership-copy > strong,
+.squeeb-app-dashboard .app-membership-copy > small {
+    display: block;
+}
+
+.squeeb-app-dashboard .app-membership-copy > span {
+    color: #5670d9;
+    font-size: 9px;
+    font-weight: 900;
+    letter-spacing: .08em;
+}
+
+.squeeb-app-dashboard .app-membership-copy > strong {
+    margin: 3px 0;
+    font-size: 13px;
+}
+
+.squeeb-app-dashboard .app-membership-copy > small {
+    color: var(--app-muted);
+    font-size: 10px;
+}
+
+.squeeb-app-dashboard .app-membership-link {
+    padding: 10px 12px;
+    border-radius: 12px;
+    background: #141721;
+    color: #fff;
+    font-size: 11px;
+    font-weight: 800;
+}
+
+/* TASK ROWS */
+.squeeb-app-dashboard .app-task-list {
+    display: grid !important;
+    gap: 10px !important;
+}
+
+.squeeb-app-dashboard .app-task-row,
+.squeeb-app-dashboard .app-task-row:nth-child(n+3) {
+    display: grid !important;
+    grid-template-columns: minmax(0,1fr) auto !important;
+    align-items: center !important;
+    gap: 14px !important;
+    min-height: 94px !important;
+    margin: 0 !important;
+    padding: 14px !important;
+    border: 1px solid var(--app-line) !important;
+    border-radius: 18px !important;
+    background: #fff !important;
+    box-shadow: none !important;
+}
+
+.squeeb-app-dashboard .app-task-main {
+    min-width: 0;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.squeeb-app-dashboard .app-task-icon {
+    width: 46px !important;
+    height: 46px !important;
+    min-width: 46px !important;
+    border-radius: 14px !important;
+    display: grid !important;
+    place-items: center !important;
+    background: #f4f5f7 !important;
+}
+
+.squeeb-app-dashboard .app-task-icon img {
+    width: 25px !important;
+    height: 25px !important;
+    object-fit: contain;
+}
+
+.squeeb-app-dashboard .app-task-info {
+    min-width: 0 !important;
+    padding: 0 !important;
+}
+
+.squeeb-app-dashboard .app-task-label {
+    display: block !important;
+    width: auto !important;
+    padding: 0 !important;
+    margin: 0 0 4px !important;
+    background: transparent !important;
+    color: var(--app-blue) !important;
+    font-size: 8px !important;
+    font-weight: 900 !important;
+    letter-spacing: .08em;
+    text-transform: uppercase;
+}
+
+.squeeb-app-dashboard .app-task-info h3 {
+    margin: 0 !important;
+    font-size: 14px !important;
+    line-height: 1.2 !important;
+    color: var(--app-text) !important;
+    white-space: normal !important;
+}
+
+.squeeb-app-dashboard .app-platforms {
+    display: flex !important;
+    align-items: center;
+    gap: 4px !important;
+    margin-top: 7px !important;
+}
+
+.squeeb-app-dashboard .app-platforms img {
+    width: 18px !important;
+    height: 18px !important;
+    border-radius: 6px;
+    padding: 2px;
+    border: 1px solid #edf0f3;
+    background: #fff;
+}
+
+.squeeb-app-dashboard .app-task-action {
+    width: auto !important;
+    padding: 0 !important;
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: flex-end !important;
+    gap: 9px !important;
+    text-align: right !important;
+}
+
+.squeeb-app-dashboard .app-task-price strong {
+    display: block;
+    color: var(--app-text) !important;
+    font-size: 15px !important;
+    line-height: 1 !important;
+}
+
+.squeeb-app-dashboard .app-task-price span {
+    display: block;
+    margin-top: 3px !important;
+    color: var(--app-muted) !important;
+    font-size: 8px !important;
+}
+
+.squeeb-app-dashboard .app-task-action .select-btn {
+    width: auto !important;
+    min-width: 76px !important;
+    min-height: 34px !important;
+    margin: 0 !important;
+    padding: 0 12px !important;
+    border: 0 !important;
+    border-radius: 10px !important;
+    background: #141721 !important;
+    color: #fff !important;
+    font-size: 10px !important;
+    font-weight: 800 !important;
+}
+
+.squeeb-app-dashboard .mobile-task-toggle {
+    display: none !important;
+}
+
+
+/* ====================== MOBILE ====================== */
+@media (max-width: 768px) {
+    .dashboard-page.squeeb-app-dashboard {
+        padding: 0 !important;
+        overflow-x: hidden !important;
+    }
+
+    .squeeb-app-dashboard .squeeb-app-main {
+        display: block !important;
+        width: calc(100% - 24px) !important;
+        max-width: none !important;
+        margin: 0 auto !important;
+        padding: 16px 0 48px !important;
+    }
+
+    .squeeb-app-dashboard .app-welcome-row {
+        margin-bottom: 14px !important;
+    }
+
+    .squeeb-app-dashboard .app-welcome-row h1 {
+        font-size: 27px !important;
+    }
+
+    .squeeb-app-dashboard .app-welcome-row p {
+        font-size: 12px !important;
+    }
+
+    .squeeb-app-dashboard .app-avatar-link img {
+        width: 48px !important;
+        height: 48px !important;
+        border-radius: 15px !important;
+    }
+
+    .squeeb-app-dashboard .app-wallet-card {
+        padding: 20px !important;
+        border-radius: 22px !important;
+    }
+
+    .squeeb-app-dashboard .app-wallet-head h2 {
+        max-width: calc(100vw - 100px) !important;
+        margin-top: 8px !important;
+        font-size: clamp(34px, 10.5vw, 46px) !important;
+        overflow-wrap: anywhere !important;
+    }
+
+    .squeeb-app-dashboard .app-wallet-icon {
+        width: 42px !important;
+        height: 42px !important;
+        border-radius: 13px !important;
+    }
+
+    .squeeb-app-dashboard .app-wallet-meta {
+        margin-top: 19px !important;
+        padding-top: 15px !important;
+    }
+
+    .squeeb-app-dashboard .app-wallet-meta strong {
+        font-size: 16px !important;
+    }
+
+    .squeeb-app-dashboard .app-wallet-actions {
+        margin-top: 17px !important;
+    }
+
+    .squeeb-app-dashboard .app-wallet-btn {
+        min-height: 44px !important;
+        font-size: 11px !important;
+    }
+
+    .squeeb-app-dashboard .app-stat-grid {
+        gap: 9px !important;
+        margin: 10px 0 28px !important;
+    }
+
+    .squeeb-app-dashboard .app-stat-card {
+        padding: 14px !important;
+        border-radius: 17px !important;
+        gap: 9px !important;
+    }
+
+    .squeeb-app-dashboard .app-stat-icon {
+        width: 36px !important;
+        height: 36px !important;
+        min-width: 36px !important;
+        border-radius: 11px !important;
+        font-size: 12px !important;
+    }
+
+    .squeeb-app-dashboard .app-stat-card strong {
+        font-size: 22px !important;
+    }
+
+    .squeeb-app-dashboard .app-section {
+        margin-bottom: 28px !important;
+        padding: 0 !important;
+    }
+
+    .squeeb-app-dashboard .app-section-heading {
+        margin-bottom: 11px !important;
+    }
+
+    .squeeb-app-dashboard .app-section-heading h2 {
+        font-size: 20px !important;
+    }
+
+    .squeeb-app-dashboard .app-quick-grid {
+        grid-template-columns: repeat(4,minmax(0,1fr)) !important;
+        gap: 7px !important;
+    }
+
+    .squeeb-app-dashboard .app-quick-card {
+        min-height: 96px !important;
+        padding: 11px 8px !important;
+        border-radius: 15px !important;
+        align-items: center !important;
+        justify-content: flex-start !important;
+        text-align: center !important;
+    }
+
+    .squeeb-app-dashboard .app-quick-icon {
+        width: 36px !important;
+        height: 36px !important;
+        margin: 0 0 9px !important;
+        border-radius: 11px !important;
+        font-size: 13px !important;
+    }
+
+    .squeeb-app-dashboard .app-quick-card strong {
+        margin: 0 !important;
+        max-width: 100% !important;
+        font-size: 10px !important;
+        line-height: 1.15 !important;
+        overflow-wrap: anywhere !important;
+    }
+
+    .squeeb-app-dashboard .app-quick-card > span {
+        margin-top: 3px !important;
+        font-size: 8px !important;
+        line-height: 1.15 !important;
+    }
+
+    .squeeb-app-dashboard .app-membership-card {
+        margin-bottom: 28px !important;
+        padding: 14px !important;
+        grid-template-columns: auto minmax(0,1fr) auto !important;
+        gap: 10px !important;
+        border-radius: 17px !important;
+    }
+
+    .squeeb-app-dashboard .app-membership-icon {
+        width: 38px !important;
+        height: 38px !important;
+    }
+
+    .squeeb-app-dashboard .app-membership-copy > strong {
+        font-size: 11px !important;
+    }
+
+    .squeeb-app-dashboard .app-membership-copy > small {
+        display: none !important;
+    }
+
+    .squeeb-app-dashboard .app-membership-link {
+        padding: 9px 10px !important;
+        font-size: 9px !important;
+    }
+
+    .squeeb-app-dashboard .app-task-list {
+        display: grid !important;
+        grid-template-columns: 1fr !important;
+        gap: 8px !important;
+    }
+
+    .squeeb-app-dashboard .app-task-row,
+    .squeeb-app-dashboard .app-task-row:nth-child(n+3) {
+        display: grid !important;
+        grid-template-columns: minmax(0,1fr) auto !important;
+        min-height: 82px !important;
+        gap: 10px !important;
+        padding: 11px !important;
+        border-radius: 16px !important;
+    }
+
+    .squeeb-app-dashboard .app-task-main {
+        gap: 9px !important;
+    }
+
+    .squeeb-app-dashboard .app-task-icon {
+        width: 40px !important;
+        height: 40px !important;
+        min-width: 40px !important;
+        border-radius: 12px !important;
+    }
+
+    .squeeb-app-dashboard .app-task-icon img {
+        width: 21px !important;
+        height: 21px !important;
+    }
+
+    .squeeb-app-dashboard .app-task-info h3 {
+        font-size: 12px !important;
+    }
+
+    .squeeb-app-dashboard .app-platforms {
+        margin-top: 5px !important;
+    }
+
+    .squeeb-app-dashboard .app-platforms img {
+        width: 16px !important;
+        height: 16px !important;
+    }
+
+    .squeeb-app-dashboard .app-task-action {
+        gap: 6px !important;
+    }
+
+    .squeeb-app-dashboard .app-task-price strong {
+        font-size: 13px !important;
+    }
+
+    .squeeb-app-dashboard .app-task-action .select-btn {
+        min-width: 68px !important;
+        min-height: 31px !important;
+        padding: 0 9px !important;
+        font-size: 9px !important;
+        border-radius: 9px !important;
+    }
+
+    /* bottom-sheet modals */
+    #fundModal,
+    #taskActionModal,
+    #campaignModal {
+        align-items: flex-end !important;
+        padding: 0 !important;
+    }
+
+    #fundModal .fund-modal-card,
+    #taskActionModal .task-action-container,
+    #campaignModal .task-action-container {
+        width: 100% !important;
+        max-width: none !important;
+        max-height: 92dvh !important;
+        margin: 0 !important;
+        padding: 20px 18px calc(20px + env(safe-area-inset-bottom)) !important;
+        border-radius: 24px 24px 0 0 !important;
+        overflow-y: auto !important;
+    }
+}
+
+@media (max-width: 430px) {
+    .squeeb-app-dashboard .squeeb-app-main {
+        width: calc(100% - 20px) !important;
+    }
+
+    .squeeb-app-dashboard .app-wallet-head h2 {
+        font-size: clamp(32px, 10vw, 42px) !important;
+    }
+
+    .squeeb-app-dashboard .app-quick-grid {
+        grid-template-columns: repeat(4,minmax(0,1fr)) !important;
+    }
+
+    .squeeb-app-dashboard .app-quick-card {
+        min-width: 0 !important;
+        padding-left: 5px !important;
+        padding-right: 5px !important;
+    }
+
+    .squeeb-app-dashboard .app-membership-copy > span {
+        display: none !important;
+    }
+}
+
+@media (max-width: 360px) {
+    .squeeb-app-dashboard .app-quick-grid {
+        grid-template-columns: repeat(2,minmax(0,1fr)) !important;
+    }
+
+    .squeeb-app-dashboard .app-quick-card {
+        min-height: 100px !important;
+    }
+
+    .squeeb-app-dashboard .app-wallet-actions {
+        grid-template-columns: 1fr !important;
+    }
+}
