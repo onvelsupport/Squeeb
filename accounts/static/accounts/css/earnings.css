@@ -5,23 +5,22 @@
 }
 
 :root{
-    --bg:#f4f7fc;
-    --surface:#ffffff;
-    --surface-soft:#f8fafc;
-    --border:#e5e7eb;
-    --text:#0f172a;
-    --muted:#64748b;
-    --primary:#2563eb;
-    --primary-soft:#eff6ff;
-    --success:#166534;
-    --success-bg:#dcfce7;
-    --danger:#991b1b;
-    --danger-bg:#fee2e2;
-    --warning:#92400e;
-    --warning-bg:#fef3c7;
-    --radius-lg:22px;
-    --radius-md:16px;
-    --shadow:0 12px 30px rgba(15,23,42,.06);
+    --earn-bg:#f5f6f9;
+    --earn-card:#ffffff;
+    --earn-text:#12141b;
+    --earn-muted:#717683;
+    --earn-border:#e7e9ef;
+    --earn-primary:#315efb;
+    --earn-primary-dark:#2447d6;
+    --earn-soft:#eef2ff;
+    --earn-success:#166534;
+    --earn-success-bg:#dcfce7;
+    --earn-danger:#991b1b;
+    --earn-danger-bg:#fee2e2;
+    --earn-warning:#92400e;
+    --earn-warning-bg:#fef3c7;
+    --earn-navy-1:#12182d;
+    --earn-navy-2:#24356f;
 }
 
 html,
@@ -31,8 +30,8 @@ body{
 }
 
 body{
-    background:var(--bg);
-    color:var(--text);
+    background:var(--earn-bg);
+    color:var(--earn-text);
     font-family:Arial, Helvetica, sans-serif;
 }
 
@@ -46,391 +45,513 @@ input{
     font:inherit;
 }
 
-.dashboard-page{
+.earnings-app-dashboard{
     min-height:100vh;
-    background:var(--bg);
+    background:
+        radial-gradient(circle at top left, rgba(49,94,251,.06), transparent 22rem),
+        var(--earn-bg);
 }
 
-.earnings-page{
-    width:min(1180px, calc(100% - 40px));
+.earnings-app-main{
+    width:min(94%,1180px);
     margin:auto;
-    padding:32px 0 56px;
+    padding:30px 0 58px;
 }
 
-.earnings-hero,
-.profile-strip,
-.withdrawal-panel,
-.task-section,
-.submission-panel,
-.activity-panel{
-    border:1px solid var(--border);
-    border-radius:var(--radius-lg);
-    box-shadow:var(--shadow);
-}
-
-.earnings-hero{
+/* HEADER */
+.earnings-app-header{
     display:flex;
     align-items:center;
     justify-content:space-between;
-    gap:24px;
-    margin-bottom:16px;
-    padding:26px 28px;
-    background:var(--surface);
+    gap:18px;
+    margin-bottom:15px;
 }
 
-.eyebrow{
-    display:inline-flex;
-    align-items:center;
-    min-height:28px;
-    margin-bottom:8px;
-    padding:6px 11px;
-    border-radius:999px;
-    background:var(--primary-soft);
-    color:var(--primary);
-    font-size:12px;
-    font-weight:800;
-    letter-spacing:.02em;
-    text-transform:uppercase;
+.earnings-app-kicker{
+    display:block;
+    margin-bottom:6px;
+    color:var(--earn-primary);
+    font-size:10px;
+    font-weight:900;
+    letter-spacing:.12em;
 }
 
-.earnings-hero h1{
-    margin-bottom:8px;
-    font-size:34px;
-    line-height:1.15;
+.earnings-app-header h1{
+    margin:0;
+    font-size:clamp(28px,4vw,40px);
+    line-height:1.05;
+    letter-spacing:-.035em;
 }
 
-.earnings-hero > div > p:last-child{
-    max-width:650px;
-    color:var(--muted);
-    font-size:14px;
-    line-height:1.6;
+.earnings-app-header p{
+    margin-top:7px;
+    color:var(--earn-muted);
+    font-size:13px;
 }
 
-.back-btn{
+.earnings-create-btn{
+    min-height:44px;
+    padding:0 15px;
+    border-radius:13px;
     display:inline-flex;
     align-items:center;
     justify-content:center;
-    gap:9px;
-    min-height:46px;
-    padding:12px 18px;
-    border-radius:13px;
-    background:var(--primary);
+    gap:8px;
+    flex:0 0 auto;
+    background:#151824;
     color:#fff;
-    font-size:14px;
+    font-size:11px;
     font-weight:800;
-    white-space:nowrap;
 }
 
-.profile-strip{
-    display:grid;
-    grid-template-columns:auto 150px minmax(0,1fr);
-    align-items:center;
-    gap:16px;
-    margin-bottom:16px;
-    padding:20px;
-    background:var(--surface);
+/* WALLET */
+.earnings-wallet-card{
+    position:relative;
+    overflow:hidden;
+    padding:25px;
+    border-radius:27px;
+    background:
+        radial-gradient(circle at 88% 14%, rgba(93,116,255,.35), transparent 19rem),
+        linear-gradient(135deg,var(--earn-navy-1),var(--earn-navy-2));
+    color:#fff;
+    box-shadow:0 22px 50px rgba(20,29,63,.16);
 }
 
-.profile-strip > img{
-    width:54px;
-    height:54px;
+.earnings-wallet-card::after{
+    content:"";
+    position:absolute;
+    right:-70px;
+    top:-100px;
+    width:240px;
+    height:240px;
+    border:1px solid rgba(255,255,255,.08);
     border-radius:50%;
+}
+
+.earnings-wallet-top,
+.earnings-main-balance,
+.earnings-wallet-stats{
+    position:relative;
+    z-index:1;
+}
+
+.earnings-wallet-top{
+    display:flex;
+    align-items:flex-start;
+    justify-content:space-between;
+    gap:16px;
+}
+
+.earnings-user-row{
+    display:flex;
+    align-items:center;
+    gap:11px;
+}
+
+.earnings-user-row img{
+    width:45px;
+    height:45px;
+    border-radius:14px;
     object-fit:cover;
 }
 
-.profile-identity h3{
-    margin-bottom:4px;
-    font-size:17px;
-}
-
-.profile-identity span{
-    color:var(--muted);
-    font-size:13px;
-}
-
-.profile-metrics{
-    display:grid;
-    grid-template-columns:repeat(4,minmax(0,1fr));
-    gap:10px;
-}
-
-.profile-metrics > div{
-    min-width:0;
-    padding:14px;
-    border:1px solid var(--border);
-    border-radius:15px;
-    background:var(--surface-soft);
-    text-align:center;
-}
-
-.profile-metrics strong{
+.earnings-user-row span,
+.earnings-user-row small{
     display:block;
-    margin-bottom:4px;
-    font-size:20px;
+    color:rgba(255,255,255,.55);
+    font-size:9px;
 }
 
-.profile-metrics span{
-    color:var(--muted);
-    font-size:11px;
+.earnings-user-row strong{
+    display:block;
+    margin:2px 0;
+    font-size:13px;
 }
 
-.withdrawal-panel{
+.earnings-wallet-icon{
+    width:43px;
+    height:43px;
+    border-radius:13px;
     display:grid;
-    grid-template-columns:minmax(0,1fr) 220px;
-    align-items:center;
-    gap:22px;
-    margin-bottom:12px;
-    padding:24px;
-    background:linear-gradient(135deg,#0f172a,#1e293b);
-    color:#fff;
+    place-items:center;
+    background:rgba(255,255,255,.11);
+    border:1px solid rgba(255,255,255,.12);
 }
 
-.withdrawal-info .eyebrow{
-    background:rgba(255,255,255,.12);
-    color:#bfdbfe;
+.earnings-main-balance{
+    margin-top:24px;
 }
 
-.withdrawal-info h2{
-    margin-bottom:8px;
-    font-size:23px;
-}
-
-.withdrawal-info > p:not(.eyebrow){
-    max-width:700px;
-    color:#cbd5e1;
-    font-size:13px;
-    line-height:1.55;
-}
-
-.withdrawal-link{
-    display:inline-flex;
-    align-items:center;
-    justify-content:center;
-    min-height:42px;
-    margin-top:14px;
-    padding:10px 15px;
-    border-radius:12px;
-    background:#fff;
-    color:var(--text);
-    font-size:13px;
-    font-weight:800;
-}
-
-.withdrawal-action{
-    display:flex;
-    flex-direction:column;
-    gap:10px;
-}
-
-.fee-card{
-    padding:17px;
-    border:1px solid rgba(255,255,255,.14);
-    border-radius:17px;
-    background:rgba(255,255,255,.08);
-    text-align:center;
-}
-
-.fee-card span{
-    color:#cbd5e1;
+.earnings-main-balance > span{
+    color:rgba(255,255,255,.62);
     font-size:11px;
     font-weight:700;
 }
 
-.fee-card h2{
-    margin-top:5px;
-    font-size:34px;
+.earnings-main-balance h2{
+    margin:8px 0 0;
+    font-size:clamp(38px,6vw,58px);
+    line-height:1;
+    letter-spacing:-.045em;
+    overflow-wrap:anywhere;
+}
+
+.earnings-wallet-stats{
+    display:grid;
+    grid-template-columns:repeat(3,minmax(0,1fr));
+    gap:0;
+    margin-top:22px;
+    padding-top:16px;
+    border-top:1px solid rgba(255,255,255,.12);
+}
+
+.earnings-wallet-stats > div{
+    min-width:0;
+    padding:0 14px;
+}
+
+.earnings-wallet-stats > div:first-child{
+    padding-left:0;
+}
+
+.earnings-wallet-stats > div + div{
+    border-left:1px solid rgba(255,255,255,.12);
+}
+
+.earnings-wallet-stats span,
+.earnings-wallet-stats strong{
+    display:block;
+}
+
+.earnings-wallet-stats span{
+    color:rgba(255,255,255,.58);
+    font-size:9px;
+}
+
+.earnings-wallet-stats strong{
+    margin-top:4px;
+    font-size:14px;
+}
+
+/* WITHDRAW */
+.earnings-withdraw-card{
+    display:grid;
+    grid-template-columns:auto minmax(0,1fr) auto;
+    align-items:center;
+    gap:12px;
+    margin-top:11px;
+    padding:14px;
+    border:1px solid var(--earn-border);
+    border-radius:18px;
+    background:#fff;
+}
+
+.earnings-withdraw-icon{
+    width:40px;
+    height:40px;
+    border-radius:12px;
+    display:grid;
+    place-items:center;
+    color:var(--earn-primary);
+    background:var(--earn-soft);
+}
+
+.earnings-withdraw-copy{
+    min-width:0;
+}
+
+.earnings-withdraw-copy > span{
+    display:block;
+    margin-bottom:3px;
+    color:var(--earn-primary);
+    font-size:8px;
+    font-weight:900;
+    letter-spacing:.08em;
+}
+
+.earnings-withdraw-copy > strong{
+    display:block;
+    font-size:12px;
+}
+
+.earnings-withdraw-copy p{
+    margin-top:3px;
+    color:var(--earn-muted);
+    font-size:9px;
+    line-height:1.4;
+}
+
+.earnings-withdraw-side{
+    display:flex;
+    align-items:center;
+    gap:8px;
+}
+
+.earnings-fee-pill{
+    min-width:55px;
+    padding:7px;
+    border-radius:11px;
+    text-align:center;
+    background:#f5f6f8;
+}
+
+.earnings-fee-pill span,
+.earnings-fee-pill strong{
+    display:block;
+}
+
+.earnings-fee-pill span{
+    color:var(--earn-muted);
+    font-size:7px;
+    text-transform:uppercase;
+}
+
+.earnings-fee-pill strong{
+    margin-top:2px;
+    font-size:12px;
+}
+
+.withdrawal-link{
+    min-height:36px;
+    padding:0 11px;
+    border-radius:10px;
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+    background:#151824;
+    color:#fff;
+    font-size:9px;
+    font-weight:800;
+}
+
+/* INFO BANNER */
+.earning-banner{
+    display:flex;
+    align-items:center;
+    gap:10px;
+    margin-top:11px;
+    padding:11px 13px;
+    border:1px solid #dce4ff;
+    border-radius:15px;
+    background:#f4f6ff;
+    color:#1e3a8a;
+}
+
+.earning-banner > i{
+    flex:0 0 auto;
+}
+
+.earning-banner > div:nth-child(2){
+    flex:1;
+}
+
+.earning-banner strong{
+    display:block;
+    font-size:10px;
+}
+
+.earning-banner p{
+    margin-top:2px;
+    color:#5e6675;
+    font-size:8px;
 }
 
 .activate-membership-btn,
 .membership-active-badge{
-    width:100%;
-    min-height:42px;
-    border-radius:12px;
-    font-size:12px;
-    font-weight:800;
+    min-height:32px;
+    padding:0 10px;
+    border-radius:9px;
+    font-size:8px;
+    font-weight:900;
 }
 
 .activate-membership-btn{
-    border:none;
-    background:var(--primary);
+    border:0;
+    background:#315efb;
     color:#fff;
     cursor:pointer;
 }
 
 .membership-active-badge{
-    align-items:center;
-    justify-content:center;
-    gap:7px;
-    padding:11px 14px;
-    background:var(--success-bg);
-    color:var(--success);
-}
-
-.earning-banner{
     display:flex;
-    align-items:flex-start;
-    gap:12px;
-    margin-bottom:16px;
-    padding:14px 16px;
-    border:1px solid #bfdbfe;
-    border-radius:16px;
-    background:var(--primary-soft);
-    color:#1e3a8a;
+    align-items:center;
+    gap:5px;
+    background:var(--earn-success-bg);
+    color:var(--earn-success);
 }
 
-.earning-banner i{
-    margin-top:2px;
+[hidden]{
+    display:none !important;
 }
 
-.earning-banner strong{
+/* SECTIONS */
+.earnings-app-section{
+    margin-top:28px;
+    padding:0;
+    background:transparent;
+}
+
+.earnings-app-section-heading{
+    display:flex;
+    align-items:flex-end;
+    justify-content:space-between;
+    gap:14px;
+    margin-bottom:11px;
+}
+
+.earnings-app-section-heading > div > span{
     display:block;
-    margin-bottom:3px;
-    font-size:13px;
-}
-
-.earning-banner p{
-    color:#475569;
-    font-size:12px;
-    line-height:1.5;
-}
-
-.task-section,
-.submission-panel,
-.activity-panel{
-    margin-bottom:16px;
-    padding:22px;
-    background:var(--surface);
-}
-
-.section-heading{
-    margin-bottom:16px;
-}
-
-.section-heading h2{
     margin-bottom:4px;
+    color:var(--earn-primary);
+    font-size:9px;
+    font-weight:900;
+    letter-spacing:.11em;
+}
+
+.earnings-app-section-heading h2{
+    margin:0;
     font-size:21px;
+    letter-spacing:-.025em;
 }
 
-.section-heading p{
-    color:var(--muted);
-    font-size:13px;
-    line-height:1.5;
+.earnings-app-section-heading > small{
+    color:var(--earn-muted);
+    font-size:9px;
 }
 
-.task-grid{
+/* TASKS */
+.earnings-task-list{
     display:grid;
-    grid-template-columns:repeat(3,minmax(0,1fr));
-    gap:12px;
+    grid-template-columns:repeat(2,minmax(0,1fr));
+    gap:9px;
 }
 
 .earn-task-card,
 .empty-task,
 .submission-card,
 .activity-item{
-    border:1px solid var(--border);
-    border-radius:18px;
-    background:var(--surface);
-    box-shadow:none;
+    border:1px solid var(--earn-border);
+    background:#fff;
 }
 
 .earn-task-card{
-    display:flex;
-    flex-direction:column;
-    justify-content:space-between;
-    min-height:245px;
-    padding:18px;
+    min-width:0;
+    min-height:148px;
+    padding:14px;
+    border-radius:17px;
+    display:grid;
+    grid-template-columns:minmax(0,1fr) auto;
+    align-items:end;
+    gap:12px;
+    transition:.18s ease;
 }
 
 .earn-task-card:hover{
-    border-color:#bfdbfe;
-    box-shadow:0 10px 24px rgba(15,23,42,.05);
     transform:translateY(-2px);
+    border-color:#cfd7f4;
+    box-shadow:0 10px 24px rgba(17,19,24,.05);
+}
+
+.earn-task-content{
+    min-width:0;
+}
+
+.earn-task-top{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:8px;
+    margin-bottom:9px;
 }
 
 .task-badge{
     display:inline-flex;
     align-items:center;
-    gap:6px;
-    margin-bottom:12px;
-    padding:6px 10px;
+    gap:5px;
+    padding:5px 8px;
     border-radius:999px;
-    background:var(--primary-soft);
-    color:var(--primary);
-    font-size:10px;
-    font-weight:800;
-}
-
-.earn-task-card h3{
-    margin-bottom:8px;
-    font-size:16px;
-    line-height:1.35;
-}
-
-.earn-task-card p{
-    color:var(--muted);
-    font-size:12px;
-    line-height:1.5;
+    background:var(--earn-soft);
+    color:var(--earn-primary);
+    font-size:8px;
+    font-weight:900;
 }
 
 .task-reward{
-    display:block;
-    margin-top:14px;
-    color:var(--primary);
-    font-size:17px;
-    font-weight:800;
+    color:var(--earn-primary);
+    font-size:10px;
+    font-weight:900;
+    white-space:nowrap;
+}
+
+.earn-task-card h3{
+    margin:0 0 6px;
+    font-size:13px;
+    line-height:1.3;
+}
+
+.earn-task-card p{
+    display:-webkit-box;
+    overflow:hidden;
+    -webkit-box-orient:vertical;
+    -webkit-line-clamp:2;
+    color:var(--earn-muted);
+    font-size:9px;
+    line-height:1.45;
 }
 
 .campaign-slots{
     display:block;
-    margin-top:5px;
-    color:var(--muted);
-    font-size:10px;
+    margin-top:6px;
+    color:var(--earn-muted);
+    font-size:8px;
 }
 
 .select-task-btn{
-    width:100%;
-    min-height:40px;
-    margin-top:14px;
-    border:none;
-    border-radius:12px;
-    background:var(--primary);
+    min-width:74px;
+    min-height:34px;
+    padding:0 10px;
+    border:0;
+    border-radius:10px;
+    background:#151824;
     color:#fff;
-    font-size:12px;
+    font-size:9px;
     font-weight:800;
     cursor:pointer;
 }
 
 .featured-campaign{
-    border-color:#c4b5fd;
-    background:#faf9ff;
+    border-color:#d9d0ff;
+    background:#fbfaff;
 }
 
 .empty-task{
     grid-column:1/-1;
-    padding:38px 24px;
+    padding:26px 16px;
+    border-radius:16px;
     text-align:center;
 }
 
 .empty-task i{
-    margin-bottom:12px;
-    color:var(--primary);
-    font-size:30px;
+    margin-bottom:8px;
+    color:var(--earn-primary);
+    font-size:20px;
 }
 
 .empty-task h3{
-    margin-bottom:7px;
-    font-size:17px;
-}
-
-.empty-task p{
-    color:var(--muted);
+    margin-bottom:4px;
     font-size:12px;
 }
 
+.empty-task p{
+    color:var(--earn-muted);
+    font-size:9px;
+}
+
+/* SUBMISSIONS */
 .submission-tabs{
     display:flex;
-    gap:8px;
-    margin-bottom:14px;
+    gap:6px;
+    margin-bottom:10px;
     overflow-x:auto;
     scrollbar-width:none;
 }
@@ -441,111 +562,157 @@ input{
 
 .submission-tab{
     flex:0 0 auto;
-    min-height:36px;
-    padding:8px 13px;
-    border:1px solid var(--border);
+    min-height:32px;
+    padding:0 10px;
+    border:1px solid var(--earn-border);
     border-radius:999px;
     background:#fff;
-    color:#475569;
-    font-size:11px;
-    font-weight:800;
+    color:#596171;
+    font-size:9px;
+    font-weight:900;
     cursor:pointer;
 }
 
 .submission-tab.active{
-    border-color:var(--primary);
-    background:var(--primary);
+    border-color:var(--earn-primary);
+    background:var(--earn-primary);
     color:#fff;
 }
 
 .submission-list,
 .activity-list{
     display:grid;
-    gap:10px;
+    gap:8px;
 }
 
 .submission-card{
-    display:flex;
+    padding:12px;
+    border-radius:15px;
+    display:grid;
+    grid-template-columns:minmax(0,1fr) auto;
+    gap:10px;
     align-items:center;
-    justify-content:space-between;
-    gap:14px;
-    padding:16px;
+}
+
+.submission-heading-row{
+    display:flex;
+    flex-wrap:wrap;
+    gap:5px;
 }
 
 .submission-card h3{
-    margin:8px 0;
-    font-size:15px;
+    margin:7px 0;
+    font-size:12px;
 }
 
 .submission-card p{
-    margin-top:4px;
-    color:var(--muted);
-    font-size:11px;
+    margin-top:3px;
+    color:var(--earn-muted);
+    font-size:8px;
 }
 
 .submission-status,
 .submission-type-badge{
     display:inline-flex;
     align-items:center;
-    gap:5px;
-    padding:5px 8px;
+    gap:4px;
+    padding:4px 7px;
     border-radius:999px;
-    font-size:9px;
-    font-weight:800;
+    font-size:7px;
+    font-weight:900;
 }
 
 .submission-status.pending{
-    background:var(--warning-bg);
-    color:var(--warning);
+    background:var(--earn-warning-bg);
+    color:var(--earn-warning);
 }
 
 .submission-status.approved{
-    background:var(--success-bg);
-    color:var(--success);
+    background:var(--earn-success-bg);
+    color:var(--earn-success);
 }
 
 .submission-status.rejected{
-    background:var(--danger-bg);
-    color:var(--danger);
+    background:var(--earn-danger-bg);
+    color:var(--earn-danger);
+}
+
+.submission-type-badge{
+    background:#f1f5f9;
+    color:#475569;
+}
+
+.submission-type-badge.campaign{
+    background:#f3e8ff;
+    color:#7e22ce;
 }
 
 .submission-money{
-    flex:0 0 auto;
     text-align:right;
 }
 
-.submission-money strong{
+.submission-money span,
+.submission-money strong,
+.submission-money small{
     display:block;
-    color:var(--primary);
-    font-size:16px;
 }
 
-.submission-money a{
-    display:inline-block;
-    margin-top:6px;
-    color:var(--primary);
-    font-size:10px;
-    font-weight:700;
+.submission-money span,
+.submission-money small{
+    color:var(--earn-muted);
+    font-size:7px;
 }
 
+.submission-money strong{
+    margin:2px 0;
+    color:var(--earn-primary);
+    font-size:13px;
+}
+
+.submission-links{
+    display:flex;
+    flex-wrap:wrap;
+    gap:6px;
+    margin-top:7px;
+}
+
+.submission-links a{
+    color:var(--earn-primary);
+    font-size:8px;
+    font-weight:800;
+}
+
+.submission-rejection-reason{
+    margin-top:7px;
+    padding:8px;
+    border-radius:9px;
+    background:#fff1f2;
+    color:#991b1b;
+}
+
+/* ACTIVITIES */
 .activity-item{
+    min-height:58px;
+    padding:10px 12px;
+    border-radius:14px;
     display:flex;
     align-items:center;
-    gap:12px;
-    padding:14px;
+    gap:10px;
 }
 
 .activity-item img{
-    width:38px;
-    height:38px;
+    width:31px;
+    height:31px;
     object-fit:contain;
 }
 
 .activity-item p{
-    color:#475569;
-    font-size:12px;
+    color:#505766;
+    font-size:9px;
+    line-height:1.4;
 }
 
+/* MODAL */
 .task-modal-bg{
     display:none;
     position:fixed;
@@ -561,8 +728,8 @@ input{
 .task-modal{
     display:flex;
     flex-direction:column;
-    width:min(620px,100%);
-    max-height:calc(100vh - 36px);
+    width:min(600px,100%);
+    max-height:calc(100dvh - 36px);
     overflow:hidden;
     border-radius:22px;
     background:#fff;
@@ -572,40 +739,40 @@ input{
 .task-modal-header,
 .task-modal-body,
 .task-modal-footer{
-    padding-left:22px;
-    padding-right:22px;
+    padding-left:20px;
+    padding-right:20px;
 }
 
 .task-modal-header{
     display:flex;
     align-items:flex-start;
     justify-content:space-between;
-    gap:16px;
-    padding-top:20px;
-    padding-bottom:16px;
-    border-bottom:1px solid var(--border);
+    gap:14px;
+    padding-top:18px;
+    padding-bottom:14px;
+    border-bottom:1px solid var(--earn-border);
 }
 
 .task-modal-eyebrow{
-    margin-bottom:5px;
-    color:var(--primary);
-    font-size:10px;
-    font-weight:800;
+    margin-bottom:4px;
+    color:var(--earn-primary);
+    font-size:8px;
+    font-weight:900;
     text-transform:uppercase;
 }
 
 .task-modal-header h2{
-    font-size:21px;
+    font-size:19px;
 }
 
 .modal-close{
+    width:34px;
+    height:34px;
+    flex:0 0 34px;
+    border:0;
+    border-radius:50%;
     display:grid;
     place-items:center;
-    width:36px;
-    height:36px;
-    flex:0 0 36px;
-    border:none;
-    border-radius:50%;
     background:#f1f5f9;
     cursor:pointer;
 }
@@ -614,126 +781,109 @@ input{
     flex:1;
     min-height:0;
     overflow-y:auto;
-    padding-top:18px;
-    padding-bottom:18px;
+    padding-top:15px;
+    padding-bottom:15px;
 }
 
 .task-meta{
     display:grid;
     grid-template-columns:1fr 1fr;
-    gap:10px;
-    margin-bottom:14px;
+    gap:8px;
+    margin-bottom:11px;
 }
 
 .task-meta p,
 .task-instructions{
-    padding:13px;
-    border:1px solid var(--border);
-    border-radius:13px;
-    background:var(--surface-soft);
+    padding:11px;
+    border:1px solid var(--earn-border);
+    border-radius:11px;
+    background:#f8fafc;
     color:#475569;
-    font-size:12px;
+    font-size:10px;
     line-height:1.5;
 }
 
 .task-instructions{
-    margin-bottom:14px;
+    margin-bottom:11px;
 }
 
 .task-link{
     display:inline-flex;
     align-items:center;
-    gap:7px;
-    margin-bottom:16px;
-    padding:10px 13px;
-    border-radius:11px;
-    background:var(--text);
+    gap:6px;
+    margin-bottom:13px;
+    padding:9px 11px;
+    border-radius:10px;
+    background:#151824;
     color:#fff;
-    font-size:12px;
+    font-size:9px;
     font-weight:800;
 }
 
 .form-group,
 .proof-upload-group{
-    margin-bottom:14px;
+    margin-bottom:11px;
 }
 
 .form-group label,
 .proof-upload-group label{
     display:block;
-    margin-bottom:6px;
-    font-size:12px;
+    margin-bottom:5px;
+    font-size:10px;
     font-weight:800;
 }
 
 .form-group input,
 .proof-upload-group input{
     width:100%;
-    min-height:46px;
-    padding:11px 13px;
+    min-height:44px;
+    padding:10px 12px;
     border:1px solid #d1d5db;
-    border-radius:12px;
+    border-radius:11px;
     background:#fff;
     font-size:16px;
 }
 
 .proof-help{
-    margin-top:6px;
-    color:var(--muted);
-    font-size:10px;
+    margin-top:5px;
+    color:var(--earn-muted);
+    font-size:8px;
 }
 
 .task-modal-footer{
     display:flex;
     align-items:center;
     justify-content:space-between;
-    gap:14px;
-    padding-top:14px;
-    padding-bottom:14px;
-    border-top:1px solid var(--border);
+    gap:12px;
+    padding-top:12px;
+    padding-bottom:12px;
+    border-top:1px solid var(--earn-border);
 }
 
 .task-modal-footer span{
-    color:var(--muted);
-    font-size:10px;
+    color:var(--earn-muted);
+    font-size:8px;
 }
 
 .task-modal-footer h3{
-    margin-top:3px;
-    color:var(--primary);
-    font-size:18px;
+    margin-top:2px;
+    color:var(--earn-primary);
+    font-size:16px;
 }
 
 .submit-proof-btn{
-    min-width:160px;
-    min-height:42px;
-    border:none;
-    border-radius:12px;
-    background:var(--primary);
+    min-width:145px;
+    min-height:40px;
+    border:0;
+    border-radius:11px;
+    background:var(--earn-primary);
     color:#fff;
-    font-size:12px;
-    font-weight:800;
+    font-size:10px;
+    font-weight:900;
     cursor:pointer;
 }
 
-[hidden]{
-    display:none !important;
-}
-
-@media(max-width:980px){
-    .profile-strip{
-        grid-template-columns:auto 1fr;
-    }
-
-    .profile-metrics{
-        grid-column:1/-1;
-    }
-
-    .task-grid{
-        grid-template-columns:repeat(2,minmax(0,1fr));
-    }
-}
-
+/* MOBILE */
 @media(max-width:700px){
     input,
     textarea,
@@ -741,180 +891,169 @@ input{
         font-size:16px !important;
     }
 
-    .earnings-page{
-        width:100%;
-        padding:14px 12px 34px;
+    .earnings-app-main{
+        width:calc(100% - 20px);
+        padding:16px 0 44px;
     }
 
-    .earnings-hero,
-    .profile-strip,
-    .withdrawal-panel,
-    .task-section,
-    .submission-panel,
-    .activity-panel{
-        border-radius:18px;
-        box-shadow:none;
+    .earnings-app-header{
+        margin-bottom:12px;
     }
 
-    .earnings-hero{
-        align-items:flex-start;
-        padding:16px;
+    .earnings-app-header h1{
+        font-size:26px;
     }
 
-    .earnings-hero h1{
-        font-size:23px;
+    .earnings-app-header p{
+        font-size:11px;
     }
 
-    .earnings-hero > div > p:last-child{
-        display:none;
-    }
-
-    .back-btn{
-        min-height:38px;
-        padding:9px 11px;
-        font-size:10px;
-    }
-
-    .profile-strip{
-        grid-template-columns:44px 1fr;
-        padding:14px;
-    }
-
-    .profile-strip > img{
-        width:44px;
-        height:44px;
-    }
-
-    .profile-identity h3{
-        font-size:14px;
-    }
-
-    .profile-metrics{
-        grid-template-columns:repeat(2,minmax(0,1fr));
-        gap:8px;
-    }
-
-    .profile-metrics > div{
-        padding:11px;
+    .earnings-create-btn{
+        width:42px;
+        height:42px;
+        min-height:42px;
+        padding:0;
         border-radius:13px;
     }
 
-    .profile-metrics strong{
-        font-size:17px;
-    }
-
-    .withdrawal-panel{
-        grid-template-columns:1fr auto;
-        gap:12px;
-        padding:16px;
-    }
-
-    .withdrawal-info h2{
-        font-size:17px;
-    }
-
-    .withdrawal-info > p:not(.eyebrow){
+    .earnings-create-btn span{
         display:none;
+    }
+
+    .earnings-wallet-card{
+        padding:19px;
+        border-radius:22px;
+    }
+
+    .earnings-user-row img{
+        width:40px;
+        height:40px;
+        border-radius:12px;
+    }
+
+    .earnings-wallet-icon{
+        width:39px;
+        height:39px;
+        border-radius:12px;
+    }
+
+    .earnings-main-balance{
+        margin-top:20px;
+    }
+
+    .earnings-main-balance h2{
+        max-width:calc(100vw - 80px);
+        font-size:clamp(32px,10vw,44px);
+    }
+
+    .earnings-wallet-stats{
+        margin-top:18px;
+        padding-top:13px;
+    }
+
+    .earnings-wallet-stats > div{
+        padding:0 8px;
+    }
+
+    .earnings-wallet-stats span{
+        font-size:7px;
+    }
+
+    .earnings-wallet-stats strong{
+        font-size:11px;
+    }
+
+    .earnings-withdraw-card{
+        padding:11px;
+        border-radius:15px;
+        gap:8px;
+    }
+
+    .earnings-withdraw-icon{
+        width:35px;
+        height:35px;
+        border-radius:10px;
+        font-size:12px;
+    }
+
+    .earnings-withdraw-copy p{
+        display:none;
+    }
+
+    .earnings-withdraw-side{
+        gap:5px;
+    }
+
+    .earnings-fee-pill{
+        min-width:48px;
+        padding:6px;
     }
 
     .withdrawal-link{
-        min-height:36px;
-        margin-top:9px;
-        padding:8px 11px;
-        font-size:10px;
-    }
-
-    .withdrawal-action{
-        min-width:95px;
-    }
-
-    .fee-card{
-        padding:11px;
-        border-radius:13px;
-    }
-
-    .fee-card span{
-        font-size:9px;
-    }
-
-    .fee-card h2{
-        font-size:24px;
-    }
-
-    .activate-membership-btn,
-    .membership-active-badge{
-        min-height:36px;
-        padding:8px;
-        font-size:9px;
+        min-height:31px;
+        padding:0 8px;
+        font-size:8px;
     }
 
     .earning-banner{
-        margin-bottom:12px;
-        padding:12px;
+        padding:9px 10px;
+        border-radius:13px;
     }
 
     .earning-banner p{
-        font-size:10px;
-    }
-
-    .task-section,
-    .submission-panel,
-    .activity-panel{
-        margin-bottom:12px;
-        padding:14px;
-    }
-
-    .section-heading{
-        margin-bottom:11px;
-    }
-
-    .section-heading h2{
-        font-size:17px;
-    }
-
-    .section-heading p{
         display:none;
     }
 
-    .task-grid{
+    .earnings-app-section{
+        margin-top:24px;
+    }
+
+    .earnings-app-section-heading{
+        margin-bottom:9px;
+    }
+
+    .earnings-app-section-heading h2{
+        font-size:18px;
+    }
+
+    .earnings-app-section-heading > small{
+        font-size:8px;
+    }
+
+    .earnings-task-list{
         grid-template-columns:1fr;
-        gap:8px;
+        gap:7px;
     }
 
     .earn-task-card{
         min-height:0;
-        padding:14px;
+        padding:11px;
         border-radius:15px;
+        grid-template-columns:minmax(0,1fr) auto;
+    }
+
+    .earn-task-top{
+        margin-bottom:6px;
     }
 
     .earn-task-card h3{
-        font-size:14px;
+        font-size:12px;
     }
 
     .earn-task-card p{
-        display:-webkit-box;
-        overflow:hidden;
-        -webkit-box-orient:vertical;
-        -webkit-line-clamp:2;
-        font-size:10px;
-    }
-
-    .task-reward{
-        font-size:15px;
+        font-size:8px;
     }
 
     .select-task-btn{
-        min-height:38px;
-        margin-top:11px;
+        min-width:64px;
+        min-height:31px;
+        padding:0 8px;
+        font-size:8px;
     }
 
     .submission-card{
-        align-items:flex-start;
-        padding:13px;
-    }
-
-    .submission-card h3{
-        font-size:13px;
+        padding:10px;
+        border-radius:13px;
     }
 
     .task-modal-bg{
@@ -924,7 +1063,7 @@ input{
 
     .task-modal{
         width:100%;
-        max-height:92vh;
+        max-height:92dvh;
         border-radius:22px 22px 0 0;
     }
 
@@ -935,6 +1074,7 @@ input{
     .task-modal-footer{
         align-items:stretch;
         flex-direction:column;
+        padding-bottom:calc(12px + env(safe-area-inset-bottom));
     }
 
     .submit-proof-btn{
@@ -943,20 +1083,22 @@ input{
 }
 
 @media(max-width:390px){
-    .earnings-page{
-        padding-inline:10px;
+    .earnings-wallet-stats > div{
+        padding-inline:5px;
     }
 
-    .withdrawal-panel{
-        grid-template-columns:1fr;
+    .earnings-withdraw-card{
+        grid-template-columns:auto minmax(0,1fr);
     }
 
-    .withdrawal-action{
+    .earnings-withdraw-side{
+        grid-column:1/-1;
         display:grid;
         grid-template-columns:1fr 1fr;
     }
 
-    .fee-card{
-        grid-row:span 2;
+    .earnings-fee-pill,
+    .withdrawal-link{
+        width:100%;
     }
 }

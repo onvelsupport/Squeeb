@@ -1,9 +1,7 @@
 {% extends 'accounts/base.html' %}
 {% load static %}
 
-{% block title %}
-Earnings | SQUEEB
-{% endblock %}
+{% block title %}Earnings | SQUEEB{% endblock %}
 
 {% block extra_css %}
 <link rel="stylesheet" href="{% static 'accounts/css/earnings.css' %}">
@@ -11,111 +9,98 @@ Earnings | SQUEEB
 
 {% block content %}
 
-<div class="dashboard-page">
+<div class="dashboard-page earnings-app-dashboard">
 
-    <main class="earnings-page">
+    <main class="earnings-page earnings-app-main">
 
-        <section class="earnings-hero">
+        <!-- Compact header -->
+        <section class="earnings-app-header">
             <div>
-                <p class="eyebrow">Earnings Dashboard</p>
-
-                <h1>Earn money on SQUEEB</h1>
-
-                <p>
-                    Complete social tasks, earn rewards, submit proof,
-                    and withdraw your earnings whenever you are eligible.
-                </p>
+                <span class="earnings-app-kicker">EARNINGS</span>
+                <h1>Earn on SQUEEB</h1>
+                <p>Complete tasks, submit proof and grow your balance.</p>
             </div>
 
-            <a href="{% url 'dashboard' %}" class="back-btn">
-                <i class="fa fa-plus"></i>
-                Create a Task
+            <a href="{% url 'dashboard' %}" class="earnings-create-btn">
+                <i class="fa-solid fa-plus"></i>
+                <span>Create task</span>
             </a>
         </section>
 
-        <section class="profile-strip">
-            <img
-                src="{% static 'accounts/img/avatar.png' %}"
-                alt="Profile"
-            >
+        <!-- Wallet / account summary -->
+        <section class="earnings-wallet-card">
+            <div class="earnings-wallet-top">
+                <div class="earnings-user-row">
+                    <img
+                        src="{% static 'accounts/img/avatar.png' %}"
+                        alt="Profile"
+                    >
 
-            <div class="profile-identity">
-                <h3 id="usernameDisplay">User</h3>
-                <span id="usernameTag">@user</span>
+                    <div>
+                        <span>Signed in as</span>
+                        <strong id="usernameDisplay">{{ request.user.username }}</strong>
+                        <small id="usernameTag">@{{ request.user.username }}</small>
+                    </div>
+                </div>
+
+                <div class="earnings-wallet-icon">
+                    <i class="fa-solid fa-wallet"></i>
+                </div>
             </div>
 
-            <div class="profile-metrics">
+            <div class="earnings-main-balance">
+                <span>Available balance</span>
+                <h2 id="balanceAmount">£{{ request.user.balance|floatformat:2 }}</h2>
+            </div>
 
+            <div class="earnings-wallet-stats">
                 <div>
-                    <strong id="balanceAmount">£0.00</strong>
-                    <span>Wallet</span>
+                    <span>Total earnings</span>
+                    <strong id="earningsTotal">£{{ request.user.earnings|floatformat:2 }}</strong>
                 </div>
 
                 <div>
-                    <strong id="earningsTotal">£0.00</strong>
-                    <span>Earnings</span>
-                </div>
-
-                <div>
+                    <span>Approved tasks</span>
                     <strong id="tasksCompleted">0</strong>
-                    <span>Approved Tasks</span>
                 </div>
 
                 <div>
-                    <strong id="referrals">0</strong>
                     <span>Referrals</span>
+                    <strong id="referrals">0</strong>
                 </div>
-
             </div>
         </section>
 
+        <!-- Withdrawal strip -->
         <section
-            class="withdrawal-panel"
+            class="earnings-withdraw-card"
             id="withdrawalPanel"
         >
-            <div class="withdrawal-info">
-                <p class="eyebrow">Withdrawals</p>
+            <div class="earnings-withdraw-icon">
+                <i class="fa-solid fa-arrow-up-right-from-square"></i>
+            </div>
 
-                <h2>Withdraw your earnings</h2>
-
+            <div class="earnings-withdraw-copy">
+                <span>WITHDRAWALS</span>
+                <strong>Withdraw your earnings</strong>
                 <p id="withdrawalMessage">
-                    Your first withdrawal does not require membership.
-                    A 20% withdrawal fee will be applied.
+                    Your first withdrawal is available without membership.
+                    A 20% withdrawal fee applies.
                 </p>
+            </div>
+
+            <div class="earnings-withdraw-side">
+                <div class="earnings-fee-pill">
+                    <span>Fee</span>
+                    <strong id="withdrawalFee">20%</strong>
+                </div>
 
                 <a
                     href="{% url 'withdrawals' %}"
                     class="withdrawal-link"
                 >
-                    Go to Withdrawals
+                    Withdraw
                 </a>
-            </div>
-
-            <div class="withdrawal-action">
-
-                <div class="fee-card">
-                    <span>Current Fee</span>
-                    <h2 id="withdrawalFee">20%</h2>
-                </div>
-
-                <button
-                    type="button"
-                    id="activateMembershipBtn"
-                    class="activate-membership-btn"
-                    style="display: none;"
-                >
-                    Activate Membership
-                </button>
-
-                <div
-                    id="membershipActiveBadge"
-                    class="membership-active-badge"
-                    style="display: none;"
-                >
-                    <i class="fa fa-circle-check"></i>
-                    Membership Active
-                </div>
-
             </div>
         </section>
 
@@ -123,60 +108,66 @@ Earnings | SQUEEB
             <i class="fa-solid fa-circle-info"></i>
 
             <div>
-                <strong>Good news!</strong>
-
+                <strong>Tasks are open to everyone</strong>
                 <p>
-                    You can complete tasks without membership.
-                    Membership is only required before making a second
-                    withdrawal.
+                    Membership is only required before making a second withdrawal.
                 </p>
+            </div>
+
+            <button
+                type="button"
+                id="activateMembershipBtn"
+                class="activate-membership-btn"
+                hidden
+            >
+                Activate
+            </button>
+
+            <div
+                id="membershipActiveBadge"
+                class="membership-active-badge"
+                hidden
+            >
+                <i class="fa-solid fa-circle-check"></i>
+                Active
             </div>
         </div>
 
-        <section class="task-section">
+        <!-- Available tasks -->
+        <section class="task-section earnings-app-section">
 
-            <div class="section-heading">
+            <div class="section-heading earnings-app-section-heading">
                 <div>
-                    <h2>Available Tasks</h2>
-
-                    <p>
-                        Complete tasks and campaigns to grow your earnings.
-                        Membership is not required to participate.
-                    </p>
+                    <span>OPPORTUNITIES</span>
+                    <h2>Available tasks</h2>
                 </div>
+
+                <small>Choose a task to earn</small>
             </div>
 
-            <div id="taskList" class="task-grid">
-
+            <div id="taskList" class="task-grid earnings-task-list">
                 <div class="empty-task">
-                    <i class="fa fa-list-check"></i>
-
-                    <h3>No tasks available yet</h3>
-
-                    <p>
-                        There are currently no tasks available.
-                        Check back again soon.
-                    </p>
+                    <i class="fa-solid fa-spinner fa-spin"></i>
+                    <h3>Loading opportunities</h3>
+                    <p>Please wait while we load available tasks.</p>
                 </div>
-
             </div>
         </section>
 
-        <section class="submission-panel">
-
-            <div class="section-heading">
+        <!-- Submissions: lazy loaded -->
+        <section
+            class="submission-panel earnings-app-section lazy-data-section"
+            id="submissionsSection"
+        >
+            <div class="section-heading earnings-app-section-heading">
                 <div>
-                    <h2>My Task Submissions</h2>
-
-                    <p>
-                        Track your pending, approved, and rejected
-                        submissions.
-                    </p>
+                    <span>MY ACTIVITY</span>
+                    <h2>Task submissions</h2>
                 </div>
+                <small>Track approval status</small>
             </div>
 
             <div class="submission-tabs">
-
                 <button
                     type="button"
                     class="submission-tab active"
@@ -208,7 +199,6 @@ Earnings | SQUEEB
                 >
                     Rejected
                 </button>
-
             </div>
 
             <div
@@ -216,28 +206,24 @@ Earnings | SQUEEB
                 class="submission-list"
             >
                 <div class="empty-task">
-                    <i class="fa fa-clock"></i>
-
-                    <h3>Loading submissions...</h3>
-
-                    <p>
-                        Please wait while we fetch your submitted tasks.
-                    </p>
+                    <i class="fa-solid fa-clock"></i>
+                    <h3>Submissions will load here</h3>
+                    <p>This section loads only when you reach it.</p>
                 </div>
             </div>
-
         </section>
 
-        <section class="activity-panel">
-
-            <div class="section-heading">
+        <!-- Recent activities: lazy loaded -->
+        <section
+            class="activity-panel earnings-app-section lazy-data-section"
+            id="activitiesSection"
+        >
+            <div class="section-heading earnings-app-section-heading">
                 <div>
-                    <h2>Recent Activity</h2>
-
-                    <p>
-                        See what people are earning on SQUEEB.
-                    </p>
+                    <span>COMMUNITY</span>
+                    <h2>Recent activity</h2>
                 </div>
+                <small>What people are earning</small>
             </div>
 
             <div
@@ -245,16 +231,16 @@ Earnings | SQUEEB
                 id="activityList"
             >
                 <div class="activity-item">
-                    <p>Loading activities...</p>
+                    <p>Activity will load when this section becomes visible.</p>
                 </div>
             </div>
-
         </section>
 
     </main>
 
 </div>
 
+<!-- TASK MODAL -->
 <div
     class="task-modal-bg"
     id="taskModal"
@@ -279,7 +265,7 @@ Earnings | SQUEEB
                 id="cancelTaskBtn"
                 aria-label="Close task modal"
             >
-                <i class="fa fa-xmark"></i>
+                <i class="fa-solid fa-xmark"></i>
             </button>
 
         </div>
@@ -312,7 +298,7 @@ Earnings | SQUEEB
                 rel="noopener noreferrer"
                 class="task-link"
             >
-                <i class="fa fa-arrow-up-right-from-square"></i>
+                <i class="fa-solid fa-arrow-up-right-from-square"></i>
                 Open Task Link
             </a>
 
@@ -346,8 +332,7 @@ Earnings | SQUEEB
                 >
 
                 <p class="proof-help">
-                    Upload a clear screenshot showing that you completed
-                    the task.
+                    Upload a clear screenshot showing that you completed the task.
                 </p>
 
             </div>
@@ -377,5 +362,5 @@ Earnings | SQUEEB
 {% endblock %}
 
 {% block extra_js %}
-<script src="{% static 'accounts/js/earnings.js' %}"></script>
+<script src="{% static 'accounts/js/earnings.js' %}" defer></script>
 {% endblock %}

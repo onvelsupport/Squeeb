@@ -25,6 +25,14 @@ document.addEventListener("DOMContentLoaded", () => {
     let allSubmissions = [];
     let activeSubmissionFilter = "all";
 
+    let tasksLoaded = false;
+    let tasksPromise = null;
+    let submissionsLoaded = false;
+    let submissionsPromise = null;
+    let activitiesLoaded = false;
+    let activitiesPromise = null;
+    let userLoadPromise = null;
+
     function setText(id, value) {
         const element = document.getElementById(id);
 
@@ -124,6 +132,11 @@ document.addEventListener("DOMContentLoaded", () => {
     // ==========================================================
 
     async function loadUser() {
+        if (userLoadPromise) {
+            return userLoadPromise;
+        }
+
+        userLoadPromise = (async () => {
         try {
             const response = await fetch("/api/user-info/", {
                 method: "GET",
@@ -183,13 +196,6 @@ document.addEventListener("DOMContentLoaded", () => {
                 user.referrals || 0
             );
 
-            /*
-             * Tasks are available to every user.
-             * Membership is only required after the first
-             * successful withdrawal.
-             */
-            loadTasks();
-
             updateWithdrawalPanel(user);
 
         } catch (error) {
@@ -197,7 +203,12 @@ document.addEventListener("DOMContentLoaded", () => {
                 "USER LOAD ERROR:",
                 error
             );
+        } finally {
+            userLoadPromise = null;
         }
+        })();
+
+        return userLoadPromise;
     }
 
     // ==========================================================
@@ -304,12 +315,22 @@ document.addEventListener("DOMContentLoaded", () => {
     // AVAILABLE TASKS AND CAMPAIGNS
     // ==========================================================
 
-    async function loadTasks() {
+    async function loadTasks(force = false) {
         const taskList = document.getElementById("taskList");
 
         if (!taskList) {
             return;
         }
+
+        if (tasksLoaded && !force) {
+            return;
+        }
+
+        if (tasksPromise) {
+            return tasksPromise;
+        }
+
+        tasksPromise = (async () => {
 
         taskList.innerHTML = `
             <div class="empty-task">
@@ -353,6 +374,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 return;
             }
 
+            tasksLoaded = true;
             taskList.innerHTML = "";
 
             if (
@@ -375,7 +397,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 return;
             }
 
-            data.tasks.forEach((task) => {
+            taskList.innerHTML = data.tasks.map((task) => {
                 const isCampaign = task.featured === true;
 
                 const platform = escapeHtml(
@@ -392,55 +414,42 @@ document.addEventListener("DOMContentLoaded", () => {
                     "Complete this task and upload proof."
                 );
 
-                taskList.innerHTML += `
-                    <div class="
+                const rewardText = isCampaign
+                    ? `${money(task.payout)} reward`
+                    : `${money(task.payout)} per ${escapeHtml(task.task_type || "task")}`;
+
+                const campaignSlots = isCampaign
+                    ? `
+                        <span class="campaign-slots">
+                            ${parseInt(task.available || 0, 10)}
+                            slots remaining
+                        </span>
+                    `
+                    : "";
+
+                return `
+                    <article class="
                         earn-task-card
                         ${isCampaign ? "featured-campaign" : ""}
                     ">
-                        <div>
-                            <span class="task-badge">
-                                ${
-                                    isCampaign
-                                        ? `
-                                            <i class="fa fa-fire"></i>
-                                            SQUEEB Campaign
-                                        `
-                                        : platform
-                                }
-                            </span>
+                        <div class="earn-task-content">
+                            <div class="earn-task-top">
+                                <span class="task-badge">
+                                    ${
+                                        isCampaign
+                                            ? `<i class="fa fa-fire"></i> SQUEEB Campaign`
+                                            : platform
+                                    }
+                                </span>
+
+                                <strong class="task-reward">
+                                    ${rewardText}
+                                </strong>
+                            </div>
 
                             <h3>${title}</h3>
-
                             <p>${description}</p>
-
-                            <strong class="task-reward">
-                                ${
-                                    isCampaign
-                                        ? `${money(task.payout)} reward`
-                                        : `
-                                            ${money(task.payout)}
-                                            per
-                                            ${escapeHtml(
-                                                task.task_type ||
-                                                "task"
-                                            )}
-                                        `
-                                }
-                            </strong>
-
-                            ${
-                                isCampaign
-                                    ? `
-                                        <span class="campaign-slots">
-                                            ${parseInt(
-                                                task.available || 0,
-                                                10
-                                            )}
-                                            slots remaining
-                                        </span>
-                                    `
-                                    : ""
-                            }
+                            ${campaignSlots}
                         </div>
 
                         <button
@@ -449,15 +458,11 @@ document.addEventListener("DOMContentLoaded", () => {
                             data-id="${task.id}"
                             data-featured="${isCampaign}"
                         >
-                            ${
-                                isCampaign
-                                    ? "Participate"
-                                    : "Select Task"
-                            }
+                            ${isCampaign ? "Participate" : "Select"}
                         </button>
-                    </div>
+                    </article>
                 `;
-            });
+            }).join("");
 
         } catch (error) {
             console.error(
@@ -476,7 +481,12 @@ document.addEventListener("DOMContentLoaded", () => {
                     </p>
                 </div>
             `;
+        } finally {
+            tasksPromise = null;
         }
+        })();
+
+        return tasksPromise;
     }
 
     // ==========================================================
@@ -744,9 +754,20 @@ document.addEventListener("DOMContentLoaded", () => {
             selectedTaskId = null;
             selectedTaskType = "task";
 
-            await loadUser();
-            await loadSubmissions();
-            await loadRecentActivities();
+            tasksLoaded = false;
+            submissionsLoaded = false;
+            activitiesLoaded = false;
+
+            await Promise.all([
+                loadUser(),
+                loadTasks(true),
+                loadSubmissions(true)
+            ]);
+
+            // Recent activity can update lazily after the submission.
+            if (document.getElementById("activitiesSection")) {
+                loadRecentActivities(true);
+            }
 
         } catch (error) {
             console.error(
@@ -768,11 +789,20 @@ document.addEventListener("DOMContentLoaded", () => {
     // USER SUBMISSIONS
     // ==========================================================
 
-    async function loadSubmissions() {
+    async function loadSubmissions(force = false) {
         if (!submissionList) {
             return;
         }
 
+        if (submissionsLoaded && !force) {
+            return;
+        }
+
+        if (submissionsPromise) {
+            return submissionsPromise;
+        }
+
+        submissionsPromise = (async () => {
         try {
             const response = await fetch(
                 "/api/my-task-submissions/",
@@ -792,6 +822,7 @@ document.addEventListener("DOMContentLoaded", () => {
             const data = await parseJsonResponse(response);
 
             allSubmissions = data.submissions || [];
+            submissionsLoaded = true;
 
             renderSubmissions();
 
@@ -800,7 +831,12 @@ document.addEventListener("DOMContentLoaded", () => {
                 "SUBMISSIONS LOAD ERROR:",
                 error
             );
+        } finally {
+            submissionsPromise = null;
         }
+        })();
+
+        return submissionsPromise;
     }
 
     function renderSubmissions() {
@@ -1047,7 +1083,7 @@ document.addEventListener("DOMContentLoaded", () => {
     // RECENT ACTIVITIES
     // ==========================================================
 
-    async function loadRecentActivities() {
+    async function loadRecentActivities(force = false) {
         const activityList = document.getElementById(
             "activityList"
         );
@@ -1056,6 +1092,15 @@ document.addEventListener("DOMContentLoaded", () => {
             return;
         }
 
+        if (activitiesLoaded && !force) {
+            return;
+        }
+
+        if (activitiesPromise) {
+            return activitiesPromise;
+        }
+
+        activitiesPromise = (async () => {
         try {
             const response = await fetch(
                 "/api/recent-activities/",
@@ -1074,6 +1119,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
             const data = await parseJsonResponse(response);
 
+            activitiesLoaded = true;
             activityList.innerHTML = "";
 
             if (
@@ -1126,7 +1172,12 @@ document.addEventListener("DOMContentLoaded", () => {
                 "ACTIVITY LOAD ERROR:",
                 error
             );
+        } finally {
+            activitiesPromise = null;
         }
+        })();
+
+        return activitiesPromise;
     }
 
     // ==========================================================
@@ -1268,24 +1319,77 @@ document.addEventListener("DOMContentLoaded", () => {
     // INITIAL PAGE LOAD
     // ==========================================================
 
-    loadUser();
-    loadSubmissions();
-    loadRecentActivities();
+    // Only the user summary and available tasks are needed above the fold.
+    // Run them in parallel instead of chaining extra requests.
+    Promise.all([
+        loadUser(),
+        loadTasks()
+    ]);
 
-    window.addEventListener("pageshow", loadUser);
+    // Load lower-page data only when the user scrolls near it.
+    const lazyObserver = (
+        "IntersectionObserver" in window
+            ? new IntersectionObserver((entries, observer) => {
+                entries.forEach((entry) => {
+                    if (!entry.isIntersecting) return;
 
-    document.addEventListener("visibilitychange", () => {
-        if (!document.hidden) {
+                    if (entry.target.id === "submissionsSection") {
+                        loadSubmissions();
+                    }
+
+                    if (entry.target.id === "activitiesSection") {
+                        loadRecentActivities();
+                    }
+
+                    observer.unobserve(entry.target);
+                });
+            }, {
+                rootMargin: "250px 0px"
+            })
+            : null
+    );
+
+    const submissionsSection = document.getElementById("submissionsSection");
+    const activitiesSection = document.getElementById("activitiesSection");
+
+    if (lazyObserver) {
+        if (submissionsSection) lazyObserver.observe(submissionsSection);
+        if (activitiesSection) lazyObserver.observe(activitiesSection);
+    } else {
+        // Older browsers: load once after the important content.
+        window.setTimeout(() => {
+            loadSubmissions();
+            loadRecentActivities();
+        }, 500);
+    }
+
+    // Do not re-fetch tasks every time the tab is focused.
+    // Refresh only lightweight user values, and throttle the refresh.
+    let lastUserRefresh = Date.now();
+
+    window.addEventListener("pageshow", (event) => {
+        if (event.persisted) {
             loadUser();
         }
     });
 
-    /*
-     * Refresh recent activity periodically without reloading
-     * the page.
-     */
-    setInterval(
-        loadRecentActivities,
-        30000
-    );
+    document.addEventListener("visibilitychange", () => {
+        if (document.hidden) return;
+
+        const now = Date.now();
+
+        if (now - lastUserRefresh > 60000) {
+            lastUserRefresh = now;
+            loadUser();
+        }
+    });
+
+    // Recent activity polling was reduced from every 30 seconds.
+    // It runs only while this page is visible and only after the section loaded.
+    window.setInterval(() => {
+        if (!document.hidden && activitiesLoaded) {
+            activitiesLoaded = false;
+            loadRecentActivities(true);
+        }
+    }, 120000);
 });
