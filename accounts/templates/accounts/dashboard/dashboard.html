@@ -9,174 +9,234 @@
 
 {% block content %}
 
-
-<!-- ====================== MAIN DASHBOARD CONTENT ====================== -->
 <div
-    class="dashboard-page"
+    class="dashboard-page dashboard-v2"
     id="dashboardPage"
     data-country="{{ request.user.country|default:''|escape }}"
     data-nigeria="{{ is_nigerian|yesno:'true,false' }}"
 >
-    <main class="dashboard-main">
+    <main class="dashboard-main dashboard-v2-main">
 
-        <!-- Hero / Welcome Section -->
-        <section class="hero-section">
-            <div>
-                <p class="eyebrow">Welcome back</p>
-                <h1>Hello, <span id="usernameDynamic">{{ request.user.username }}</span></h1>
-                <p class="hero-text">
-                    Manage your wallet, create adverts, post social tasks, and grow your marketplace activity.
+        <!-- ====================== OVERVIEW HERO ====================== -->
+        <section class="v2-hero">
+            <div class="v2-hero-copy">
+                <div class="v2-kicker">
+                    <span class="v2-status-dot"></span>
+                    SQUEEB Dashboard
+                </div>
+
+                <h1>
+                    Welcome back,
+                    <span id="usernameDynamic">{{ request.user.username }}</span>
+                </h1>
+
+                <p>
+                    Earn, promote, sell and manage your SQUEEB activity from one place.
                 </p>
-            </div>
 
-            <a href="{% url 'more_page' %}" class="profile-pill">
-    <img src="{% static 'accounts/img/avatar.png' %}" alt="Profile">
+                <div class="v2-hero-actions">
+                    <button type="button" class="v2-primary-btn" id="fundBtn">
+                        <i class="fa-solid fa-plus"></i>
+                        Add money
+                    </button>
 
-    <div>
-        <strong id="usernameDisplay">{{ request.user.username }}</strong>
-        <span id="usernameTag">@{{ request.user.username }}</span>
-    </div>
-</a>
-        </section>
-
-
-        <!-- Wallet and Stats Section -->
-        <section class="dashboard-grid">
-
-            <!-- Wallet Card -->
-<div class="wallet-card">
-    <div class="wallet-top">
-        <div>
-            <p>Wallet Balance</p>
-            <h2 id="balanceAmount">£{{ request.user.balance|floatformat:2 }}</h2>
-        </div>
-
-        <div class="wallet-icon">
-            <i class="fa fa-wallet"></i>
-        </div>
-    </div>
-
-    <div class="wallet-earnings-row">
-        <span>Total Earnings</span>
-        <strong id="earningsTotal">£{{ request.user.earnings|floatformat:2 }}</strong>
-    </div>
-
-    <div class="wallet-actions">
-        <button id="fundBtn">
-            <i class="fa fa-plus"></i>
-            Fund
-        </button>
-
-        <button class="secondary" onclick="window.location.href='{% url 'withdrawals' %}'">
-            <i class="fa fa-arrow-up"></i>
-            Withdraw
-        </button>
-    </div>
-</div>
-
-
-            <!-- Followers Stat -->
-            <div class="stats-card">
-                <p>Squeebers</p>
-                <h3 id="followers">{{ followers_count }}</h3>
-                <span>Your current SQUEEB audience.</span>
-            </div>
-
-            <!-- Following Stat -->
-            <div class="stats-card">
-                <p>Connections</p>
-                <h3 id="following">{{ following_count }}</h3>
-                <span>People and brands you connect with.</span>
-            </div>
-
-        </section>
-
-
-        <!-- Quick Actions Section -->
-        <section class="quick-actions">
-            <div class="section-heading">
-                <div>
-                    <h2>Quick Actions</h2>
-                    <p>Choose what you want to do next.</p>
+                    <a href="{% url 'withdrawals' %}" class="v2-secondary-btn">
+                        <i class="fa-solid fa-arrow-up-right-from-square"></i>
+                        Withdraw
+                    </a>
                 </div>
             </div>
 
-            <div class="quick-grid">
-                <a href="{% url 'earnings' %}" class="quick-card">
-                    <i class="fa fa-coins"></i>
-                    <h3>Earn Money</h3>
-                    <p>Complete tasks and build your balance.</p>
+            <a href="{% url 'more_page' %}" class="v2-profile-card">
+                <div class="v2-avatar-wrap">
+                    <img src="{% static 'accounts/img/avatar.png' %}" alt="Profile">
+                    <span></span>
+                </div>
+
+                <div class="v2-profile-copy">
+                    <span>Signed in as</span>
+                    <strong id="usernameDisplay">{{ request.user.username }}</strong>
+                    <small id="usernameTag">@{{ request.user.username }}</small>
+                </div>
+
+                <i class="fa-solid fa-chevron-right"></i>
+            </a>
+        </section>
+
+
+        <!-- ====================== MONEY / STATS ====================== -->
+        <section class="v2-overview-grid">
+
+            <article class="v2-wallet-card">
+                <div class="v2-card-label">
+                    <span>Available balance</span>
+                    <div class="v2-wallet-symbol">
+                        <i class="fa-solid fa-wallet"></i>
+                    </div>
+                </div>
+
+                <h2 id="balanceAmount">£{{ request.user.balance|floatformat:2 }}</h2>
+
+                <div class="v2-wallet-bottom">
+                    <div>
+                        <span>Total earnings</span>
+                        <strong id="earningsTotal">£{{ request.user.earnings|floatformat:2 }}</strong>
+                    </div>
+
+                    <a href="{% url 'earnings' %}">
+                        View earnings
+                        <i class="fa-solid fa-arrow-right"></i>
+                    </a>
+                </div>
+            </article>
+
+            <article class="v2-stat-card">
+                <div class="v2-stat-icon">
+                    <i class="fa-solid fa-users"></i>
+                </div>
+
+                <div>
+                    <span>Squeebers</span>
+                    <strong id="followers">{{ followers_count }}</strong>
+                    <small>Your audience</small>
+                </div>
+            </article>
+
+            <article class="v2-stat-card">
+                <div class="v2-stat-icon">
+                    <i class="fa-solid fa-link"></i>
+                </div>
+
+                <div>
+                    <span>Connections</span>
+                    <strong id="following">{{ following_count }}</strong>
+                    <small>Your network</small>
+                </div>
+            </article>
+        </section>
+
+
+        <!-- ====================== QUICK ACTIONS ====================== -->
+        <section class="v2-section">
+            <div class="v2-section-heading">
+                <div>
+                    <span class="v2-section-kicker">SHORTCUTS</span>
+                    <h2>What do you want to do?</h2>
+                </div>
+            </div>
+
+            <div class="v2-action-grid">
+                <a href="{% url 'earnings' %}" class="v2-action-card">
+                    <div class="v2-action-icon">
+                        <i class="fa-solid fa-coins"></i>
+                    </div>
+                    <div>
+                        <strong>Earn money</strong>
+                        <span>Complete paid tasks</span>
+                    </div>
+                    <i class="fa-solid fa-arrow-right"></i>
                 </a>
 
-                <a href="{% url 'dashboard' %}" class="quick-card">
-                    <i class="fa fa-bullhorn"></i>
-                    <h3>Advertise</h3>
-                    <p>Promote your products, pages, or posts.</p>
+                <a href="#socialTasks" class="v2-action-card">
+                    <div class="v2-action-icon">
+                        <i class="fa-solid fa-bullhorn"></i>
+                    </div>
+                    <div>
+                        <strong>Advertise</strong>
+                        <span>Create social tasks</span>
+                    </div>
+                    <i class="fa-solid fa-arrow-right"></i>
                 </a>
 
-                <a href="{% url 'marketplace' %}" class="quick-card">
-                    <i class="fa fa-store"></i>
-                    <h3>Marketplace</h3>
-                    <p>Buy, sell, and resell products.</p>
+                <a href="{% url 'marketplace' %}" class="v2-action-card">
+                    <div class="v2-action-icon">
+                        <i class="fa-solid fa-bag-shopping"></i>
+                    </div>
+                    <div>
+                        <strong>Marketplace</strong>
+                        <span>Buy and sell items</span>
+                    </div>
+                    <i class="fa-solid fa-arrow-right"></i>
                 </a>
 
-                <a href="{% url 'referrals_page' %}" class="quick-card">
-                    <i class="fa fa-user"></i>
-                    <h3>Referrals</h3>
-                    <p>Manage and track your referrals.</p>
+                <a href="{% url 'referrals_page' %}" class="v2-action-card">
+                    <div class="v2-action-icon">
+                        <i class="fa-solid fa-user-plus"></i>
+                    </div>
+                    <div>
+                        <strong>Referrals</strong>
+                        <span>Invite and earn</span>
+                    </div>
+                    <i class="fa-solid fa-arrow-right"></i>
                 </a>
-
 
                 {% if request.user.is_staff %}
-                <a href="{% url 'squeeb_admin_dashboard' %}" class="quick-card admin-card">
-                <i class="fa fa-shield-halved"></i>
-                <h3>SQUEEB Admin</h3>
-                <p>Manage campaigns, users, withdrawals and platform activity.</p>
+                <a href="{% url 'squeeb_admin_dashboard' %}" class="v2-action-card v2-admin-action">
+                    <div class="v2-action-icon">
+                        <i class="fa-solid fa-shield-halved"></i>
+                    </div>
+                    <div>
+                        <strong>SQUEEB Admin</strong>
+                        <span>Manage the platform</span>
+                    </div>
+                    <i class="fa-solid fa-arrow-right"></i>
                 </a>
                 {% endif %}
             </div>
-        </section> 
+        </section>
 
 
-        <!-- Membership Banner -->
+        <!-- ====================== MEMBERSHIP ====================== -->
         {% if not request.user.is_member %}
-        <section class="membership-banner" id="membershipBanner">
-            <div>
-                <p>Membership</p>
-                <h2>Unlock task earnings and premium activity tools.</h2>
-                <span>Activate your account to access more earning options on SQUEEB.</span>
+        <section class="v2-membership" id="membershipBanner">
+            <div class="v2-membership-icon">
+                <i class="fa-solid fa-crown"></i>
             </div>
 
-            <a href="{% url 'earnings' %}" class="pay-btn" id="activateMembershipBtn">
-                Activate Membership
+            <div class="v2-membership-copy">
+                <span>SQUEEB MEMBERSHIP</span>
+                <h2>Get more from your SQUEEB account.</h2>
+                <p>Unlock additional earning options and premium account benefits.</p>
+            </div>
+
+            <a href="{% url 'earnings' %}" class="v2-membership-btn" id="activateMembershipBtn">
+                Activate membership
+                <i class="fa-solid fa-arrow-right"></i>
             </a>
         </section>
         {% endif %}
 
 
-        <!-- Social Task Creation Section -->
-        <section class="tasks-section">
-            <div class="section-heading">
+        <!-- ====================== SOCIAL TASK MARKETPLACE ====================== -->
+        <section class="v2-section v2-task-section" id="socialTasks">
+            <div class="v2-section-heading v2-task-heading">
                 <div>
-                    <h2>Create Social Tasks</h2>
-                    <p>Post a task and get real people to engage with your content.</p>
+                    <span class="v2-section-kicker">PROMOTE</span>
+                    <h2>Create a social task</h2>
+                    <p>Choose the engagement you want and launch your campaign.</p>
+                </div>
+
+                <div class="v2-task-badge">
+                    <i class="fa-solid fa-bolt"></i>
+                    Fast setup
                 </div>
             </div>
 
-            <div class="task-list" id="dashboardTaskList">
+            <div class="task-list v2-task-grid" id="dashboardTaskList">
 
-                <!-- Follow Task -->
-                <div class="task-card">
-                    <div class="task-icon">
-                        <img src="{% static 'accounts/img/follow.png' %}" alt="Follow">
+                <article class="task-card v2-task-card">
+                    <div class="v2-task-top">
+                        <div class="task-icon v2-task-icon">
+                            <img src="{% static 'accounts/img/follow.png' %}" alt="Follow">
+                        </div>
+                        <span class="task-label v2-task-label">Growth</span>
                     </div>
 
-                    <div class="task-info">
-                        <span class="task-label">Social Growth</span>
-                        <h3>Get Real People to Follow Your Page</h3>
-                        <p>Grow your social media page with real users. No login details required.</p>
+                    <div class="task-info v2-task-info">
+                        <h3>Social followers</h3>
+                        <p>Grow your page with real SQUEEB users across supported platforms.</p>
 
-                        <div class="platforms">
+                        <div class="platforms v2-platforms">
                             <img src="{% static 'accounts/img/facebook.png' %}" alt="Facebook">
                             <img src="{% static 'accounts/img/instagram.png' %}" alt="Instagram">
                             <img src="{% static 'accounts/img/twitter.png' %}" alt="Twitter">
@@ -184,9 +244,11 @@
                         </div>
                     </div>
 
-                    <div class="task-action">
-                        <strong>£0.15</strong>
-                        <span>per follower</span>
+                    <div class="task-action v2-task-action">
+                        <div>
+                            <strong>£0.15</strong>
+                            <span>per follower</span>
+                        </div>
 
                         <button class="select-btn"
                                 data-title="Get Real People to Follow Your Page on Social Media"
@@ -195,23 +257,25 @@
                                 data-icon="{% static 'accounts/img/follow.png' %}"
                                 data-type="follow"
                                 data-amount="0.15">
-                            Create Task
+                            Create
+                            <i class="fa-solid fa-arrow-right"></i>
                         </button>
                     </div>
-                </div>
+                </article>
 
-                <!-- Like Task -->
-                <div class="task-card">
-                    <div class="task-icon">
-                        <img src="{% static 'accounts/img/like.png' %}" alt="Like">
+                <article class="task-card v2-task-card">
+                    <div class="v2-task-top">
+                        <div class="task-icon v2-task-icon">
+                            <img src="{% static 'accounts/img/like.png' %}" alt="Like">
+                        </div>
+                        <span class="task-label v2-task-label">Engagement</span>
                     </div>
 
-                    <div class="task-info">
-                        <span class="task-label">Engagement</span>
-                        <h3>Get People to Like Your Social Media Posts</h3>
-                        <p>Increase likes on your posts by sharing your content link.</p>
+                    <div class="task-info v2-task-info">
+                        <h3>Post likes</h3>
+                        <p>Increase engagement on your social media content using your post link.</p>
 
-                        <div class="platforms">
+                        <div class="platforms v2-platforms">
                             <img src="{% static 'accounts/img/facebook.png' %}" alt="Facebook">
                             <img src="{% static 'accounts/img/instagram.png' %}" alt="Instagram">
                             <img src="{% static 'accounts/img/twitter.png' %}" alt="Twitter">
@@ -219,9 +283,11 @@
                         </div>
                     </div>
 
-                    <div class="task-action">
-                        <strong>£0.07</strong>
-                        <span>per like</span>
+                    <div class="task-action v2-task-action">
+                        <div>
+                            <strong>£0.07</strong>
+                            <span>per like</span>
+                        </div>
 
                         <button class="select-btn"
                                 data-title="Get People to Like Your Social Media Posts"
@@ -230,82 +296,73 @@
                                 data-icon="{% static 'accounts/img/like.png' %}"
                                 data-type="like"
                                 data-amount="0.07">
-                            Create Task
+                            Create
+                            <i class="fa-solid fa-arrow-right"></i>
                         </button>
                     </div>
-                </div>
+                </article>
 
-
-
-                <!-- Repost Task -->
-
-<div class="task-card">
-
-    <div class="task-icon">
-        <img src="{% static 'accounts/img/repost.png' %}" alt="Repost">
-    </div>
-
-    <div class="task-info">
-
-        <span class="task-label">Repost</span>
-
-        <h3>Get People to Repost or Retweet Your Social Media Posts</h3>
-
-        <p>
-            Increase the reach of your content by getting users to repost,
-            retweet, or share your posts across supported social media platforms.
-        </p>
-
-        <div class="platforms">
-            <img src="{% static 'accounts/img/facebook.png' %}" alt="Facebook">
-            <img src="{% static 'accounts/img/instagram.png' %}" alt="Instagram">
-            <img src="{% static 'accounts/img/twitter.png' %}" alt="Twitter">
-            <img src="{% static 'accounts/img/tiktok.png' %}" alt="TikTok">
-        </div>
-
-    </div>
-
-    <div class="task-action">
-
-        <strong>£0.10</strong>
-        <span>per repost</span>
-
-        <button
-            class="select-btn"
-            data-title="Get People to Repost or Retweet Your Social Media Posts"
-            data-price="£0.10 per repost"
-            data-description="Increase the reach of your content by getting users to repost, retweet, or share your post. Simply enter your post link to get started."
-            data-icon="{% static 'accounts/img/repost.png' %}"
-            data-type="repost"
-            data-amount="0.10">
-
-            Create Task
-
-        </button>
-
-    </div>
-
-</div>
-
-                <!-- Subscribe Task -->
-                <div class="task-card">
-                    <div class="task-icon">
-                        <img src="{% static 'accounts/img/youtube.png' %}" alt="Subscribe">
+                <article class="task-card v2-task-card">
+                    <div class="v2-task-top">
+                        <div class="task-icon v2-task-icon">
+                            <img src="{% static 'accounts/img/repost.png' %}" alt="Repost">
+                        </div>
+                        <span class="task-label v2-task-label">Reach</span>
                     </div>
 
-                    <div class="task-info">
-                        <span class="task-label">YouTube Growth</span>
-                        <h3>Get People to Subscribe to Your YouTube Channel</h3>
-                        <p>Increase your subscribers and improve your channel reach.</p>
+                    <div class="task-info v2-task-info">
+                        <h3>Reposts & shares</h3>
+                        <p>Push your content further with reposts, retweets and social shares.</p>
 
-                        <div class="platforms">
+                        <div class="platforms v2-platforms">
+                            <img src="{% static 'accounts/img/facebook.png' %}" alt="Facebook">
+                            <img src="{% static 'accounts/img/instagram.png' %}" alt="Instagram">
+                            <img src="{% static 'accounts/img/twitter.png' %}" alt="Twitter">
+                            <img src="{% static 'accounts/img/tiktok.png' %}" alt="TikTok">
+                        </div>
+                    </div>
+
+                    <div class="task-action v2-task-action">
+                        <div>
+                            <strong>£0.10</strong>
+                            <span>per repost</span>
+                        </div>
+
+                        <button class="select-btn"
+                                data-title="Get People to Repost or Retweet Your Social Media Posts"
+                                data-price="£0.10 per repost"
+                                data-description="Increase the reach of your content by getting users to repost, retweet, or share your post. Simply enter your post link to get started."
+                                data-icon="{% static 'accounts/img/repost.png' %}"
+                                data-type="repost"
+                                data-amount="0.10">
+                            Create
+                            <i class="fa-solid fa-arrow-right"></i>
+                        </button>
+                    </div>
+                </article>
+
+                <article class="task-card v2-task-card">
+                    <div class="v2-task-top">
+                        <div class="task-icon v2-task-icon">
+                            <img src="{% static 'accounts/img/youtube.png' %}" alt="Subscribe">
+                        </div>
+                        <span class="task-label v2-task-label">YouTube</span>
+                    </div>
+
+                    <div class="task-info v2-task-info">
+                        <h3>Channel subscribers</h3>
+                        <p>Build your YouTube audience with real subscribers from SQUEEB.</p>
+
+                        <div class="platforms v2-platforms">
                             <img src="{% static 'accounts/img/youtube.png' %}" alt="YouTube">
                         </div>
                     </div>
 
-                    <div class="task-action">
-                        <strong>£0.20</strong>
-                        <span>per subscriber</span>
+                    <div class="task-action v2-task-action">
+                        <div>
+                            <strong>£0.20</strong>
+                            <span>per subscriber</span>
+                        </div>
 
                         <button class="select-btn"
                                 data-title="Get People to Subscribe to Your YouTube Channel"
@@ -314,23 +371,25 @@
                                 data-icon="{% static 'accounts/img/youtube.png' %}"
                                 data-type="subscribe"
                                 data-amount="0.20">
-                            Create Task
+                            Create
+                            <i class="fa-solid fa-arrow-right"></i>
                         </button>
                     </div>
-                </div>
+                </article>
 
-                <!-- Comment Task -->
-                <div class="task-card">
-                    <div class="task-icon">
-                        <img src="{% static 'accounts/img/comment.png' %}" alt="Comment">
+                <article class="task-card v2-task-card">
+                    <div class="v2-task-top">
+                        <div class="task-icon v2-task-icon">
+                            <img src="{% static 'accounts/img/comment.png' %}" alt="Comment">
+                        </div>
+                        <span class="task-label v2-task-label">Conversation</span>
                     </div>
 
-                    <div class="task-info">
-                        <span class="task-label">Conversation</span>
-                        <h3>Get Real People to Comment on Your Posts</h3>
-                        <p>Get real comments from active users. Fake users and bots are not allowed.</p>
+                    <div class="task-info v2-task-info">
+                        <h3>Real comments</h3>
+                        <p>Get authentic comments from active SQUEEB users on your content.</p>
 
-                        <div class="platforms">
+                        <div class="platforms v2-platforms">
                             <img src="{% static 'accounts/img/facebook.png' %}" alt="Facebook">
                             <img src="{% static 'accounts/img/instagram.png' %}" alt="Instagram">
                             <img src="{% static 'accounts/img/twitter.png' %}" alt="Twitter">
@@ -338,9 +397,11 @@
                         </div>
                     </div>
 
-                    <div class="task-action">
-                        <strong>£0.60</strong>
-                        <span>per comment</span>
+                    <div class="task-action v2-task-action">
+                        <div>
+                            <strong>£0.60</strong>
+                            <span>per comment</span>
+                        </div>
 
                         <button class="select-btn"
                                 data-title="Get Real People to Comment on Your Social Media Posts"
@@ -349,10 +410,11 @@
                                 data-icon="{% static 'accounts/img/comment.png' %}"
                                 data-type="comment"
                                 data-amount="0.60">
-                            Create Task
+                            Create
+                            <i class="fa-solid fa-arrow-right"></i>
                         </button>
                     </div>
-                </div>
+                </article>
 
             </div>
 
