@@ -3708,7 +3708,6 @@ def my_tasks_api(request):
 
 @csrf_exempt
 @login_required
-@transaction.atomic
 def complete_task(request, task_id):
     if request.method != "POST":
         return JsonResponse(
@@ -3716,46 +3715,6 @@ def complete_task(request, task_id):
             status=400
         )
 
-    # Lock task while this submission is processed.
-    # Prevents two users from taking the final slot.
-    try:
-        task = (
-            Task.objects
-            .select_for_update()
-            .select_related("creator")
-            .get(id=task_id)
-        )
-    except Task.DoesNotExist:
-        return JsonResponse(
-            {"error": "Task not found"},
-            status=404
-        )
-
-    # User cannot complete their own task
-    if task.creator == request.user:
-        return JsonResponse(
-            {"error": "You cannot complete your own task"},
-            status=400
-        )
-
-    # Prevent duplicate submission
-    if TaskCompletion.objects.filter(
-        user=request.user,
-        task=task
-    ).exists():
-        return JsonResponse(
-            {"error": "You already submitted this task"},
-            status=400
-        )
-
-    # Check available slots
-    if task.available <= 0:
-        return JsonResponse(
-            {"error": "No slots remaining"},
-            status=400
-        )
-
-    # Screenshot proof
     proof = request.FILES.get("proof")
 
     if not proof:
@@ -3764,46 +3723,122 @@ def complete_task(request, task_id):
             status=400
         )
 
-    # Reserve slot
-    task.available -= 1
-    task.save(update_fields=["available"])
+    try:
+        # ======================================================
+        # SAVE TASK SUBMISSION
+        # ======================================================
 
-    # Create pending completion
-    completion = TaskCompletion.objects.create(
-        user=request.user,
-        task=task,
-        proof=proof,
-        reward_amount=task.worker_reward,
-        status="pending"
-    )
+        with transaction.atomic():
 
-    task_owner = task.creator
+            task = (
+                Task.objects
+                .select_for_update()
+                .select_related("creator")
+                .get(id=task_id)
+            )
+
+            if task.creator == request.user:
+                return JsonResponse(
+                    {
+                        "error":
+                        "You cannot complete your own task"
+                    },
+                    status=400
+                )
+
+            if TaskCompletion.objects.filter(
+                user=request.user,
+                task=task
+            ).exists():
+
+                return JsonResponse(
+                    {
+                        "error":
+                        "You already submitted this task"
+                    },
+                    status=400
+                )
+
+            if task.available <= 0:
+                return JsonResponse(
+                    {"error": "No slots remaining"},
+                    status=400
+                )
+
+            task.available -= 1
+
+            task.save(
+                update_fields=["available"]
+            )
+
+            completion = TaskCompletion.objects.create(
+                user=request.user,
+                task=task,
+                proof=proof,
+                reward_amount=task.worker_reward,
+                status="pending"
+            )
+
+            task_owner = task.creator
+
+    except Task.DoesNotExist:
+        return JsonResponse(
+            {"error": "Task not found"},
+            status=404
+        )
+
+    except Exception as error:
+        print(
+            "TASK SUBMISSION DATABASE ERROR:",
+            repr(error)
+        )
+
+        return JsonResponse(
+            {
+                "error":
+                "Unable to save your proof submission."
+            },
+            status=500
+        )
+
 
     # ==========================================================
     # IN-APP NOTIFICATION
+    # Runs AFTER successful database transaction.
+    # Failure here will NOT break submission.
     # ==========================================================
 
     try:
+
         Notification.objects.create(
             user=task_owner,
+
             title="New task submission",
+
             message=(
-                f"@{request.user.username} submitted proof for "
-                f"'{task.title}'. Review the submission."
+                f"@{request.user.username} submitted "
+                f"proof for '{task.title}'. "
+                f"Review the submission."
             )
         )
+
     except Exception as notification_error:
+
         print(
             "TASK NOTIFICATION ERROR:",
-            notification_error
+            repr(notification_error)
         )
+
 
     # ==========================================================
     # EMAIL TASK OWNER
+    # Failure here will NOT break submission.
     # ==========================================================
 
     if task_owner.email:
+
         try:
+
             site_url = getattr(
                 settings,
                 "SITE_URL",
@@ -3811,23 +3846,28 @@ def complete_task(request, task_id):
             ).rstrip("/")
 
             review_url = (
-                f"{site_url}/my-tasks/{task.id}/reviews/"
+                f"{site_url}/my-tasks/"
+                f"{task.id}/reviews/"
             )
 
             send_account_email(
                 user=task_owner,
 
                 subject=(
-                    f"New engagement on your SQUEEB task: "
-                    f"{task.title}"
+                    "New engagement on your "
+                    f"SQUEEB task: {task.title}"
                 ),
 
-                heading="Your task received a new submission",
+                heading=(
+                    "Your task received "
+                    "a new submission"
+                ),
 
                 message=(
-                    f"@{request.user.username} completed an "
-                    f"action on your task and submitted proof "
-                    f"for your review."
+                    f"@{request.user.username} "
+                    "completed an action on your "
+                    "task and submitted proof "
+                    "for review."
                 ),
 
                 details=[
@@ -3837,11 +3877,13 @@ def complete_task(request, task_id):
                     },
                     {
                         "label": "Submitted by",
-                        "value": f"@{request.user.username}"
+                        "value":
+                            f"@{request.user.username}"
                     },
                     {
                         "label": "Reward",
-                        "value": f"£{task.worker_reward}"
+                        "value":
+                            f"£{task.worker_reward}"
                     },
                     {
                         "label": "Status",
@@ -3849,30 +3891,45 @@ def complete_task(request, task_id):
                     },
                     {
                         "label": "Remaining slots",
-                        "value": str(task.available)
+                        "value":
+                            str(task.available)
                     }
                 ],
 
                 action_url=review_url,
+
                 action_text="Review Submission"
             )
 
         except Exception as email_error:
-            # Submission must still succeed even if email fails.
+
             print(
                 "TASK OWNER EMAIL ERROR:",
-                email_error
+                repr(email_error)
             )
 
-    return JsonResponse({
-        "success": True,
-        "completion_id": completion.id,
-        "message": (
-            "Task submitted for review. "
-            "Your balance will update after approval."
-        ),
-        "status": "pending"
-    })
+
+    # ==========================================================
+    # SUCCESS
+    # ==========================================================
+
+    return JsonResponse(
+        {
+            "success": True,
+
+            "completion_id":
+                completion.id,
+
+            "message": (
+                "Task submitted for review. "
+                "Your balance will update "
+                "after approval."
+            ),
+
+            "status": "pending"
+        },
+        status=201
+    )
 
 
 @csrf_exempt
