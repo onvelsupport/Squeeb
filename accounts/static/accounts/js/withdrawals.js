@@ -7,6 +7,8 @@ document.addEventListener("DOMContentLoaded", () => {
     let availableBalance = 0;
     let currentGbpNgnRate = 0;
     let bankWithdrawalAvailable = false;
+    let withdrawalHistoryLoaded = false;
+    let withdrawalHistoryPromise = null;
 
     const byId = (id) => document.getElementById(id);
 
@@ -330,8 +332,10 @@ document.addEventListener("DOMContentLoaded", () => {
                 nigeriaUser ? "5" : "10"
             );
 
+            // Do not fetch the exchange rate during initial page load.
+            // It is loaded only when the user opens the bank modal.
             if (nigeriaUser) {
-                await loadExchangeRate();
+                setText("bankExchangeRate", "Load when opened");
             }
         } catch (error) {
             console.error("USER INFO ERROR:", error);
@@ -416,8 +420,27 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     async function loadWithdrawals() {
+        if (withdrawalHistoryLoaded) {
+            return;
+        }
+
+        if (withdrawalHistoryPromise) {
+            return withdrawalHistoryPromise;
+        }
+
         const list = byId("withdrawHistoryList");
 
+        if (list) {
+            list.innerHTML = `
+                <div class="empty-withdraw">
+                    <i class="fa fa-clock"></i>
+                    <h3>Loading withdrawals...</h3>
+                    <p>Please wait while we fetch your withdrawal history.</p>
+                </div>
+            `;
+        }
+
+        withdrawalHistoryPromise = (async () => {
         try {
             const response = await fetch("/api/withdrawal-history/", {
                 credentials: "same-origin",
@@ -438,6 +461,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 [];
 
             allWithdrawals = records.map(normaliseWithdrawal);
+            withdrawalHistoryLoaded = true;
 
             const pendingTotal = Number.parseFloat(
                 data.pending_total ?? data.pendingWithdrawals
@@ -496,7 +520,12 @@ document.addEventListener("DOMContentLoaded", () => {
                     </div>
                 `;
             }
+        } finally {
+            withdrawalHistoryPromise = null;
         }
+        })();
+
+        await withdrawalHistoryPromise;
     }
 
     async function submitWithdrawalForm(
@@ -584,10 +613,12 @@ if (!Number.isFinite(amount) || amount < minimumAmount) {
             form.reset();
             successCalculationReset();
 
-            await Promise.all([
-                loadUser(),
-                loadWithdrawals(),
-            ]);
+            await loadUser();
+
+            if (withdrawalHistoryLoaded) {
+                withdrawalHistoryLoaded = false;
+                await loadWithdrawals();
+            }
 
             window.setTimeout(() => {
                 closeModal(modalId);
@@ -746,7 +777,7 @@ if (!Number.isFinite(amount) || amount < minimumAmount) {
         window.location.href = "/pay-membership/";
     });
 
-    byId("historyToggle")?.addEventListener("click", (event) => {
+    byId("historyToggle")?.addEventListener("click", async (event) => {
         const button = event.currentTarget;
         const content = byId("historyContent");
         const expanded = (
@@ -757,6 +788,11 @@ if (!Number.isFinite(amount) || amount < minimumAmount) {
 
         if (content) {
             content.hidden = expanded;
+        }
+
+        // Fetch history only when the user actually opens the section.
+        if (!expanded && !withdrawalHistoryLoaded) {
+            await loadWithdrawals();
         }
     });
 
@@ -771,6 +807,7 @@ if (!Number.isFinite(amount) || amount < minimumAmount) {
         });
     });
 
+    // Only the small user summary request runs at startup.
+    // Withdrawal history and FX rates are lazy-loaded on demand.
     loadUser();
-    loadWithdrawals();
 });

@@ -8,35 +8,60 @@
 {% endblock %}
 
 {% block content %}
-<div class="withdraw-page">
-    <main class="withdraw-main">
+<div
+    class="withdraw-page withdraw-app"
+    id="withdrawPage"
+    data-country="{{ request.user.country|default:''|escape }}"
+>
+    <main class="withdraw-main withdraw-app-main">
 
-        <section class="withdraw-summary-card">
-            <div class="withdraw-greeting">
-                <p class="eyebrow">Withdraw Funds</p>
-                <h1>Hello, <span id="usernameDisplay">User</span></h1>
-                <p class="desktop-summary-text">
-                    Request a withdrawal and track your payment status.
-                </p>
+        <!-- Compact header -->
+        <section class="withdraw-app-header">
+            <div>
+                <span class="withdraw-app-kicker">WITHDRAWALS</span>
+                <h1>Hello, <span id="usernameDisplay">{{ request.user.username }}</span></h1>
+                <p>Move money out of your SQUEEB wallet.</p>
             </div>
 
-            <div class="balance-card">
-                <span>Available Balance</span>
-                <h2 id="balanceAmount">£0.00</h2>
-                <div class="balance-meta">
-                    <span>Minimum £<strong id="summaryMinimum">10</strong></span>
-                    <span>Fee <strong id="summaryFee">20%</strong></span>
+            <div class="withdraw-header-icon">
+                <i class="fa-solid fa-arrow-up-right-from-square"></i>
+            </div>
+        </section>
+
+        <!-- Main balance card -->
+        <section class="withdraw-wallet-card">
+            <div class="withdraw-wallet-top">
+                <div>
+                    <span>Available balance</span>
+                    <h2 id="balanceAmount">£{{ request.user.balance|floatformat:2 }}</h2>
+                </div>
+
+                <div class="withdraw-wallet-symbol">
+                    <i class="fa-solid fa-wallet"></i>
+                </div>
+            </div>
+
+            <div class="withdraw-wallet-meta">
+                <div>
+                    <span>Minimum</span>
+                    <strong>£<span id="summaryMinimum">10</span></strong>
+                </div>
+
+                <div>
+                    <span>Current fee</span>
+                    <strong id="summaryFee">20%</strong>
                 </div>
             </div>
         </section>
 
-        <section class="compact-status-panel" id="withdrawalStatusPanel">
+        <!-- Status -->
+        <section class="withdraw-status-card" id="withdrawalStatusPanel">
             <div class="status-icon" id="withdrawalStatusIcon">
-                <i class="fa fa-circle-info"></i>
+                <i class="fa-solid fa-circle-info"></i>
             </div>
 
             <div class="status-copy">
-                <span class="status-label">Withdrawal Status</span>
+                <span class="status-label">Withdrawal status</span>
                 <strong id="withdrawalStatusTitle">
                     Your first withdrawal is available
                 </strong>
@@ -45,8 +70,8 @@
                 </p>
             </div>
 
-            <div class="status-side">
-                <span>Current fee</span>
+            <div class="status-fee-pill">
+                <span>Fee</span>
                 <strong id="currentWithdrawalFee">20%</strong>
             </div>
         </section>
@@ -56,13 +81,11 @@
             id="membershipRequiredNotice"
             hidden
         >
-            <i class="fa fa-lock"></i>
+            <i class="fa-solid fa-lock"></i>
 
             <div>
                 <strong>Membership required</strong>
-                <p>
-                    Activate SQUEEB Membership before making another withdrawal.
-                </p>
+                <p>Activate SQUEEB Membership before making another withdrawal.</p>
             </div>
 
             <button
@@ -79,76 +102,92 @@
             class="membership-active-badge"
             hidden
         >
-            <i class="fa fa-circle-check"></i>
+            <i class="fa-solid fa-circle-check"></i>
             Membership Active
         </div>
 
-       <section class="withdraw-options" aria-label="Withdrawal methods">
-    <button
-        type="button"
-        class="withdraw-option disabled"
-        id="openBankModal"
-        disabled
-        aria-disabled="true"
-    >
-        <span class="method-icon bank">
-            <i class="fa fa-building-columns"></i>
-        </span>
+        <!-- Withdrawal methods -->
+        <section class="withdraw-app-section">
+            <div class="withdraw-section-heading">
+                <div>
+                    <span>METHOD</span>
+                    <h2>Choose where to withdraw</h2>
+                </div>
+            </div>
 
-        <span class="method-copy">
-            <strong>Bank</strong>
-            <small id="bankOptionDescription">
-                Temporary Unavailable
-            </small>
-        </span>
+            <div class="withdraw-options" aria-label="Withdrawal methods">
+                <button
+                    type="button"
+                    class="withdraw-option disabled"
+                    id="openBankModal"
+                    disabled
+                    aria-disabled="true"
+                >
+                    <span class="method-icon bank">
+                        <i class="fa-solid fa-building-columns"></i>
+                    </span>
 
-        <span
-            class="method-status unavailable"
-            id="bankOptionStatus"
-        >
-            Unavailable
-        </span>
-    </button>
+                    <span class="method-copy">
+                        <strong>Bank account</strong>
+                        <small id="bankOptionDescription">
+                            Temporarily unavailable
+                        </small>
+                    </span>
 
-    <button
-        type="button"
-        class="withdraw-option active"
-        id="openPaypalModal"
-    >
-        <span class="method-icon paypal">
-            <i class="fa-brands fa-paypal"></i>
-        </span>
+                    <span
+                        class="method-status unavailable"
+                        id="bankOptionStatus"
+                    >
+                        Unavailable
+                    </span>
 
-        <span class="method-copy">
-            <strong>PayPal</strong>
-            <small>
-                Fee <span id="paypalOptionFee">20%</span>
-            </small>
-        </span>
+                    <span class="method-arrow">
+                        <i class="fa-solid fa-chevron-right"></i>
+                    </span>
+                </button>
 
-        <span class="method-arrow">
-            <i class="fa fa-chevron-right"></i>
-        </span>
-    </button>
-</section>
+                <button
+                    type="button"
+                    class="withdraw-option active"
+                    id="openPaypalModal"
+                >
+                    <span class="method-icon paypal">
+                        <i class="fa-brands fa-paypal"></i>
+                    </span>
 
+                    <span class="method-copy">
+                        <strong>PayPal</strong>
+                        <small>
+                            Fee <span id="paypalOptionFee">20%</span>
+                        </small>
+                    </span>
+
+                    <span class="method-arrow">
+                        <i class="fa-solid fa-chevron-right"></i>
+                    </span>
+                </button>
+            </div>
+        </section>
+
+        <!-- Compact totals -->
         <section class="withdraw-stats">
             <div>
                 <span>Pending</span>
-                <strong id="pendingWithdrawals">£0.00</strong>
+                <strong id="pendingWithdrawals">—</strong>
             </div>
 
             <div>
                 <span>Received</span>
-                <strong id="paidWithdrawals">£0.00</strong>
+                <strong id="paidWithdrawals">—</strong>
             </div>
 
             <div>
                 <span>Rejected</span>
-                <strong id="rejectedWithdrawals">0</strong>
+                <strong id="rejectedWithdrawals">—</strong>
             </div>
         </section>
 
+        <!-- Lazy-loaded history -->
         <section class="withdraw-history-section">
             <button
                 type="button"
@@ -158,11 +197,11 @@
                 aria-controls="historyContent"
             >
                 <span>
-                    <strong>Withdrawal History</strong>
-                    <small>View previous withdrawal requests</small>
+                    <strong>Withdrawal history</strong>
+                    <small>Loaded only when you open it</small>
                 </span>
 
-                <i class="fa fa-chevron-down"></i>
+                <i class="fa-solid fa-chevron-down"></i>
             </button>
 
             <div class="history-content" id="historyContent" hidden>
@@ -183,9 +222,9 @@
 
                 <div class="withdraw-history-list" id="withdrawHistoryList">
                     <div class="empty-withdraw">
-                        <i class="fa fa-clock"></i>
-                        <h3>Loading withdrawals...</h3>
-                        <p>Please wait while we fetch your withdrawal history.</p>
+                        <i class="fa-solid fa-clock"></i>
+                        <h3>History not loaded yet</h3>
+                        <p>Open this section to fetch your withdrawals.</p>
                     </div>
                 </div>
             </div>
@@ -194,6 +233,7 @@
     </main>
 </div>
 
+<!-- BANK MODAL -->
 <div class="modal-overlay" id="bankModal" aria-hidden="true">
     <div
         class="withdraw-modal"
@@ -211,13 +251,11 @@
         </button>
 
         <div class="modal-method-icon bank">
-            <i class="fa fa-building-columns"></i>
+            <i class="fa-solid fa-building-columns"></i>
         </div>
 
         <h2 id="bankModalTitle">Nigerian Bank Withdrawal</h2>
-        <p>
-            Withdraw your SQUEEB balance to a Nigerian bank account in Naira.
-        </p>
+        <p>Withdraw your SQUEEB balance to a Nigerian bank account in Naira.</p>
 
         <div class="nigeria-only-badge">
             <span>🇳🇬</span>
@@ -255,9 +293,7 @@
                 </div>
 
                 <div>
-                    <span>
-                        Fee (<span id="bankFeePercentage">20%</span>)
-                    </span>
+                    <span>Fee (<span id="bankFeePercentage">20%</span>)</span>
                     <strong id="bankFeeAmount">£0.00</strong>
                 </div>
 
@@ -268,7 +304,7 @@
 
                 <div>
                     <span>GBP → NGN rate</span>
-                    <strong id="bankExchangeRate">Loading...</strong>
+                    <strong id="bankExchangeRate">Load when opened</strong>
                 </div>
 
                 <div class="withdrawal-net-row naira-row">
@@ -282,7 +318,7 @@
                 class="refresh-rate-btn"
                 id="refreshExchangeRate"
             >
-                <i class="fa fa-rotate"></i>
+                <i class="fa-solid fa-rotate"></i>
                 Refresh exchange rate
             </button>
 
@@ -339,11 +375,11 @@
             >
 
             <div class="withdrawal-warning">
-                <i class="fa fa-circle-info"></i>
+                <i class="fa-solid fa-circle-info"></i>
                 <p>
                     The Naira figure is an estimate based on the exchange rate
-                    locked when you submit the withdrawal. Check your Nigerian
-                    bank details carefully before confirming.
+                    locked when you submit the withdrawal. Check your bank details
+                    carefully before confirming.
                 </p>
             </div>
 
@@ -371,6 +407,7 @@
     </div>
 </div>
 
+<!-- PAYPAL MODAL -->
 <div class="modal-overlay" id="paypalModal" aria-hidden="true">
     <div
         class="withdraw-modal"
@@ -426,9 +463,7 @@
                 </div>
 
                 <div>
-                    <span>
-                        Fee (<span id="paypalFeePercentage">20%</span>)
-                    </span>
+                    <span>Fee (<span id="paypalFeePercentage">20%</span>)</span>
                     <strong id="paypalFeeAmount">£0.00</strong>
                 </div>
 
@@ -450,7 +485,7 @@
             >
 
             <div class="withdrawal-warning">
-                <i class="fa fa-circle-info"></i>
+                <i class="fa-solid fa-circle-info"></i>
                 <p>
                     Check your PayPal email carefully. Payments sent to an
                     incorrect address may not be recoverable.
@@ -468,5 +503,5 @@
 {% endblock %}
 
 {% block extra_js %}
-<script src="{% static 'accounts/js/withdrawals.js' %}"></script>
+<script src="{% static 'accounts/js/withdrawals.js' %}" defer></script>
 {% endblock %}
