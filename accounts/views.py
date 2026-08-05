@@ -3715,81 +3715,72 @@ def complete_task(request, task_id):
             status=400
         )
 
+    task = get_object_or_404(
+        Task,
+        id=task_id
+    )
+
+    if task.creator == request.user:
+        return JsonResponse(
+            {
+                "error":
+                "You cannot complete your own task"
+            },
+            status=400
+        )
+
+    if TaskCompletion.objects.filter(
+        user=request.user,
+        task=task
+    ).exists():
+        return JsonResponse(
+            {
+                "error":
+                "You already submitted this task"
+            },
+            status=400
+        )
+
+    if task.available <= 0:
+        return JsonResponse(
+            {"error": "No slots remaining"},
+            status=400
+        )
+
     proof = request.FILES.get("proof")
 
     if not proof:
         return JsonResponse(
-            {"error": "Screenshot proof is required."},
+            {
+                "error":
+                "Screenshot proof is required."
+            },
             status=400
         )
 
+    # ==========================================================
+    # SAVE SUBMISSION
+    # This is your original working logic.
+    # ==========================================================
+
     try:
-        # ======================================================
-        # SAVE TASK SUBMISSION
-        # ======================================================
+        task.available -= 1
 
-        with transaction.atomic():
+        task.save(
+            update_fields=["available"]
+        )
 
-            task = (
-                Task.objects
-                .select_for_update()
-                .select_related("creator")
-                .get(id=task_id)
-            )
-
-            if task.creator == request.user:
-                return JsonResponse(
-                    {
-                        "error":
-                        "You cannot complete your own task"
-                    },
-                    status=400
-                )
-
-            if TaskCompletion.objects.filter(
-                user=request.user,
-                task=task
-            ).exists():
-
-                return JsonResponse(
-                    {
-                        "error":
-                        "You already submitted this task"
-                    },
-                    status=400
-                )
-
-            if task.available <= 0:
-                return JsonResponse(
-                    {"error": "No slots remaining"},
-                    status=400
-                )
-
-            task.available -= 1
-
-            task.save(
-                update_fields=["available"]
-            )
-
-            completion = TaskCompletion.objects.create(
-                user=request.user,
-                task=task,
-                proof=proof,
-                reward_amount=task.worker_reward,
-                status="pending"
-            )
-
-            task_owner = task.creator
-
-    except Task.DoesNotExist:
-        return JsonResponse(
-            {"error": "Task not found"},
-            status=404
+        completion = TaskCompletion.objects.create(
+            user=request.user,
+            task=task,
+            proof=proof,
+            reward_amount=task.worker_reward,
+            status="pending"
         )
 
     except Exception as error:
         print(
-            "TASK SUBMISSION DATABASE ERROR:",
+            "TASK SUBMISSION SAVE ERROR:",
             repr(error)
         )
 
@@ -3801,44 +3792,40 @@ def complete_task(request, task_id):
             status=500
         )
 
+    task_owner = task.creator
+
 
     # ==========================================================
     # IN-APP NOTIFICATION
-    # Runs AFTER successful database transaction.
-    # Failure here will NOT break submission.
+    # Failure will NOT affect submission.
     # ==========================================================
 
     try:
-
         Notification.objects.create(
             user=task_owner,
-
             title="New task submission",
-
             message=(
-                f"@{request.user.username} submitted "
-                f"proof for '{task.title}'. "
-                f"Review the submission."
+                f"@{request.user.username} "
+                f"submitted proof for "
+                f"'{task.title}'."
             )
         )
 
-    except Exception as notification_error:
-
+    except Exception as error:
         print(
-            "TASK NOTIFICATION ERROR:",
-            repr(notification_error)
+            "TASK OWNER NOTIFICATION ERROR:",
+            repr(error)
         )
 
 
     # ==========================================================
     # EMAIL TASK OWNER
-    # Failure here will NOT break submission.
+    # Failure will NOT affect submission.
     # ==========================================================
 
     if task_owner.email:
 
         try:
-
             site_url = getattr(
                 settings,
                 "SITE_URL",
@@ -3865,9 +3852,8 @@ def complete_task(request, task_id):
 
                 message=(
                     f"@{request.user.username} "
-                    "completed an action on your "
-                    "task and submitted proof "
-                    "for review."
+                    "completed your task and "
+                    "submitted proof for review."
                 ),
 
                 details=[
@@ -3897,21 +3883,15 @@ def complete_task(request, task_id):
                 ],
 
                 action_url=review_url,
-
                 action_text="Review Submission"
             )
 
-        except Exception as email_error:
-
+        except Exception as error:
             print(
                 "TASK OWNER EMAIL ERROR:",
-                repr(email_error)
+                repr(error)
             )
 
-
-    # ==========================================================
-    # SUCCESS
-    # ==========================================================
 
     return JsonResponse(
         {
