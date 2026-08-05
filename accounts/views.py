@@ -3416,7 +3416,6 @@ def task_submission_reviews_api(request, task_id):
 @transaction.atomic
 def pay_membership(request):
     membership_fee = Decimal("10.00")
-    referral_reward = Decimal("5.00")
 
     user = User.objects.select_for_update().get(
         pk=request.user.pk
@@ -3443,6 +3442,30 @@ def pay_membership(request):
             status=400,
         )
 
+    # ----------------------------------------------------------
+    # REFERRAL REWARD
+    # Nigeria: £5 total shared equally
+    # Referrer: £2.50
+    # Referred user: £2.50
+    #
+    # Other countries keep the existing £5 each.
+    # ----------------------------------------------------------
+
+    user_country = (user.country or "").strip().lower()
+
+    is_nigerian = user_country in {
+        "nigeria",
+        "ng",
+        "nga",
+    }
+
+    if is_nigerian:
+        referrer_reward = Decimal("2.50")
+        referee_reward = Decimal("2.50")
+    else:
+        referrer_reward = Decimal("5.00")
+        referee_reward = Decimal("5.00")
+
     # Deduct the membership fee and activate membership.
     user.balance -= membership_fee
     user.is_member = True
@@ -3466,6 +3489,7 @@ def pay_membership(request):
     )
 
     referral_reward_paid = False
+    referee_reward_paid = Decimal("0.00")
     referrer = None
 
     if referral:
@@ -3473,9 +3497,12 @@ def pay_membership(request):
             pk=referral.referrer_id
         )
 
-        # Pay the person who made the referral.
-        referrer.balance += referral_reward
-        referrer.earnings += referral_reward
+        # ------------------------------------------------------
+        # PAY REFERRER
+        # ------------------------------------------------------
+
+        referrer.balance += referrer_reward
+        referrer.earnings += referrer_reward
 
         referrer.save(
             update_fields=[
@@ -3484,9 +3511,12 @@ def pay_membership(request):
             ]
         )
 
-        # Pay the referred user who activated membership.
-        user.balance += referral_reward
-        user.earnings += referral_reward
+        # ------------------------------------------------------
+        # PAY REFERRED USER
+        # ------------------------------------------------------
+
+        user.balance += referee_reward
+        user.earnings += referee_reward
 
         user.save(
             update_fields=[
@@ -3495,7 +3525,8 @@ def pay_membership(request):
             ]
         )
 
-        referral.reward = referral_reward
+        # `reward` represents the reward earned by the referrer.
+        referral.reward = referrer_reward
         referral.rewarded = True
 
         referral.save(
@@ -3506,15 +3537,20 @@ def pay_membership(request):
         )
 
         referral_reward_paid = True
+        referee_reward_paid = referee_reward
+
+        # ------------------------------------------------------
+        # RECENT ACTIVITY
+        # ------------------------------------------------------
 
         RecentActivity.objects.create(
             username=referrer.username,
             platform="referral",
             message=(
                 f"@{referrer.username} earned "
-                f"£{referral_reward} from a referral"
+                f"£{referrer_reward} from a referral"
             ),
-            amount=referral_reward,
+            amount=referrer_reward,
         )
 
         RecentActivity.objects.create(
@@ -3522,16 +3558,20 @@ def pay_membership(request):
             platform="referral",
             message=(
                 f"@{user.username} earned "
-                f"£{referral_reward} referral bonus"
+                f"£{referee_reward} referral bonus"
             ),
-            amount=referral_reward,
+            amount=referee_reward,
         )
+
+        # ------------------------------------------------------
+        # NOTIFICATIONS
+        # ------------------------------------------------------
 
         Notification.objects.create(
             user=referrer,
             title="Referral Reward Earned",
             message=(
-                f"You earned £{referral_reward} because "
+                f"You earned £{referrer_reward} because "
                 f"{user.username} activated membership."
             ),
         )
@@ -3540,10 +3580,14 @@ def pay_membership(request):
             user=user,
             title="Referral Bonus Earned",
             message=(
-                f"You earned £{referral_reward} for activating "
+                f"You earned £{referee_reward} for activating "
                 "membership through a referral."
             ),
         )
+
+        # ------------------------------------------------------
+        # REFERRER EMAIL
+        # ------------------------------------------------------
 
         send_account_email(
             user=referrer,
@@ -3556,7 +3600,7 @@ def pay_membership(request):
             details=[
                 {
                     "label": "Referral reward",
-                    "value": f"£{referral_reward}",
+                    "value": f"£{referrer_reward}",
                 },
                 {
                     "label": "New wallet balance",
@@ -3564,6 +3608,10 @@ def pay_membership(request):
                 },
             ],
         )
+
+        # ------------------------------------------------------
+        # REFERRED USER EMAIL
+        # ------------------------------------------------------
 
         send_account_email(
             user=user,
@@ -3576,7 +3624,7 @@ def pay_membership(request):
             details=[
                 {
                     "label": "Referral bonus",
-                    "value": f"£{referral_reward}",
+                    "value": f"£{referee_reward}",
                 },
                 {
                     "label": "New wallet balance",
@@ -3584,6 +3632,10 @@ def pay_membership(request):
                 },
             ],
         )
+
+    # ----------------------------------------------------------
+    # MEMBERSHIP ACTIVATED NOTIFICATION
+    # ----------------------------------------------------------
 
     Notification.objects.create(
         user=user,
@@ -3615,7 +3667,7 @@ def pay_membership(request):
             {
                 "label": "Referral bonus",
                 "value": (
-                    f"£{referral_reward}"
+                    f"£{referee_reward_paid}"
                     if referral_reward_paid
                     else "Not applicable"
                 ),
@@ -3634,8 +3686,14 @@ def pay_membership(request):
             "new_balance": str(user.balance),
             "is_member": True,
             "referral_reward_paid": referral_reward_paid,
+            "referral_bonus": (
+                str(referee_reward_paid)
+                if referral_reward_paid
+                else "0.00"
+            ),
         }
     )
+
 
 @login_required
 def more_page(request):
