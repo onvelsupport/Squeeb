@@ -325,6 +325,11 @@ document.addEventListener("DOMContentLoaded", () => {
             const nigeriaUser = isNigeriaCountry(user.country);
             setBankAvailability(nigeriaUser);
 
+            setText(
+                "summaryMinimum",
+                nigeriaUser ? "5" : "10"
+            );
+
             if (nigeriaUser) {
                 await loadExchangeRate();
             }
