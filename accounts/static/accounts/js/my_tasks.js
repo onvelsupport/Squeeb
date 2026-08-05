@@ -1,45 +1,105 @@
 document.addEventListener("DOMContentLoaded", () => {
     const taskList = document.getElementById("postedTaskList");
-
     const totalTasks = document.getElementById("totalTasks");
     const activeTasks = document.getElementById("activeTasks");
     const completedTasks = document.getElementById("completedTasks");
 
-    function setText(element, value) {
-        if (element) element.textContent = value;
+    if (!taskList) {
+        return;
     }
 
-    function money(value) {
-        return `£${parseFloat(value || 0).toFixed(2)}`;
+    const money = (value) => {
+        const amount = Number.parseFloat(value || 0);
+
+        return new Intl.NumberFormat("en-GB", {
+            style: "currency",
+            currency: "GBP",
+        }).format(Number.isFinite(amount) ? amount : 0);
+    };
+
+    const escapeHtml = (value) => {
+        return String(value ?? "")
+            .replaceAll("&", "&amp;")
+            .replaceAll("<", "&lt;")
+            .replaceAll(">", "&gt;")
+            .replaceAll('"', "&quot;")
+            .replaceAll("'", "&#039;");
+    };
+
+    const safeExternalUrl = (value) => {
+        try {
+            const url = new URL(value, window.location.origin);
+
+            if (!["http:", "https:"].includes(url.protocol)) {
+                return "";
+            }
+
+            return url.href;
+        } catch {
+            return "";
+        }
+    };
+
+    function setText(element, value) {
+        if (element) {
+            element.textContent = value;
+        }
     }
 
     function taskCard(task) {
-        const status = task.status || "active";
-        const isClosed = status === "completed" || status === "closed";
+        const status = String(task.status || "active").toLowerCase();
+        const isClosed = ["completed", "closed"].includes(status);
+
+        const taskType = escapeHtml(task.task_type || "Task");
+        const title = escapeHtml(task.title || "Social Task");
+        const description = escapeHtml(
+            task.description || "No description available."
+        );
+        const platform = escapeHtml(task.platform || "Platform");
+
+        const taskUrl = safeExternalUrl(task.link);
+        const reviewUrl = `/my-tasks/${encodeURIComponent(task.id)}/reviews/`;
+
+        const linkMarkup = taskUrl
+            ? `
+                <a
+                    href="${taskUrl}"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                >
+                    View link
+                </a>
+            `
+            : "Posted task";
 
         return `
-            <div class="posted-task-card">
+            <article class="posted-task-card">
 
                 <div class="task-main">
-                    <span class="task-badge">${task.task_type || "Task"}</span>
 
-                    <h3>${task.title || "Social Task"}</h3>
+                    <div class="task-top-row">
+                        <span class="task-badge">
+                            ${taskType}
+                        </span>
 
-                    <p>${task.description || "No description available."}</p>
+                        <span class="task-status-pill ${isClosed ? "closed" : ""}">
+                            ${isClosed ? "Completed" : "Active"}
+                        </span>
+                    </div>
+
+                    <h3>${title}</h3>
+
+                    <p>${description}</p>
 
                     <div class="task-meta">
                         <span>
-                            <i class="fa fa-globe"></i>
-                            ${task.platform || "Platform"}
+                            <i class="fa-solid fa-globe"></i>
+                            ${platform}
                         </span>
 
                         <span>
-                            <i class="fa fa-link"></i>
-                            ${
-                                task.link
-                                    ? `<a href="${task.link}" target="_blank">View Link</a>`
-                                    : "Posted task"
-                            }
+                            <i class="fa-solid fa-link"></i>
+                            ${linkMarkup}
                         </span>
                     </div>
 
@@ -47,119 +107,154 @@ document.addEventListener("DOMContentLoaded", () => {
 
                         <div class="stat-box">
                             <div class="stat-icon blue">
-                                <i class="fa fa-users"></i>
+                                <i class="fa-solid fa-users"></i>
                             </div>
-                            <div>
-                                <strong>${task.quantity || 0}</strong>
-                                <span>Total</span>
-                            </div>
+                            <strong>${Number.parseInt(task.quantity || 0, 10)}</strong>
+                            <span>Total</span>
                         </div>
 
                         <div class="stat-box">
                             <div class="stat-icon orange">
-                                <i class="fa fa-clock"></i>
+                                <i class="fa-solid fa-clock"></i>
                             </div>
-                            <div>
-                                <strong>${task.pending || 0}</strong>
-                                <span>Pending</span>
-                            </div>
+                            <strong>${Number.parseInt(task.pending || 0, 10)}</strong>
+                            <span>Pending</span>
                         </div>
 
                         <div class="stat-box">
                             <div class="stat-icon green">
-                                <i class="fa fa-circle-check"></i>
+                                <i class="fa-solid fa-circle-check"></i>
                             </div>
-                            <div>
-                                <strong>${task.completed || 0}</strong>
-                                <span>Approved</span>
-                            </div>
+                            <strong>${Number.parseInt(task.completed || 0, 10)}</strong>
+                            <span>Approved</span>
                         </div>
 
                         <div class="stat-box">
                             <div class="stat-icon purple">
-                                <i class="fa fa-box"></i>
+                                <i class="fa-solid fa-box"></i>
                             </div>
-                            <div>
-                                <strong>${task.available || 0}</strong>
-                                <span>Remaining</span>
-                            </div>
+                            <strong>${Number.parseInt(task.available || 0, 10)}</strong>
+                            <span>Remaining</span>
                         </div>
 
                     </div>
 
-                    <a href="/my-tasks/${task.id}/reviews/" class="review-submissions-btn">
-                        <i class="fa fa-check-circle"></i>
-                        Review Submissions
+                    <a
+                        href="${reviewUrl}"
+                        class="review-submissions-btn"
+                    >
+                        <i class="fa-solid fa-circle-check"></i>
+                        Review submissions
                     </a>
+
                 </div>
 
                 <div class="task-status">
-                    <strong>${money(task.total_cost)}</strong>
+                    <span>Budget</span>
+
+                    <strong>
+                        ${money(task.total_cost)}
+                    </strong>
 
                     <small>
                         ${money(task.worker_reward)} per action
                     </small>
-
-                    <span class="status-pill ${isClosed ? "closed" : ""}">
-                        ${isClosed ? "Completed" : "Active"}
-                    </span>
                 </div>
 
-            </div>
+            </article>
         `;
     }
 
-    async function loadMyTasks() {
-        try {
-            const res = await fetch("/api/my-tasks/", {
-                credentials: "same-origin",
-                headers: {
-                    "Accept": "application/json"
-                }
-            });
+    let loadPromise = null;
 
-            if (!res.ok) {
+    async function loadMyTasks() {
+        if (loadPromise) {
+            return loadPromise;
+        }
+
+        loadPromise = (async () => {
+            try {
+                const response = await fetch("/api/my-tasks/", {
+                    credentials: "same-origin",
+                    headers: {
+                        Accept: "application/json",
+                    },
+                });
+
+                if (!response.ok) {
+                    throw new Error("Could not load tasks.");
+                }
+
+                const data = await response.json();
+                const tasks = Array.isArray(data.tasks)
+                    ? data.tasks
+                    : [];
+
+                setText(
+                    totalTasks,
+                    Number.isFinite(Number(data.total))
+                        ? data.total
+                        : tasks.length
+                );
+
+                setText(
+                    activeTasks,
+                    Number.isFinite(Number(data.active))
+                        ? data.active
+                        : tasks.filter(
+                            (task) =>
+                                !["completed", "closed"].includes(
+                                    String(task.status || "").toLowerCase()
+                                )
+                        ).length
+                );
+
+                setText(
+                    completedTasks,
+                    Number.isFinite(Number(data.completed))
+                        ? data.completed
+                        : tasks.filter(
+                            (task) =>
+                                ["completed", "closed"].includes(
+                                    String(task.status || "").toLowerCase()
+                                )
+                        ).length
+                );
+
+                if (!tasks.length) {
+                    taskList.innerHTML = `
+                        <div class="empty-task">
+                            <i class="fa-solid fa-list-check"></i>
+                            <h3>No posted tasks yet</h3>
+                            <p>
+                                Tasks you create from the dashboard
+                                will appear here.
+                            </p>
+                        </div>
+                    `;
+                    return;
+                }
+
+                taskList.innerHTML = tasks
+                    .map(taskCard)
+                    .join("");
+
+            } catch (error) {
+                console.error("MY TASKS ERROR:", error);
+
                 taskList.innerHTML = `
                     <div class="empty-task">
-                        <i class="fa fa-triangle-exclamation"></i>
-                        <h3>Could not load tasks</h3>
+                        <i class="fa-solid fa-triangle-exclamation"></i>
+                        <h3>Unable to load tasks</h3>
                         <p>Please refresh the page and try again.</p>
                     </div>
                 `;
-                return;
+            } finally {
+                loadPromise = null;
             }
+        })();
 
-            const data = await res.json();
-            const tasks = data.tasks || [];
-
-            setText(totalTasks, data.total || tasks.length || 0);
-            setText(activeTasks, data.active || 0);
-            setText(completedTasks, data.completed || 0);
-
-            if (!tasks.length) {
-                taskList.innerHTML = `
-                    <div class="empty-task">
-                        <i class="fa fa-list-check"></i>
-                        <h3>No posted tasks yet</h3>
-                        <p>Tasks you create from the dashboard will appear here.</p>
-                    </div>
-                `;
-                return;
-            }
-
-            taskList.innerHTML = tasks.map(taskCard).join("");
-
-        } catch (err) {
-            console.error("My tasks error:", err);
-
-            taskList.innerHTML = `
-                <div class="empty-task">
-                    <i class="fa fa-wifi"></i>
-                    <h3>Network error</h3>
-                    <p>Please check your connection and try again.</p>
-                </div>
-            `;
-        }
+        return loadPromise;
     }
 
     loadMyTasks();

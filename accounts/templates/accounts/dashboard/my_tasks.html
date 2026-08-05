@@ -1,9 +1,7 @@
 {% extends 'accounts/base.html' %}
 {% load static %}
 
-{% block title %}
-My Tasks | SQUEEB
-{% endblock %}
+{% block title %}My Tasks | SQUEEB{% endblock %}
 
 {% block extra_css %}
 <link rel="stylesheet" href="{% static 'accounts/css/my_tasks.css' %}">
@@ -11,56 +9,76 @@ My Tasks | SQUEEB
 
 {% block content %}
 
-<main class="my-tasks-page">
+<div class="my-tasks-app">
 
-    <section class="tasks-hero">
-        <div>
-            <p class="eyebrow">Task Management</p>
-            <h1>My Posted Tasks</h1>
-            <p>View your posted tasks, pending reviews, approved workers, and remaining slots.</p>
-        </div>
+    <main class="my-tasks-page">
 
-        <a href="{% url 'dashboard' %}" class="back-btn">
-            Create New Task
-        </a>
-    </section>
-
-    <section class="tasks-summary">
-        <div>
-            <strong id="totalTasks">0</strong>
-            <span>Total Tasks</span>
-        </div>
-
-        <div>
-            <strong id="activeTasks">0</strong>
-            <span>Active</span>
-        </div>
-
-        <div>
-            <strong id="completedTasks">0</strong>
-            <span>Completed</span>
-        </div>
-    </section>
-
-    <section class="task-list-section">
-        <div class="section-heading">
-            <h2>Tasks You Posted</h2>
-            <p>Manage submissions and track task progress from one place.</p>
-        </div>
-
-        <div class="posted-task-list" id="postedTaskList">
-            <div class="empty-task">
-                <i class="fa fa-list-check"></i>
-                <h3>Loading tasks...</h3>
-                <p>Please wait while we fetch your posted tasks.</p>
+        <!-- HEADER -->
+        <section class="my-tasks-header">
+            <div>
+                <span class="my-tasks-kicker">MY TASKS</span>
+                <h1>Your created tasks</h1>
+                <p>Track progress, review submissions and see what remains.</p>
             </div>
-        </div>
-    </section>
 
-</main>
+            <a
+                href="{% url 'dashboard' %}#socialTasks"
+                class="create-task-btn"
+            >
+                <i class="fa-solid fa-plus"></i>
+                <span>Create task</span>
+            </a>
+        </section>
+
+        <!-- SUMMARY -->
+        <section class="tasks-summary">
+            <article>
+                <span>Total tasks</span>
+                <strong id="totalTasks">—</strong>
+            </article>
+
+            <article>
+                <span>Active</span>
+                <strong id="activeTasks">—</strong>
+            </article>
+
+            <article>
+                <span>Completed</span>
+                <strong id="completedTasks">—</strong>
+            </article>
+        </section>
+
+        <!-- TASK LIST -->
+        <section class="my-tasks-section">
+
+            <div class="section-heading">
+                <div>
+                    <span>POSTED TASKS</span>
+                    <h2>Campaign activity</h2>
+                </div>
+
+                <small>Review worker submissions</small>
+            </div>
+
+            <div
+                class="posted-task-list"
+                id="postedTaskList"
+            >
+                <div class="empty-task">
+                    <i class="fa-solid fa-spinner fa-spin"></i>
+                    <h3>Loading your tasks</h3>
+                    <p>Please wait while we fetch your posted tasks.</p>
+                </div>
+            </div>
+
+        </section>
+
+    </main>
+
+</div>
 
 {% endblock %}
 
 {% block extra_js %}
-<script src="{% static 'accounts/js/my_tasks.js' %}"></script>
+<script src="{% static 'accounts/js/my_tasks.js' %}" defer></script>
 {% endblock %}
