@@ -3415,10 +3415,24 @@ def task_submission_reviews_api(request, task_id):
 @require_POST
 @transaction.atomic
 def pay_membership(request):
-    membership_fee = Decimal("10.00")
-
     user = User.objects.select_for_update().get(
-        pk=request.user.pk
+    pk=request.user.pk
+    )
+
+    user_country = (user.country or "").strip().lower()
+
+    is_nigerian = user_country in {
+    "nigeria",
+    "ng",
+    "nga",
+    }
+
+# Nigeria membership = £5
+# Other countries = £10
+    membership_fee = (
+        Decimal("5.00")
+        if is_nigerian
+        else Decimal("10.00")
     )
 
     if user.is_member:
@@ -3432,15 +3446,15 @@ def pay_membership(request):
 
     if user.balance < membership_fee:
         return JsonResponse(
-            {
-                "success": False,
-                "error": (
-                    "Insufficient balance. You need £10.00 "
-                    "to activate membership."
-                ),
-            },
-            status=400,
-        )
+        {
+            "success": False,
+            "error": (
+                f"Insufficient balance. You need "
+                f"£{membership_fee:.2f} to activate membership."
+            ),
+        },
+        status=400,
+    )
 
     # ----------------------------------------------------------
     # REFERRAL REWARD
