@@ -1,34 +1,7 @@
 {% extends 'accounts/base.html' %}
 {% load static %}
 
-{% block title %}
-Dashboard | SQUEEB
-
-<script>
-document.addEventListener("DOMContentLoaded", function () {
-    const tasksSection = document.querySelector(".tasks-section");
-    const toggleButton = document.getElementById("mobileTaskToggle");
-
-    if (!tasksSection || !toggleButton) {
-        return;
-    }
-
-    toggleButton.addEventListener("click", function () {
-        const isExpanded = tasksSection.classList.toggle("mobile-expanded");
-
-        toggleButton.setAttribute("aria-expanded", String(isExpanded));
-
-        const buttonText = toggleButton.querySelector("span");
-        if (buttonText) {
-            buttonText.textContent = isExpanded
-                ? "Show fewer social tasks"
-                : "View all social tasks";
-        }
-    });
-});
-</script>
-
-{% endblock %}
+{% block title %}Dashboard | SQUEEB{% endblock %}
 
 {% block extra_css %}
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -38,14 +11,19 @@ document.addEventListener("DOMContentLoaded", function () {
 
 
 <!-- ====================== MAIN DASHBOARD CONTENT ====================== -->
-<div class="dashboard-page">
+<div
+    class="dashboard-page"
+    id="dashboardPage"
+    data-country="{{ request.user.country|default:''|escape }}"
+    data-nigeria="{{ is_nigerian|yesno:'true,false' }}"
+>
     <main class="dashboard-main">
 
         <!-- Hero / Welcome Section -->
         <section class="hero-section">
             <div>
                 <p class="eyebrow">Welcome back</p>
-                <h1>Hello, <span id="usernameDynamic">User</span></h1>
+                <h1>Hello, <span id="usernameDynamic">{{ request.user.username }}</span></h1>
                 <p class="hero-text">
                     Manage your wallet, create adverts, post social tasks, and grow your marketplace activity.
                 </p>
@@ -55,8 +33,8 @@ document.addEventListener("DOMContentLoaded", function () {
     <img src="{% static 'accounts/img/avatar.png' %}" alt="Profile">
 
     <div>
-        <strong id="usernameDisplay">User</strong>
-        <span id="usernameTag">@user</span>
+        <strong id="usernameDisplay">{{ request.user.username }}</strong>
+        <span id="usernameTag">@{{ request.user.username }}</span>
     </div>
 </a>
         </section>
@@ -70,7 +48,7 @@ document.addEventListener("DOMContentLoaded", function () {
     <div class="wallet-top">
         <div>
             <p>Wallet Balance</p>
-            <h2 id="balanceAmount">£0.00</h2>
+            <h2 id="balanceAmount">£{{ request.user.balance|floatformat:2 }}</h2>
         </div>
 
         <div class="wallet-icon">
@@ -80,7 +58,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
     <div class="wallet-earnings-row">
         <span>Total Earnings</span>
-        <strong id="earningsTotal">£0.00</strong>
+        <strong id="earningsTotal">£{{ request.user.earnings|floatformat:2 }}</strong>
     </div>
 
     <div class="wallet-actions">
@@ -100,14 +78,14 @@ document.addEventListener("DOMContentLoaded", function () {
             <!-- Followers Stat -->
             <div class="stats-card">
                 <p>Squeebers</p>
-                <h3 id="followers">0</h3>
+                <h3 id="followers">{{ followers_count }}</h3>
                 <span>Your current SQUEEB audience.</span>
             </div>
 
             <!-- Following Stat -->
             <div class="stats-card">
                 <p>Connections</p>
-                <h3 id="following">0</h3>
+                <h3 id="following">{{ following_count }}</h3>
                 <span>People and brands you connect with.</span>
             </div>
 
@@ -161,6 +139,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
 
         <!-- Membership Banner -->
+        {% if not request.user.is_member %}
         <section class="membership-banner" id="membershipBanner">
             <div>
                 <p>Membership</p>
@@ -172,6 +151,7 @@ document.addEventListener("DOMContentLoaded", function () {
                 Activate Membership
             </a>
         </section>
+        {% endif %}
 
 
         <!-- Social Task Creation Section -->
@@ -418,93 +398,131 @@ document.addEventListener("DOMContentLoaded", function () {
 
 
 
-<!-- ====================== FUND WALLET MODAL (but users have two options) ====================== -->
+<!-- ====================== FUND WALLET MODAL ====================== -->
 <div class="modal-bg" id="fundModal">
     <div class="modal-card fund-modal-card">
-        <button class="modal-close" id="fundClose">✖</button>
+        <button class="modal-close" id="fundClose" type="button">✖</button>
 
         <h2 class="modal-title">Fund Wallet</h2>
-        <p class="modal-sub">Choose how you want to fund your wallet.</p>
 
-        <div class="fund-methods">
-            <button class="fund-method active" data-method="card">
-                <i class="fa fa-credit-card"></i>
-                <strong>Card / Apple Pay</strong>
-                <span>Instant • 2% + £0.25 fee</span>
-            </button>
+        {% if is_nigerian %}
+            <p class="modal-sub">
+                Add pounds to your SQUEEB wallet and pay securely in Naira.
+            </p>
 
-            <button class="fund-method" data-method="bank">
-                <i class="fa fa-building-columns"></i>
-                <strong>Bank Transfer</strong>
-                <span>Free • Manual confirmation</span>
-            </button>
+            <div class="nigeria-funding-badge">
+                <span>🇳🇬</span>
+                Nigerian funding
+            </div>
+
+            <div class="fund-methods nigeria-fund-methods">
+                <button
+                    class="fund-method active"
+                    type="button"
+                    data-method="nigeria"
+                >
+                    <i class="fa fa-building-columns"></i>
+                    <strong>Pay in Naira</strong>
+                    <span>Secure checkout powered by Flutterwave</span>
+                </button>
+            </div>
+        {% else %}
+            <p class="modal-sub">
+                Choose how you want to fund your wallet.
+            </p>
+
+            <div class="fund-methods">
+                <button class="fund-method active" type="button" data-method="card">
+                    <i class="fa fa-credit-card"></i>
+                    <strong>Card / Apple Pay</strong>
+                    <span>Instant • 2% + £0.25 fee</span>
+                </button>
+
+                <button class="fund-method" type="button" data-method="bank">
+                    <i class="fa fa-building-columns"></i>
+                    <strong>Bank Transfer</strong>
+                    <span>Free • Manual confirmation</span>
+                </button>
+            </div>
+        {% endif %}
+
+        <label class="fund-amount-label" for="fundAmountInput">
+            Amount to add to wallet
+        </label>
+
+        <div class="fund-gbp-input">
+            <span>£</span>
+            <input
+                type="number"
+                id="fundAmountInput"
+                class="modal-input"
+                placeholder="10.00"
+                min="1"
+                step="0.01"
+                inputmode="decimal"
+            >
         </div>
-
-        <input type="number"
-               id="fundAmountInput"
-               class="modal-input"
-               placeholder="Enter amount"
-               min="1"
-               step="0.01">
 
         <div class="fund-summary" id="fundSummary">
-            <p><span>Wallet receives</span> <strong id="walletReceives">£0.00</strong></p>
-            <p><span>Fee</span> <strong id="fundFee">£0.00</strong></p>
-            <p class="total"><span>Total to pay</span> <strong id="totalToPay">£0.00</strong></p>
+            <p>
+                <span>Wallet receives</span>
+                <strong id="walletReceives">£0.00</strong>
+            </p>
+
+            {% if is_nigerian %}
+                <p>
+                    <span>GBP → NGN rate</span>
+                    <strong id="fundExchangeRate">Loading when needed</strong>
+                </p>
+
+                <p class="fund-total-row">
+                    <span>You pay</span>
+                    <strong id="totalToPay">₦0.00</strong>
+                </p>
+            {% else %}
+                <p>
+                    <span>Fee</span>
+                    <strong id="fundFee">£0.00</strong>
+                </p>
+
+                <p class="fund-total-row">
+                    <span>Total to pay</span>
+                    <strong id="totalToPay">£0.00</strong>
+                </p>
+            {% endif %}
         </div>
 
-        <div class="bank-details" id="bankDetails" style="display:none;">
-            <div class="bank-header">
-                <i class="fa-solid fa-building-columns"></i>
-                <div>
-                    <h4>Bank Transfer Details</h4>
-                    <span>Transfer the exact amount using the details below.</span>
-                </div>
+        {% if not is_nigerian %}
+            <div id="bankDetails" class="bank-transfer-details" style="display:none;">
+                <p>
+                    Use the bank details already shown in your SQUEEB
+                    bank-transfer flow and include this reference:
+                </p>
+                <strong id="bankReference"></strong>
             </div>
+        {% else %}
+            <p class="nigeria-funding-note">
+                Your SQUEEB wallet remains in GBP. The Naira amount is
+                calculated before checkout, and your wallet is credited
+                only after Flutterwave confirms and SQUEEB verifies payment.
+            </p>
+        {% endif %}
 
-            <div class="bank-row">
-                <span>Account Name</span>
-                <strong>SQUEEB</strong>
-            </div>
-
-            <div class="bank-row">
-                <span>Bank</span>
-                <strong>Revolut</strong>
-            </div>
-
-            <div class="bank-row">
-                <span>Sort Code</span>
-                <strong>04-29-09</strong>
-            </div>
-
-            <div class="bank-row">
-                <span>Account Number</span>
-                <strong>10119574</strong>
-            </div>
-
-            <div class="bank-row">
-                <span>Reference</span>
-                <strong id="bankReference" class="reference-code">SQB-000000</strong>
-            </div>
-
-            <div class="bank-note">
-                <i class="fa-solid fa-circle-info"></i>
-                <span>
-                    Use the account name and reference exactly as shown. Your wallet will be credited after we verify your transfer.
-                </span>
-            </div>
-        </div>
-
-        <button class="modal-action" id="fundSubmitBtn">Continue to Payment</button>
+        <button
+            type="button"
+            class="modal-action"
+            id="fundSubmitBtn"
+        >
+            {% if is_nigerian %}
+                Continue to Naira Payment
+            {% else %}
+                Continue to Payment
+            {% endif %}
+        </button>
 
         <p class="modal-msg" id="fundMsg"></p>
     </div>
 </div>
-
-
-
-
-
 
 <!-- ====================== CREATE TASK MODAL ====================== -->
 <div class="modal-bg" id="taskActionModal" style="display:none;">
@@ -653,4 +671,8 @@ document.addEventListener("DOMContentLoaded", function () {
 
     </div>
 </div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'accounts/js/dashboard.js' %}" defer></script>
 {% endblock %}

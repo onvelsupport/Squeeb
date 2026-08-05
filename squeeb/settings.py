@@ -219,6 +219,14 @@ ADMIN_EMAIL = "sammyperazzi@gmail.com"
 STRIPE_SECRET_KEY = os.getenv("STRIPE_SECRET_KEY")
 STRIPE_WEBHOOK_SECRET = os.getenv("STRIPE_WEBHOOK_SECRET")
 
+
+# =============================
+# FLUTTERWAVE
+# =============================
+FLUTTERWAVE_SECRET_KEY = os.getenv("FLUTTERWAVE_SECRET_KEY")
+FLUTTERWAVE_SECRET_HASH = os.getenv("FLUTTERWAVE_SECRET_HASH")
+
+
 # =============================
 # SITE URL
 # =============================

@@ -25,6 +25,7 @@ from .views import (
     edit_profile,
     forgot_password_api,
     forgot_password_page,
+    flutterwave_webhook,
     gbp_ngn_exchange_rate,
     get_campaign,
     get_single_task,
@@ -535,6 +536,12 @@ path(
         "stripe/webhook/",
         stripe_webhook,
         name="stripe_webhook",
+    ),
+
+    path(
+        "flutterwave/webhook/",
+        flutterwave_webhook,
+        name="flutterwave_webhook",
     ),
 
     path(

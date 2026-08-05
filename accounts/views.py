@@ -2,7 +2,11 @@
 # STANDARD LIBRARY IMPORTS
 # ==========================================================
 
+import base64
+import hashlib
+import hmac
 import json
+import uuid
 import urllib.error
 import urllib.request
 from decimal import Decimal
@@ -995,45 +999,51 @@ stripe.api_key = settings.STRIPE_SECRET_KEY
 
 
 
+@login_required
 def global_search(request):
+    q = request.GET.get("q", "").strip()
 
-    q = request.GET.get("q", "")
+    # Do not hit three tables for one-character / empty searches.
+    if len(q) < 2:
+        return JsonResponse({"results": []})
 
     results = []
 
-    # Users
-    users = User.objects.filter(username__icontains=q)[:5]
+    users = User.objects.filter(
+        username__icontains=q
+    ).only("username")[:5]
 
     for user in users:
         results.append({
             "name": user.username,
             "type": "User",
-            "url": f"/user/{user.username}/"
+            "url": f"/user/{user.username}/",
         })
 
-    # Products
-    products = Product.objects.filter(title__icontains=q)[:5]
+    products = Product.objects.filter(
+        title__icontains=q,
+        is_sold=False,
+    ).only("title")[:5]
 
-    for p in products:
+    for product in products:
         results.append({
-            "name": p.title,
+            "name": product.title,
             "type": "Product",
-            "url": "/market/"
+            "url": "/market/",
         })
 
-    # Tasks
-    tasks = Task.objects.filter(title__icontains=q)[:5]
+    tasks = Task.objects.filter(
+        title__icontains=q
+    ).only("title")[:5]
 
     for task in tasks:
         results.append({
             "name": task.title,
             "type": "Task",
-            "url": "/earnings/"
+            "url": "/earnings/",
         })
 
-    return JsonResponse({
-        "results": results
-    })
+    return JsonResponse({"results": results})
 
 # ==========================
 # PUBLIC PAGES
@@ -1156,16 +1166,40 @@ def forgot_password_api(request):
 # ==========================
 @login_required
 def dashboard(request):
+    """
+    Render the dashboard with the important user data already present.
+
+    This avoids waiting for /api/user-info/ before the dashboard looks
+    complete. Notifications themselves are still lazy-loaded only when
+    the user opens the notification panel.
+    """
+    followers_count = Follow.objects.filter(
+        following=request.user
+    ).count()
+
+    following_count = Follow.objects.filter(
+        follower=request.user
+    ).count()
+
     notification_count = Notification.objects.filter(
         user=request.user,
-        is_read=False
+        is_read=False,
     ).count()
+
+    is_nigerian = _is_nigeria_country(request.user.country)
 
     context = {
         "notification_count": notification_count,
+        "followers_count": followers_count,
+        "following_count": following_count,
+        "is_nigerian": is_nigerian,
     }
 
-    return render(request, "accounts/dashboard/dashboard.html", context)
+    return render(
+        request,
+        "accounts/dashboard/dashboard.html",
+        context,
+    )
 
 # ==========================
 # AUTH APIs
@@ -1307,31 +1341,236 @@ def logout_user(request):
     return redirect("login")
 
 # ==========================
-# REAL STRIPE WALLET FUNDING
+# REAL WALLET FUNDING
 # ==========================
+
+FLUTTERWAVE_API_BASE = "https://api.flutterwave.com/v3"
+
+
+def _flutterwave_request(path, *, method="GET", payload=None):
+    secret_key = getattr(settings, "FLUTTERWAVE_SECRET_KEY", "")
+
+    if not secret_key:
+        raise RuntimeError(
+            "Flutterwave is not configured. "
+            "Add FLUTTERWAVE_SECRET_KEY to your environment."
+        )
+
+    body = None
+
+    if payload is not None:
+        body = json.dumps(payload).encode("utf-8")
+
+    request = urllib.request.Request(
+        f"{FLUTTERWAVE_API_BASE}{path}",
+        data=body,
+        method=method,
+        headers={
+            "Authorization": f"Bearer {secret_key}",
+            "Content-Type": "application/json",
+            "Accept": "application/json",
+            "User-Agent": "SQUEEB/1.0",
+        },
+    )
+
+    try:
+        with urllib.request.urlopen(request, timeout=12) as response:
+            return json.loads(response.read().decode("utf-8"))
+    except urllib.error.HTTPError as exc:
+        try:
+            error_payload = json.loads(
+                exc.read().decode("utf-8")
+            )
+            message = (
+                error_payload.get("message")
+                or "Flutterwave rejected the payment request."
+            )
+        except Exception:
+            message = "Flutterwave rejected the payment request."
+
+        raise RuntimeError(message) from exc
+    except (
+        urllib.error.URLError,
+        TimeoutError,
+        json.JSONDecodeError,
+    ) as exc:
+        raise RuntimeError(
+            "The payment provider is temporarily unavailable."
+        ) from exc
+
+
+def _start_nigerian_funding(request, amount):
+    """
+    Nigerian users pay NGN through Flutterwave while the SQUEEB
+    wallet is credited with the requested GBP amount after the
+    transaction is independently verified.
+    """
+    rate = _get_gbp_ngn_rate()
+    ngn_amount = (amount * rate).quantize(Decimal("0.01"))
+
+    tx_ref = (
+        f"SQB-NG-{request.user.id}-"
+        f"{uuid.uuid4().hex[:16].upper()}"
+    )
+
+    payment = FundingPayment.objects.create(
+        user=request.user,
+        amount=amount,
+        fee=Decimal("0.00"),
+        total_charged=amount,
+        method="nigeria",
+        reference=tx_ref,
+        provider="flutterwave",
+        provider_reference=tx_ref,
+        currency_paid="NGN",
+        amount_paid=ngn_amount,
+        exchange_rate=rate,
+        status="pending",
+    )
+
+    site_url = getattr(
+        settings,
+        "SITE_URL",
+        "https://squeeb.co.uk",
+    ).rstrip("/")
+
+    payload = {
+        "tx_ref": tx_ref,
+        "amount": str(ngn_amount),
+        "currency": "NGN",
+        "redirect_url": (
+            f"{site_url}/dashboard/?funding=processing"
+        ),
+        "customer": {
+            "email": request.user.email,
+            "name": request.user.get_full_name()
+            or request.user.username,
+        },
+        "customizations": {
+            "title": "SQUEEB Wallet Funding",
+            "description": (
+                f"Add £{amount} to your SQUEEB wallet"
+            ),
+        },
+        "meta": {
+            "payment_id": payment.id,
+            "wallet_amount_gbp": str(amount),
+            "squeeb_user_id": request.user.id,
+        },
+    }
+
+    response = _flutterwave_request(
+        "/payments",
+        method="POST",
+        payload=payload,
+    )
+
+    checkout_url = (
+        response.get("data", {}).get("link")
+    )
+
+    if response.get("status") != "success" or not checkout_url:
+        payment.status = "failed"
+        payment.save(update_fields=["status"])
+        raise RuntimeError(
+            response.get("message")
+            or "Unable to create the Nigerian payment."
+        )
+
+    return payment, checkout_url
+
+
 @csrf_exempt
 @login_required
 def create_funding_checkout(request):
     if request.method != "POST":
-        return JsonResponse({"error": "POST method required"}, status=400)
+        return JsonResponse(
+            {"error": "POST method required"},
+            status=400,
+        )
 
     try:
-        data = json.loads(request.body.decode("utf-8") or "{}")
-        amount = Decimal(str(data.get("amount", "0")))
+        data = json.loads(
+            request.body.decode("utf-8") or "{}"
+        )
+
+        amount = Decimal(
+            str(data.get("amount", "0"))
+        ).quantize(Decimal("0.01"))
+
         method = data.get("method", "card")
         reference = data.get("reference", "")
+
     except Exception:
-        return JsonResponse({"error": "Invalid amount"}, status=400)
+        return JsonResponse(
+            {"error": "Invalid amount"},
+            status=400,
+        )
 
     if amount < Decimal("1.00"):
-        return JsonResponse({"error": "Minimum funding amount is £1.00"}, status=400)
+        return JsonResponse(
+            {
+                "error": (
+                    "Minimum funding amount is £1.00"
+                ),
+            },
+            status=400,
+        )
 
+    is_nigerian = _is_nigeria_country(
+        request.user.country
+    )
+
+    # Nigeria must use the NGN / Flutterwave route.
+    if is_nigerian:
+        if method != "nigeria":
+            return JsonResponse(
+                {
+                    "error": (
+                        "Nigerian wallet funding must be "
+                        "completed in Naira."
+                    ),
+                },
+                status=400,
+            )
+
+        try:
+            payment, checkout_url = _start_nigerian_funding(
+                request,
+                amount,
+            )
+        except RuntimeError as exc:
+            return JsonResponse(
+                {"error": str(exc)},
+                status=503,
+            )
+
+        return JsonResponse(
+            {
+                "checkout_url": checkout_url,
+                "provider": "flutterwave",
+                "wallet_amount": str(payment.amount),
+                "currency": payment.currency_paid,
+                "amount_to_pay": str(payment.amount_paid),
+                "exchange_rate": str(payment.exchange_rate),
+            }
+        )
+
+    # Existing funding flow for users outside Nigeria.
     if method not in ["card", "bank"]:
-        return JsonResponse({"error": "Invalid funding method"}, status=400)
+        return JsonResponse(
+            {"error": "Invalid funding method"},
+            status=400,
+        )
 
     if method == "card":
-        fee = (amount * Decimal("0.02")) + Decimal("0.25")
+        fee = (
+            amount * Decimal("0.02")
+        ) + Decimal("0.25")
+
+        fee = fee.quantize(Decimal("0.01"))
         total_charged = amount + fee
+
     else:
         fee = Decimal("0.00")
         total_charged = amount
@@ -1344,7 +1583,14 @@ def create_funding_checkout(request):
             total_charged=total_charged,
             method=method,
             reference=reference,
-            status="pending"
+            provider=(
+                "stripe"
+                if method == "card"
+                else "manual_bank"
+            ),
+            currency_paid="GBP",
+            amount_paid=total_charged,
+            status="pending",
         )
 
         if method == "bank":
@@ -1352,10 +1598,15 @@ def create_funding_checkout(request):
             payment.save(update_fields=["status"])
 
             verify_url = request.build_absolute_uri(
-                reverse("verify_bank_transfer", args=[payment.id])
+                reverse(
+                    "verify_bank_transfer",
+                    args=[payment.id],
+                )
             )
 
-            subject = "New Bank Transfer Awaiting Verification"
+            subject = (
+                "New Bank Transfer Awaiting Verification"
+            )
 
             context = {
                 "username": request.user.username,
@@ -1366,25 +1617,42 @@ def create_funding_checkout(request):
             }
 
             html_message = render_to_string(
-                "accounts/emails/bank_transfer_verification.html",
-                context
+                "accounts/emails/"
+                "bank_transfer_verification.html",
+                context,
             )
 
             email = EmailMultiAlternatives(
                 subject=subject,
-                body=f"A new bank transfer from {request.user.username} requires verification.",
+                body=(
+                    f"A new bank transfer from "
+                    f"{request.user.username} "
+                    "requires verification."
+                ),
                 from_email=settings.DEFAULT_FROM_EMAIL,
                 to=[settings.ADMIN_EMAIL],
             )
 
-            email.attach_alternative(html_message, "text/html")
+            email.attach_alternative(
+                html_message,
+                "text/html",
+            )
             email.send()
 
-            return JsonResponse({
-                "message": "Transfer request sent. Your wallet will be credited once payment is confirmed."
-            })
+            return JsonResponse(
+                {
+                    "message": (
+                        "Transfer request sent. Your wallet "
+                        "will be credited once payment is confirmed."
+                    ),
+                }
+            )
 
-        site_url = getattr(settings, "SITE_URL", "https://squeeb.co.uk").rstrip("/")
+        site_url = getattr(
+            settings,
+            "SITE_URL",
+            "https://squeeb.co.uk",
+        ).rstrip("/")
 
         session = stripe.checkout.Session.create(
             payment_method_types=["card"],
@@ -1395,9 +1663,11 @@ def create_funding_checkout(request):
                     "price_data": {
                         "currency": "gbp",
                         "product_data": {
-                            "name": "Squeeb Wallet Funding",
+                            "name": "SQUEEB Wallet Funding",
                         },
-                        "unit_amount": int(total_charged * 100),
+                        "unit_amount": int(
+                            total_charged * 100
+                        ),
                     },
                     "quantity": 1,
                 }
@@ -1411,18 +1681,32 @@ def create_funding_checkout(request):
                 "total_charged": str(total_charged),
                 "method": method,
             },
-            success_url=f"{site_url}/dashboard/?funding=success",
-            cancel_url=f"{site_url}/dashboard/?funding=cancelled",
+            success_url=(
+                f"{site_url}/dashboard/?funding=success"
+            ),
+            cancel_url=(
+                f"{site_url}/dashboard/?funding=cancelled"
+            ),
         )
 
         payment.stripe_session_id = session.id
-        payment.save(update_fields=["stripe_session_id"])
+        payment.provider_reference = session.id
+        payment.save(
+            update_fields=[
+                "stripe_session_id",
+                "provider_reference",
+            ]
+        )
 
-        return JsonResponse({"checkout_url": session.url})
+        return JsonResponse(
+            {"checkout_url": session.url}
+        )
 
-    except Exception as e:
-        return JsonResponse({"error": str(e)}, status=500)
-
+    except Exception as exc:
+        return JsonResponse(
+            {"error": str(exc)},
+            status=500,
+        )
 
 
 @login_required
@@ -1739,6 +2023,211 @@ def create_cart_checkout(request):
     return JsonResponse({
         "checkout_url": session.url
     })
+
+
+
+def _valid_flutterwave_signature(raw_body, signature):
+    secret_hash = getattr(
+        settings,
+        "FLUTTERWAVE_SECRET_HASH",
+        "",
+    )
+
+    if not secret_hash or not signature:
+        return False
+
+    expected = base64.b64encode(
+        hmac.new(
+            secret_hash.encode("utf-8"),
+            raw_body,
+            hashlib.sha256,
+        ).digest()
+    ).decode("utf-8")
+
+    return hmac.compare_digest(
+        expected,
+        signature,
+    )
+
+
+def _verify_flutterwave_transaction(transaction_id):
+    response = _flutterwave_request(
+        f"/transactions/{transaction_id}/verify"
+    )
+
+    if response.get("status") != "success":
+        raise RuntimeError(
+            "Unable to verify the Flutterwave transaction."
+        )
+
+    return response.get("data") or {}
+
+
+@csrf_exempt
+@require_POST
+def flutterwave_webhook(request):
+    """
+    Credit a Nigerian user's GBP wallet only after:
+    1. webhook signature validation
+    2. Flutterwave transaction verification
+    3. amount/currency/reference comparison
+    4. database row locking / idempotency
+    """
+    signature = request.headers.get(
+        "flutterwave-signature"
+    )
+
+    if not _valid_flutterwave_signature(
+        request.body,
+        signature,
+    ):
+        return HttpResponse(status=401)
+
+    try:
+        payload = json.loads(
+            request.body.decode("utf-8") or "{}"
+        )
+    except json.JSONDecodeError:
+        return HttpResponse(status=400)
+
+    event_data = payload.get("data") or {}
+
+    transaction_id = event_data.get("id")
+    tx_ref = event_data.get("tx_ref")
+
+    if not transaction_id or not tx_ref:
+        return HttpResponse(status=200)
+
+    try:
+        verified = _verify_flutterwave_transaction(
+            transaction_id
+        )
+    except RuntimeError:
+        # Flutterwave can retry the webhook.
+        return HttpResponse(status=503)
+
+    try:
+        with transaction.atomic():
+            payment = (
+                FundingPayment.objects
+                .select_for_update()
+                .select_related("user")
+                .get(
+                    provider="flutterwave",
+                    provider_reference=tx_ref,
+                )
+            )
+
+            if payment.status == "paid":
+                return HttpResponse(status=200)
+
+            verified_status = str(
+                verified.get("status", "")
+            ).lower()
+
+            verified_currency = str(
+                verified.get("currency", "")
+            ).upper()
+
+            verified_tx_ref = str(
+                verified.get("tx_ref", "")
+            )
+
+            verified_amount = Decimal(
+                str(verified.get("amount", "0"))
+            )
+
+            expected_amount = (
+                payment.amount_paid
+                or Decimal("0.00")
+            )
+
+            valid_payment = (
+                verified_status == "successful"
+                and verified_currency == "NGN"
+                and verified_tx_ref
+                == payment.provider_reference
+                and verified_amount >= expected_amount
+            )
+
+            if not valid_payment:
+                payment.status = "failed"
+                payment.save(update_fields=["status"])
+                return HttpResponse(status=200)
+
+            user = User.objects.select_for_update().get(
+                pk=payment.user_id
+            )
+
+            user.balance = (
+                user.balance or Decimal("0.00")
+            ) + payment.amount
+
+            user.save(update_fields=["balance"])
+
+            payment.status = "paid"
+            payment.paid_at = timezone.now()
+            payment.reference = str(
+                verified.get("flw_ref")
+                or payment.reference
+                or ""
+            )
+
+            payment.save(
+                update_fields=[
+                    "status",
+                    "paid_at",
+                    "reference",
+                ]
+            )
+
+            Notification.objects.create(
+                user=user,
+                title="Wallet funded",
+                message=(
+                    f"Your Nigerian payment was confirmed. "
+                    f"£{payment.amount} has been added "
+                    "to your SQUEEB wallet."
+                ),
+            )
+
+            send_account_email(
+                user=user,
+                subject="Your SQUEEB wallet has been funded",
+                heading="Wallet funding successful",
+                message=(
+                    "Your Naira payment was verified and "
+                    "the funds have been added to your wallet."
+                ),
+                details=[
+                    {
+                        "label": "Amount credited",
+                        "value": f"£{payment.amount}",
+                    },
+                    {
+                        "label": "Naira paid",
+                        "value": (
+                            f"₦{payment.amount_paid:,.2f}"
+                        ),
+                    },
+                    {
+                        "label": "Exchange rate",
+                        "value": (
+                            f"£1 = "
+                            f"₦{payment.exchange_rate:,.2f}"
+                        ),
+                    },
+                    {
+                        "label": "New balance",
+                        "value": f"£{user.balance}",
+                    },
+                ],
+            )
+
+    except FundingPayment.DoesNotExist:
+        return HttpResponse(status=200)
+
+    return HttpResponse(status=200)
 
 
 @csrf_exempt

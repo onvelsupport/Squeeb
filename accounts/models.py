@@ -309,21 +309,81 @@ class FundingPayment(models.Model):
     METHOD_CHOICES = (
         ("card", "Card / Apple Pay"),
         ("bank", "Bank Transfer"),
+        ("nigeria", "Nigeria / Flutterwave"),
     )
 
-    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="funding_payments")
+    user = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        related_name="funding_payments",
+    )
+
+    # Amount credited to the SQUEEB wallet (always GBP).
     amount = models.DecimalField(max_digits=10, decimal_places=2)
+
+    # Existing SQUEEB funding fee, represented in GBP.
     fee = models.DecimalField(max_digits=10, decimal_places=2, default=0)
-    total_charged = models.DecimalField(max_digits=10, decimal_places=2, default=0)
-    method = models.CharField(max_length=20, choices=METHOD_CHOICES, default="card")
-    reference = models.CharField(max_length=50, blank=True, null=True)
-    stripe_session_id = models.CharField(max_length=255, unique=True, blank=True, null=True)
-    status = models.CharField(max_length=30, choices=STATUS_CHOICES, default="pending")
+
+    # Existing GBP equivalent charged/required.
+    total_charged = models.DecimalField(
+        max_digits=10,
+        decimal_places=2,
+        default=0,
+    )
+
+    method = models.CharField(
+        max_length=20,
+        choices=METHOD_CHOICES,
+        default="card",
+    )
+
+    reference = models.CharField(max_length=80, blank=True, null=True)
+
+    # Stripe
+    stripe_session_id = models.CharField(
+        max_length=255,
+        unique=True,
+        blank=True,
+        null=True,
+    )
+
+    # Cross-border / Nigerian funding snapshot.
+    provider = models.CharField(max_length=30, blank=True, default="")
+    provider_reference = models.CharField(
+        max_length=120,
+        unique=True,
+        blank=True,
+        null=True,
+    )
+    currency_paid = models.CharField(max_length=3, blank=True, default="")
+    amount_paid = models.DecimalField(
+        max_digits=18,
+        decimal_places=2,
+        blank=True,
+        null=True,
+    )
+    exchange_rate = models.DecimalField(
+        max_digits=18,
+        decimal_places=6,
+        blank=True,
+        null=True,
+    )
+
+    status = models.CharField(
+        max_length=30,
+        choices=STATUS_CHOICES,
+        default="pending",
+    )
     created_at = models.DateTimeField(auto_now_add=True)
     paid_at = models.DateTimeField(blank=True, null=True)
 
     def __str__(self):
-        return f"{self.user.username} - £{self.amount} - {self.method} - {self.status}"
+        return (
+            f"{self.user.username} - "
+            f"£{self.amount} - "
+            f"{self.method} - "
+            f"{self.status}"
+        )
 
 
 class Product(models.Model):

@@ -1,47 +1,55 @@
 document.addEventListener("DOMContentLoaded", () => {
+    const byId = (id) => document.getElementById(id);
+    const dashboardPage = byId("dashboardPage");
 
-
+    const isNigerian = (
+        dashboardPage?.dataset.nigeria === "true"
+    );
 
     function getCookie(name) {
+        let cookieValue = null;
 
-    let cookieValue = null;
+        if (document.cookie && document.cookie !== "") {
+            const cookies = document.cookie.split(";");
 
-    if (document.cookie && document.cookie !== "") {
+            for (let cookie of cookies) {
+                cookie = cookie.trim();
 
-        const cookies = document.cookie.split(";");
-
-        for (let cookie of cookies) {
-
-            cookie = cookie.trim();
-
-            if (cookie.startsWith(name + "=")) {
-
-                cookieValue = decodeURIComponent(
-                    cookie.substring(name.length + 1)
-                );
-
-                break;
+                if (cookie.startsWith(name + "=")) {
+                    cookieValue = decodeURIComponent(
+                        cookie.substring(name.length + 1)
+                    );
+                    break;
+                }
             }
         }
+
+        return cookieValue;
     }
 
-    return cookieValue;
-}
+    const money = (value) => {
+        const amount = Number.parseFloat(value || 0);
 
-    // ==========================================================
-    // UTILITIES
-    // ==========================================================
+        return new Intl.NumberFormat("en-GB", {
+            style: "currency",
+            currency: "GBP",
+        }).format(Number.isFinite(amount) ? amount : 0);
+    };
 
-    const money = (n) => `£${parseFloat(n || 0).toFixed(2)}`;
+    const naira = (value) => {
+        const amount = Number.parseFloat(value || 0);
+
+        return new Intl.NumberFormat("en-NG", {
+            style: "currency",
+            currency: "NGN",
+            maximumFractionDigits: 2,
+        }).format(Number.isFinite(amount) ? amount : 0);
+    };
 
     function setText(id, value) {
-        const element = document.getElementById(id);
-
-        if (element) {
-            element.textContent = value;
-        }
+        const element = byId(id);
+        if (element) element.textContent = value;
     }
-
 
     async function parseJsonResponse(response) {
         const contentType = response.headers.get("content-type") || "";
@@ -69,14 +77,12 @@ document.addEventListener("DOMContentLoaded", () => {
 
     function openModal(modal) {
         if (!modal) return;
-
         modal.style.display = "flex";
         document.body.style.overflow = "hidden";
     }
 
     function closeModal(modal) {
         if (!modal) return;
-
         modal.style.display = "none";
 
         const anyOpenModal = Array.from(
@@ -88,83 +94,49 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     }
 
-
     // ==========================================================
-    // NAVIGATION ELEMENTS
-    // ==========================================================
-
-    const mobileMenuBtn = document.getElementById("mobileMenuBtn");
-    const mobileDropdown = document.getElementById("mobileDropdown");
-
-
-    // ==========================================================
-    // USER DETAILS / DASHBOARD DATA
+    // USER SUMMARY
+    // Initial values are server-rendered by Django.
+    // Only refresh after an action changes the account.
     // ==========================================================
 
-    async function loadUser() {
+    async function refreshUserSummary() {
         try {
             const res = await fetch("/api/user-info/", {
-                method: "GET",
                 credentials: "same-origin",
                 headers: {
-                    "Accept": "application/json"
-                }
+                    Accept: "application/json",
+                },
             });
 
-            if (res.status === 401 || res.status === 403 || res.redirected) {
-                window.location.href = "/login/";
-                return;
-            }
-
-            if (!res.ok) {
-                console.error("User info failed:", res.status);
-                return;
-            }
+            if (!res.ok) return;
 
             const data = await parseJsonResponse(res);
 
             setText("usernameDisplay", data.username || "User");
-            setText("usernameTag", "@" + (data.username || "user"));
+            setText("usernameTag", `@${data.username || "user"}`);
             setText("usernameDynamic", data.username || "User");
-
             setText("followers", data.followers || 0);
             setText("following", data.following || 0);
-
             setText("balanceAmount", money(data.balance));
             setText("earningsTotal", money(data.earnings));
 
-            const membershipBanner = document.getElementById("membershipBanner");
+            const membershipBanner = byId("membershipBanner");
 
-            const rawMembershipValue =
-                data.is_member ??
-                data.membership_active ??
-                data.has_membership ??
-                data.is_active_member ??
-                false;
-
-            const isMember =
-                rawMembershipValue === true ||
-                rawMembershipValue === 1 ||
-                String(rawMembershipValue).toLowerCase() === "true" ||
-                String(rawMembershipValue) === "1";
-
-            if (membershipBanner) {
-                membershipBanner.hidden = isMember;
-                membershipBanner.style.display = isMember ? "none" : "";
+            if (membershipBanner && data.is_member) {
+                membershipBanner.remove();
             }
-
-        } catch (err) {
-            console.error("USER LOAD ERROR:", err);
+        } catch (error) {
+            console.error("USER SUMMARY REFRESH ERROR:", error);
         }
     }
-
 
     // ==========================================================
     // LOGOUT
     // ==========================================================
 
-    async function logout(e) {
-        if (e) e.preventDefault();
+    async function logout(event) {
+        event?.preventDefault();
 
         try {
             await fetch("/api/logout/", {
@@ -172,70 +144,96 @@ document.addEventListener("DOMContentLoaded", () => {
                 credentials: "same-origin",
                 headers: {
                     "Content-Type": "application/json",
-                    "X-CSRFToken": getCookie("csrftoken")
-                }
+                    "X-CSRFToken": getCookie("csrftoken"),
+                },
             });
-        } catch (err) {
-            console.error("Logout error:", err);
+        } catch (error) {
+            console.error("LOGOUT ERROR:", error);
         }
 
         window.location.href = "/login/";
     }
 
-    document.querySelectorAll(".logout").forEach((btn) => {
-        btn.addEventListener("click", logout);
+    document.querySelectorAll(".logout").forEach((button) => {
+        button.addEventListener("click", logout);
     });
 
-
     // ==========================================================
-    // SEARCH BAR
+    // SEARCH - DEBOUNCED
     // ==========================================================
 
-    const searchInput = document.getElementById("globalSearchInput");
-    const searchResults = document.getElementById("searchResults");
+    const searchInput = byId("globalSearchInput");
+    const searchResults = byId("searchResults");
+    let searchTimer = null;
+    let activeSearchController = null;
 
-    searchInput?.addEventListener("input", async () => {
-        const query = searchInput.value.trim();
+    async function performSearch(query) {
+        if (!searchResults) return;
 
-        if (!query) {
-            searchResults.style.display = "none";
-            searchResults.innerHTML = "";
-            return;
-        }
+        activeSearchController?.abort();
+        activeSearchController = new AbortController();
 
         try {
-            const res = await fetch(`/api/search/?q=${encodeURIComponent(query)}`);
-            const data = await res.json();
+            const response = await fetch(
+                `/api/search/?q=${encodeURIComponent(query)}`,
+                {
+                    credentials: "same-origin",
+                    signal: activeSearchController.signal,
+                }
+            );
+
+            const data = await parseJsonResponse(response);
+
+            if (!response.ok) return;
 
             searchResults.innerHTML = "";
 
-            if (!data.results.length) {
+            if (!data.results?.length) {
                 searchResults.innerHTML = `
                     <div class="search-item">No results found</div>
                 `;
-
                 searchResults.style.display = "block";
                 return;
             }
 
-            data.results.forEach((item) => {
-                const safeUrl = escapeHtml(item.url || "#");
-                const safeName = escapeHtml(item.name || "Result");
-                const safeType = escapeHtml(item.type || "");
-
-                searchResults.insertAdjacentHTML("beforeend", `
-                    <a href="${safeUrl}" class="search-item">
-                        <strong>${safeName}</strong>
-                        <div class="search-type">${safeType}</div>
-                    </a>
-                `);
-            });
+            searchResults.innerHTML = data.results.map((item) => `
+                <a
+                    href="${escapeHtml(item.url || "#")}"
+                    class="search-item"
+                >
+                    <strong>${escapeHtml(item.name || "Result")}</strong>
+                    <div class="search-type">
+                        ${escapeHtml(item.type || "")}
+                    </div>
+                </a>
+            `).join("");
 
             searchResults.style.display = "block";
-
-        } catch (err) {
-            console.error("SEARCH ERROR:", err);
+        } catch (error) {
+            if (error.name !== "AbortError") {
+                console.error("SEARCH ERROR:", error);
+            }
         }
+    }
+
+    searchInput?.addEventListener("input", () => {
+        const query = searchInput.value.trim();
+        clearTimeout(searchTimer);
+
+        if (query.length < 2) {
+            activeSearchController?.abort();
+
+            if (searchResults) {
+                searchResults.style.display = "none";
+                searchResults.innerHTML = "";
+            }
+            return;
+        }
+
+        searchTimer = window.setTimeout(
+            () => performSearch(query),
+            300
+        );
     });
 
     document.addEventListener("click", (event) => {
@@ -249,17 +247,16 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     });
 
-
     // ==========================================================
-    // NOTIFICATION MENU
+    // NOTIFICATIONS - LAZY LOAD ONLY WHEN OPENED
     // ==========================================================
 
-    const openNotifications = document.getElementById("openNotifications");
-    const closeNotifications = document.getElementById("closeNotifications");
-    const notificationOverlay = document.getElementById("notificationOverlay");
-    const notificationPanel = document.getElementById("notificationPanel");
-    const notificationList = document.getElementById("notificationList");
-    const notificationCount = document.getElementById("notificationCount");
+    const openNotifications = byId("openNotifications");
+    const closeNotifications = byId("closeNotifications");
+    const notificationOverlay = byId("notificationOverlay");
+    const notificationPanel = byId("notificationPanel");
+    const notificationList = byId("notificationList");
+    const notificationCount = byId("notificationCount");
 
     async function loadNotifications() {
         if (!notificationList) return;
@@ -270,503 +267,644 @@ document.addEventListener("DOMContentLoaded", () => {
 
         try {
             const response = await fetch("/api/notifications/", {
-                method: "GET",
-                credentials: "include",
+                credentials: "same-origin",
                 headers: {
-                    "Accept": "application/json"
-                }
+                    Accept: "application/json",
+                },
             });
-
-            if (!response.ok) {
-                notificationList.innerHTML = `
-                    <p class="empty-text">Could not load notifications.</p>
-                `;
-                return;
-            }
 
             const data = await parseJsonResponse(response);
 
-            if (notificationCount) {
-                if (data.unread_count > 0) {
-                    notificationCount.textContent = data.unread_count;
-                    notificationCount.style.display = "inline-flex";
-                } else {
-                    notificationCount.style.display = "none";
-                }
+            if (!response.ok) {
+                throw new Error("Could not load notifications.");
             }
 
-            if (!data.notifications || data.notifications.length === 0) {
+            if (!data.notifications?.length) {
                 notificationList.innerHTML = `
                     <p class="empty-text">No notifications yet.</p>
                 `;
                 return;
             }
 
-            notificationList.innerHTML = data.notifications.map((notification) => {
-                const link = escapeHtml(notification.link || "#");
-                const title = escapeHtml(notification.title || "Notification");
-                const message = escapeHtml(notification.message || "");
-                const createdAt = escapeHtml(notification.created_at || "");
-
-                return `
-                    <a href="${link}" class="notification-item ${notification.is_read ? "" : "unread"}">
+            notificationList.innerHTML = data.notifications.map(
+                (notification) => `
+                    <a
+                        href="${escapeHtml(notification.link || "#")}"
+                        class="notification-item ${
+                            notification.is_read ? "" : "unread"
+                        }"
+                    >
                         <div class="notification-content">
-                            <h4>${title}</h4>
-                            <p>${message}</p>
-                            <span class="notification-date">${createdAt}</span>
+                            <h4>${escapeHtml(notification.title || "Notification")}</h4>
+                            <p>${escapeHtml(notification.message || "")}</p>
+                            <span class="notification-date">
+                                ${escapeHtml(notification.created_at || "")}
+                            </span>
                         </div>
                     </a>
-                `;
-            }).join("");
-
+                `
+            ).join("");
         } catch (error) {
             console.error("NOTIFICATION ERROR:", error);
 
             notificationList.innerHTML = `
-                <p class="empty-text">Network error. Please try again.</p>
+                <p class="empty-text">
+                    Could not load notifications.
+                </p>
             `;
         }
     }
 
-
-
     async function markNotificationsRead() {
+        try {
+            await fetch("/api/notifications/read/", {
+                method: "POST",
+                credentials: "same-origin",
+                headers: {
+                    "X-CSRFToken": getCookie("csrftoken"),
+                },
+            });
 
-    try {
-
-        await fetch("/api/notifications/read/", {
-            method: "POST",
-            credentials: "same-origin",
-            headers: {
-                "X-CSRFToken": getCookie("csrftoken")
+            if (notificationCount) {
+                notificationCount.style.display = "none";
+                notificationCount.textContent = "";
             }
-        });
-
-        if (notificationCount) {
-            notificationCount.style.display = "none";
-            notificationCount.textContent = "";
+        } catch (error) {
+            console.error("MARK READ ERROR:", error);
         }
-
-        document.querySelectorAll(".notification-item.unread")
-            .forEach(item => item.classList.remove("unread"));
-
-    } catch (err) {
-        console.error("MARK READ ERROR:", err);
     }
 
-}
+    async function openNotificationPanel(event) {
+        event?.preventDefault();
 
-   function openNotificationPanel(e) {
-    if (e) e.preventDefault();
+        notificationOverlay?.classList.add("show");
+        notificationPanel?.classList.add("show");
 
-    notificationOverlay?.classList.add("show");
-    notificationPanel?.classList.add("show");
-    mobileDropdown?.classList.remove("show");
-
-    loadNotifications();
-
-    markNotificationsRead();
-}
+        await loadNotifications();
+        markNotificationsRead();
+    }
 
     function closeNotificationPanel() {
         notificationOverlay?.classList.remove("show");
         notificationPanel?.classList.remove("show");
     }
 
-    openNotifications?.addEventListener("click", openNotificationPanel);
-    closeNotifications?.addEventListener("click", closeNotificationPanel);
-    notificationOverlay?.addEventListener("click", closeNotificationPanel);
+    openNotifications?.addEventListener(
+        "click",
+        openNotificationPanel
+    );
 
+    closeNotifications?.addEventListener(
+        "click",
+        closeNotificationPanel
+    );
 
+    notificationOverlay?.addEventListener(
+        "click",
+        closeNotificationPanel
+    );
 
+    // ==========================================================
+    // FUND WALLET
+    // ==========================================================
 
- // ==========================================================
-    // FUND WALLET MODAL (with other options)
-// ==========================================================
+    const fundModal = byId("fundModal");
+    const fundBtn = byId("fundBtn");
+    const fundClose = byId("fundClose");
+    const fundAmountInput = byId("fundAmountInput");
+    const fundSubmitBtn = byId("fundSubmitBtn");
+    const fundMsg = byId("fundMsg");
+    const fundMethods = document.querySelectorAll(".fund-method");
+    const fundFee = byId("fundFee");
+    const walletReceives = byId("walletReceives");
+    const totalToPay = byId("totalToPay");
+    const bankDetails = byId("bankDetails");
+    const bankReference = byId("bankReference");
+    const fundExchangeRate = byId("fundExchangeRate");
 
-const fundModal = document.getElementById("fundModal");
-const fundBtn = document.getElementById("fundBtn");
-const fundClose = document.getElementById("fundClose");
-const fundAmountInput = document.getElementById("fundAmountInput");
-const fundSubmitBtn = document.getElementById("fundSubmitBtn");
-const fundMsg = document.getElementById("fundMsg");
+    let selectedFundingMethod = (
+        isNigerian ? "nigeria" : "card"
+    );
 
-const fundMethods = document.querySelectorAll(".fund-method");
-const fundFee = document.getElementById("fundFee");
-const walletReceives = document.getElementById("walletReceives");
-const totalToPay = document.getElementById("totalToPay");
-const bankDetails = document.getElementById("bankDetails");
-const bankReference = document.getElementById("bankReference");
+    let currentGbpNgnRate = 0;
+    let exchangeRatePromise = null;
 
-let selectedFundingMethod = "card";
-
-function formatMoney(amount) {
-    return `£${Number(amount).toFixed(2)}`;
-}
-
-function updateFundingSummary() {
-    const amount = parseFloat(fundAmountInput?.value) || 0;
-
-    let fee = 0;
-    let total = amount;
-
-    if (selectedFundingMethod === "card") {
-        fee = amount > 0 ? (amount * 0.02) + 0.25 : 0;
-        total = amount + fee;
-
-        if (bankDetails) bankDetails.style.display = "none";
-        if (fundSubmitBtn) fundSubmitBtn.textContent = "Continue to Payment";
-    } else {
-        fee = 0;
-        total = amount;
-
-        if (bankDetails) bankDetails.style.display = "block";
-        if (fundSubmitBtn) fundSubmitBtn.textContent = "I've Sent the Transfer";
-    }
-
-    if (walletReceives) walletReceives.textContent = formatMoney(amount);
-    if (fundFee) fundFee.textContent = formatMoney(fee);
-    if (totalToPay) totalToPay.textContent = formatMoney(total);
-}
-
-function generateBankReference() {
-    if (bankReference) {
-        bankReference.textContent = `SQB-${Date.now().toString().slice(-6)}`;
-    }
-}
-
-function openFundModal() {
-    if (!fundModal) return;
-
-    if (fundMsg) fundMsg.textContent = "";
-    if (fundAmountInput) fundAmountInput.value = "";
-
-    selectedFundingMethod = "card";
-
-    fundMethods.forEach(btn => {
-        btn.classList.toggle("active", btn.dataset.method === "card");
-    });
-
-    updateFundingSummary();
-
-    openModal(fundModal);
-    fundAmountInput?.focus();
-}
-
-function closeFundModal() {
-    closeModal(fundModal);
-}
-
-fundMethods.forEach(button => {
-    button.addEventListener("click", () => {
-        selectedFundingMethod = button.dataset.method;
-
-        fundMethods.forEach(btn => btn.classList.remove("active"));
-        button.classList.add("active");
-
-        if (selectedFundingMethod === "bank") {
-            generateBankReference();
+    function generateBankReference() {
+        if (bankReference) {
+            bankReference.textContent = (
+                `SQB-${Date.now().toString().slice(-6)}`
+            );
         }
+    }
+
+    function updateFundingSummary() {
+        const amount = Number.parseFloat(
+            fundAmountInput?.value || 0
+        ) || 0;
+
+        if (walletReceives) {
+            walletReceives.textContent = money(amount);
+        }
+
+        if (isNigerian) {
+            const ngnAmount = amount * currentGbpNgnRate;
+
+            if (totalToPay) {
+                totalToPay.textContent = naira(ngnAmount);
+            }
+            return;
+        }
+
+        let fee = 0;
+        let total = amount;
+
+        if (selectedFundingMethod === "card") {
+            fee = amount > 0
+                ? (amount * 0.02) + 0.25
+                : 0;
+
+            total = amount + fee;
+
+            if (bankDetails) {
+                bankDetails.style.display = "none";
+            }
+
+            if (fundSubmitBtn) {
+                fundSubmitBtn.textContent = "Continue to Payment";
+            }
+        } else {
+            if (bankDetails) {
+                bankDetails.style.display = "block";
+            }
+
+            if (fundSubmitBtn) {
+                fundSubmitBtn.textContent = "I've Sent the Transfer";
+            }
+        }
+
+        if (fundFee) {
+            fundFee.textContent = money(fee);
+        }
+
+        if (totalToPay) {
+            totalToPay.textContent = money(total);
+        }
+    }
+
+    async function loadFundingExchangeRate() {
+        if (!isNigerian) return 0;
+
+        if (currentGbpNgnRate > 0) {
+            return currentGbpNgnRate;
+        }
+
+        if (exchangeRatePromise) {
+            return exchangeRatePromise;
+        }
+
+        if (fundExchangeRate) {
+            fundExchangeRate.textContent = "Loading...";
+        }
+
+        exchangeRatePromise = (async () => {
+            try {
+                const response = await fetch(
+                    "/api/exchange-rate/gbp-ngn/",
+                    {
+                        credentials: "same-origin",
+                        headers: {
+                            Accept: "application/json",
+                        },
+                    }
+                );
+
+                const data = await parseJsonResponse(response);
+
+                if (!response.ok || data.success === false) {
+                    throw new Error(
+                        data.message ||
+                        "Unable to load the exchange rate."
+                    );
+                }
+
+                currentGbpNgnRate = Number.parseFloat(
+                    data.rate || 0
+                ) || 0;
+
+                if (fundExchangeRate) {
+                    fundExchangeRate.textContent = (
+                        `£1 = ${naira(currentGbpNgnRate)}`
+                    );
+                }
+
+                updateFundingSummary();
+                return currentGbpNgnRate;
+            } catch (error) {
+                console.error("FUND RATE ERROR:", error);
+
+                if (fundExchangeRate) {
+                    fundExchangeRate.textContent = "Unavailable";
+                }
+
+                if (fundMsg) {
+                    fundMsg.textContent = error.message;
+                }
+
+                return 0;
+            } finally {
+                exchangeRatePromise = null;
+            }
+        })();
+
+        return exchangeRatePromise;
+    }
+
+    async function openFundModal() {
+        if (!fundModal) return;
 
         if (fundMsg) fundMsg.textContent = "";
-        updateFundingSummary();
-    });
-});
+        if (fundAmountInput) fundAmountInput.value = "";
 
-fundAmountInput?.addEventListener("input", updateFundingSummary);
+        selectedFundingMethod = (
+            isNigerian ? "nigeria" : "card"
+        );
 
-fundBtn?.addEventListener("click", openFundModal);
-fundClose?.addEventListener("click", closeFundModal);
-
-fundModal?.addEventListener("click", (e) => {
-    if (e.target === fundModal) closeFundModal();
-});
-
-fundSubmitBtn?.addEventListener("click", async () => {
-    const amount = fundAmountInput?.value;
-
-    if (!amount || Number(amount) <= 0) {
-        if (fundMsg) fundMsg.textContent = "Enter a valid amount.";
-        return;
-    }
-
-    fundSubmitBtn.disabled = true;
-
-    if (fundMsg) {
-        fundMsg.textContent =
-            selectedFundingMethod === "card"
-                ? "Redirecting to payment..."
-                : "Creating bank transfer request...";
-    }
-
-    try {
-        const res = await fetch("/api/create-funding-checkout/", {
-            method: "POST",
-            credentials: "same-origin",
-            headers: {
-                "Content-Type": "application/json",
-                "X-CSRFToken": getCookie("csrftoken")
-            },
-            body: JSON.stringify({
-                amount,
-                method: selectedFundingMethod,
-                reference: bankReference?.textContent || ""
-            })
+        fundMethods.forEach((button) => {
+            button.classList.toggle(
+                "active",
+                button.dataset.method === selectedFundingMethod
+            );
         });
 
-        const data = await res.json();
+        updateFundingSummary();
+        openModal(fundModal);
+        fundAmountInput?.focus();
 
-        if (!res.ok) {
-            if (fundMsg) {
-                fundMsg.textContent = data.error || "Failed to start funding request.";
+        // Important: only call FX API when a Nigerian user opens
+        // the funding modal, not during initial page load.
+        if (isNigerian) {
+            await loadFundingExchangeRate();
+        }
+    }
+
+    fundMethods.forEach((button) => {
+        button.addEventListener("click", () => {
+            selectedFundingMethod = button.dataset.method;
+
+            fundMethods.forEach(
+                (item) => item.classList.remove("active")
+            );
+
+            button.classList.add("active");
+
+            if (selectedFundingMethod === "bank") {
+                generateBankReference();
             }
-            return;
-        }
 
-        if (selectedFundingMethod === "card" && data.checkout_url) {
-            window.location.href = data.checkout_url;
-            return;
-        }
-
-        if (selectedFundingMethod === "bank") {
-            if (fundMsg) {
-                fundMsg.textContent = data.message || "Bank transfer request created. Use the reference shown above.";
-            }
-            return;
-        }
-
-        if (fundMsg) {
-            fundMsg.textContent = "Payment URL was not returned.";
-        }
-
-    } catch (err) {
-        console.error("FUND ERROR:", err);
-        if (fundMsg) fundMsg.textContent = "Network error.";
-    } finally {
-        fundSubmitBtn.disabled = false;
-    }
-});
-
-
-    // ==========================================================
-    // WITHDRAWAL MODAL
-    // ==========================================================
-
-    const withdrawModal = document.getElementById("withdrawModal");
-    const withdrawBtn = document.getElementById("withdrawBtn");
-    const withdrawClose = document.getElementById("withdrawClose");
-    const withdrawAmountInput = document.getElementById("withdrawAmountInput");
-    const sortCodeInput = document.getElementById("sortCodeInput");
-    const accountNumberInput = document.getElementById("accountNumberInput");
-    const withdrawSubmitBtn = document.getElementById("withdrawSubmitBtn");
-    const withdrawMsg = document.getElementById("withdrawMsg");
-
-    function openWithdrawModal() {
-        if (!withdrawModal) return;
-
-        if (withdrawMsg) withdrawMsg.textContent = "";
-        if (withdrawAmountInput) withdrawAmountInput.value = "";
-        if (sortCodeInput) sortCodeInput.value = "";
-        if (accountNumberInput) accountNumberInput.value = "";
-
-        openModal(withdrawModal);
-
-        withdrawAmountInput?.focus();
-    }
-
-    function closeWithdrawModal() {
-        closeModal(withdrawModal);
-    }
-
-    withdrawBtn?.addEventListener("click", openWithdrawModal);
-    withdrawClose?.addEventListener("click", closeWithdrawModal);
-
-    withdrawModal?.addEventListener("click", (e) => {
-        if (e.target === withdrawModal) closeWithdrawModal();
+            if (fundMsg) fundMsg.textContent = "";
+            updateFundingSummary();
+        });
     });
 
+    fundAmountInput?.addEventListener(
+        "input",
+        updateFundingSummary
+    );
+
+    fundBtn?.addEventListener("click", openFundModal);
+    fundClose?.addEventListener(
+        "click",
+        () => closeModal(fundModal)
+    );
+
+    fundModal?.addEventListener("click", (event) => {
+        if (event.target === fundModal) {
+            closeModal(fundModal);
+        }
+    });
+
+    fundSubmitBtn?.addEventListener("click", async () => {
+        const amount = Number.parseFloat(
+            fundAmountInput?.value || 0
+        );
+
+        if (!Number.isFinite(amount) || amount < 1) {
+            if (fundMsg) {
+                fundMsg.textContent = (
+                    "Minimum funding amount is £1.00."
+                );
+            }
+            return;
+        }
+
+        if (isNigerian && !currentGbpNgnRate) {
+            const rate = await loadFundingExchangeRate();
+
+            if (!rate) {
+                return;
+            }
+        }
+
+        fundSubmitBtn.disabled = true;
+
+        if (fundMsg) {
+            fundMsg.textContent = isNigerian
+                ? "Creating secure Naira checkout..."
+                : (
+                    selectedFundingMethod === "card"
+                        ? "Redirecting to payment..."
+                        : "Creating bank transfer request..."
+                );
+        }
+
+        try {
+            const response = await fetch(
+                "/api/create-funding-checkout/",
+                {
+                    method: "POST",
+                    credentials: "same-origin",
+                    headers: {
+                        "Content-Type": "application/json",
+                        "X-CSRFToken": getCookie("csrftoken"),
+                    },
+                    body: JSON.stringify({
+                        amount: amount.toFixed(2),
+                        method: selectedFundingMethod,
+                        reference: (
+                            bankReference?.textContent || ""
+                        ),
+                    }),
+                }
+            );
+
+            const data = await parseJsonResponse(response);
+
+            if (!response.ok) {
+                throw new Error(
+                    data.error ||
+                    "Failed to start funding request."
+                );
+            }
+
+            if (data.checkout_url) {
+                window.location.href = data.checkout_url;
+                return;
+            }
+
+            if (selectedFundingMethod === "bank") {
+                if (fundMsg) {
+                    fundMsg.textContent = (
+                        data.message ||
+                        "Transfer request created."
+                    );
+                }
+                return;
+            }
+
+            if (fundMsg) {
+                fundMsg.textContent = (
+                    "Payment URL was not returned."
+                );
+            }
+        } catch (error) {
+            console.error("FUND ERROR:", error);
+
+            if (fundMsg) {
+                fundMsg.textContent = error.message;
+            }
+        } finally {
+            fundSubmitBtn.disabled = false;
+        }
+    });
+
+    // ==========================================================
+    // LEGACY WITHDRAWAL MODAL ON DASHBOARD
+    // ==========================================================
+
+    const withdrawModal = byId("withdrawModal");
+    const withdrawBtn = byId("withdrawBtn");
+    const withdrawClose = byId("withdrawClose");
+    const withdrawAmountInput = byId("withdrawAmountInput");
+    const sortCodeInput = byId("sortCodeInput");
+    const accountNumberInput = byId("accountNumberInput");
+    const withdrawSubmitBtn = byId("withdrawSubmitBtn");
+    const withdrawMsg = byId("withdrawMsg");
+
+    withdrawBtn?.addEventListener(
+        "click",
+        () => openModal(withdrawModal)
+    );
+
+    withdrawClose?.addEventListener(
+        "click",
+        () => closeModal(withdrawModal)
+    );
+
     sortCodeInput?.addEventListener("input", () => {
-        sortCodeInput.value = sortCodeInput.value.replace(/[^\d-]/g, "");
+        sortCodeInput.value = sortCodeInput.value.replace(
+            /[^\d-]/g,
+            ""
+        );
     });
 
     accountNumberInput?.addEventListener("input", () => {
-        accountNumberInput.value = accountNumberInput.value.replace(/[^\d]/g, "");
+        accountNumberInput.value = (
+            accountNumberInput.value.replace(/[^\d]/g, "")
+        );
     });
 
     withdrawSubmitBtn?.addEventListener("click", async () => {
         const amount = withdrawAmountInput?.value;
-        const sort_code = sortCodeInput?.value;
-        const account_number = accountNumberInput?.value;
+        const sortCode = sortCodeInput?.value;
+        const accountNumber = accountNumberInput?.value;
 
         if (!amount || Number(amount) <= 0) {
-            if (withdrawMsg) withdrawMsg.textContent = "Enter a valid amount.";
+            if (withdrawMsg) {
+                withdrawMsg.textContent = "Enter a valid amount.";
+            }
             return;
         }
 
-        if (!sort_code || !account_number) {
-            if (withdrawMsg) withdrawMsg.textContent = "Enter your bank details.";
+        if (!sortCode || !accountNumber) {
+            if (withdrawMsg) {
+                withdrawMsg.textContent = "Enter your bank details.";
+            }
             return;
         }
 
         withdrawSubmitBtn.disabled = true;
 
-        if (withdrawMsg) withdrawMsg.textContent = "Processing...";
-
         try {
-            const res = await fetch("/api/request-withdrawal/", {
-                method: "POST",
-                credentials: "same-origin",
-                headers: {
-                    "Content-Type": "application/json",
-                    "X-CSRFToken": getCookie("csrftoken")
-                },
-                body: JSON.stringify({
-                    amount,
-                    sort_code,
-                    account_number
-                })
-            });
-
-            const data = await parseJsonResponse(res);
-
-            if (!res.ok) {
-                if (withdrawMsg) {
-                    withdrawMsg.textContent = data.error || "Withdrawal failed.";
+            const response = await fetch(
+                "/api/request-withdrawal/",
+                {
+                    method: "POST",
+                    credentials: "same-origin",
+                    headers: {
+                        "Content-Type": "application/json",
+                        "X-CSRFToken": getCookie("csrftoken"),
+                    },
+                    body: JSON.stringify({
+                        amount,
+                        sort_code: sortCode,
+                        account_number: accountNumber,
+                    }),
                 }
-                return;
+            );
+
+            const data = await parseJsonResponse(response);
+
+            if (!response.ok) {
+                throw new Error(
+                    data.error || "Withdrawal failed."
+                );
             }
 
-            setText("balanceAmount", money(data.new_balance));
+            await refreshUserSummary();
 
             if (withdrawMsg) {
-                withdrawMsg.textContent = data.message || "Withdrawal request submitted.";
+                withdrawMsg.textContent = (
+                    data.message ||
+                    "Withdrawal request submitted."
+                );
             }
 
-            loadUser();
-
-            setTimeout(closeWithdrawModal, 700);
-
-        } catch (err) {
-            console.error("WITHDRAW ERROR:", err);
-
+            window.setTimeout(
+                () => closeModal(withdrawModal),
+                700
+            );
+        } catch (error) {
             if (withdrawMsg) {
-                withdrawMsg.textContent = "Network error. Try again.";
+                withdrawMsg.textContent = error.message;
             }
         } finally {
             withdrawSubmitBtn.disabled = false;
         }
     });
 
-
     // ==========================================================
     // TASK ACTION MODAL
     // ==========================================================
 
-    const taskModal = document.getElementById("taskActionModal");
-    const closeTaskModal = document.getElementById("taskActionClose");
-    const modalTitle = document.getElementById("taskActionTitle");
-    const modalPrice = document.getElementById("taskActionPrice");
-    const modalDescription = document.getElementById("taskActionDescription");
-    const modalIcon = document.getElementById("taskActionIcon");
-    const quantityLabel = document.getElementById("quantityLabel");
-    const platformGroup = document.getElementById("platformGroup");
-    const quantityInput = document.getElementById("taskQuantity");
-    const totalDisplay = document.getElementById("taskTotal");
-    const taskLink = document.getElementById("taskLink");
-    const taskPlatform = document.getElementById("taskPlatform");
-    const submitTaskBtn = document.getElementById("submitTaskBtn");
+    const taskModal = byId("taskActionModal");
+    const taskActionClose = byId("taskActionClose");
+    const modalTitle = byId("taskActionTitle");
+    const modalPrice = byId("taskActionPrice");
+    const modalDescription = byId("taskActionDescription");
+    const modalIcon = byId("taskActionIcon");
+    const quantityLabel = byId("quantityLabel");
+    const platformGroup = byId("platformGroup");
+    const quantityInput = byId("taskQuantity");
+    const totalDisplay = byId("taskTotal");
+    const taskLink = byId("taskLink");
+    const taskPlatform = byId("taskPlatform");
+    const submitTaskBtn = byId("submitTaskBtn");
 
     let currentPrice = 0;
-    let taskType = null;
+    let taskType = "";
 
     document.querySelectorAll(".select-btn").forEach((button) => {
         button.addEventListener("click", function () {
-            if (!taskModal) return;
+            currentPrice = Number.parseFloat(
+                this.dataset.amount || 0
+            ) || 0;
 
-            if (modalTitle) modalTitle.innerText = this.dataset.title || "";
-            if (modalPrice) modalPrice.innerText = this.dataset.price || "";
-            if (modalDescription) modalDescription.innerText = this.dataset.description || "";
-            if (modalIcon) modalIcon.src = this.dataset.icon || "";
-
-            currentPrice = parseFloat(this.dataset.amount) || 0;
             taskType = this.dataset.type || "";
 
-            if (quantityInput) quantityInput.value = "";
-            if (totalDisplay) totalDisplay.innerText = "£0.00";
+            if (modalTitle) {
+                modalTitle.textContent = this.dataset.title || "";
+            }
 
-            if (platformGroup) platformGroup.style.display = "block";
+            if (modalPrice) {
+                modalPrice.textContent = this.dataset.price || "";
+            }
+
+            if (modalDescription) {
+                modalDescription.textContent = (
+                    this.dataset.description || ""
+                );
+            }
+
+            if (modalIcon) {
+                modalIcon.src = this.dataset.icon || "";
+            }
+
+            if (quantityInput) quantityInput.value = "";
+            if (totalDisplay) totalDisplay.textContent = "£0.00";
+            if (taskLink) taskLink.value = "";
+
+            if (platformGroup) {
+                platformGroup.style.display = (
+                    taskType === "subscribe"
+                        ? "none"
+                        : "block"
+                );
+            }
 
             if (taskType === "subscribe") {
+                if (quantityLabel) {
+                    quantityLabel.textContent = (
+                        "Number of Subscribers You Want"
+                    );
+                }
+                if (taskPlatform) taskPlatform.value = "YouTube";
+                if (taskLink) {
+                    taskLink.placeholder = (
+                        "Enter your YouTube channel link"
+                    );
+                }
+            } else {
+                const labels = {
+                    follow: "Number of Followers You Want",
+                    like: "Number of Likes You Want",
+                    comment: "Number of Comments You Want",
+                    repost: "Number of Reposts You Want",
+                };
 
-    if (quantityLabel) quantityLabel.innerText = "Number of Subscribers You Want";
+                if (quantityLabel) {
+                    quantityLabel.textContent = (
+                        labels[taskType] || "Quantity"
+                    );
+                }
 
-    if (platformGroup) platformGroup.style.display = "none";
+                if (taskPlatform) taskPlatform.value = "";
 
-    if (taskPlatform) taskPlatform.value = "YouTube";
-
-    if (taskLink) taskLink.placeholder = "Enter your YouTube channel link";
-
-} else if (taskType === "follow") {
-
-    if (quantityLabel) quantityLabel.innerText = "Number of Followers You Want";
-
-    if (platformGroup) platformGroup.style.display = "block";
-
-    if (taskLink) taskLink.placeholder = "Enter your page/profile link";
-
-} else if (taskType === "like") {
-
-    if (quantityLabel) quantityLabel.innerText = "Number of Likes You Want";
-
-    if (platformGroup) platformGroup.style.display = "block";
-
-    if (taskLink) taskLink.placeholder = "Enter your post link";
-
-} else if (taskType === "comment") {
-
-    if (quantityLabel) quantityLabel.innerText = "Number of Comments You Want";
-
-    if (platformGroup) platformGroup.style.display = "block";
-
-    if (taskLink) taskLink.placeholder = "Enter your post link";
-
-} else if (taskType === "repost") {
-
-    if (quantityLabel) quantityLabel.innerText = "Number of Reposts You Want";
-
-    if (platformGroup) platformGroup.style.display = "block";
-
-    if (taskLink) taskLink.placeholder = "Enter your post link";
-
-}
-
-            if (taskLink) taskLink.value = "";
-            if (taskPlatform && taskType !== "subscribe") taskPlatform.value = "";
+                if (taskLink) {
+                    taskLink.placeholder = (
+                        taskType === "follow"
+                            ? "Enter your page/profile link"
+                            : "Enter your post link"
+                    );
+                }
+            }
 
             openModal(taskModal);
         });
     });
 
     quantityInput?.addEventListener("input", function () {
-        const quantity = parseFloat(this.value);
+        const quantity = Number.parseFloat(this.value);
 
-        if (!isNaN(quantity) && quantity > 0) {
-            if (totalDisplay) {
-                totalDisplay.innerText = "£" + (quantity * currentPrice).toFixed(2);
-            }
-        } else {
-            if (totalDisplay) {
-                totalDisplay.innerText = "£0.00";
-            }
+        if (totalDisplay) {
+            totalDisplay.textContent = (
+                Number.isFinite(quantity) && quantity > 0
+                    ? money(quantity * currentPrice)
+                    : "£0.00"
+            );
         }
     });
 
-    closeTaskModal?.addEventListener("click", () => {
-        closeModal(taskModal);
-    });
+    taskActionClose?.addEventListener(
+        "click",
+        () => closeModal(taskModal)
+    );
 
     submitTaskBtn?.addEventListener("click", async () => {
-        const quantity = parseInt(quantityInput?.value || "0");
+        const quantity = Number.parseInt(
+            quantityInput?.value || "0",
+            10
+        );
+
         const link = taskLink?.value.trim() || "";
         const platform = taskPlatform?.value || "";
 
@@ -788,179 +926,191 @@ fundSubmitBtn?.addEventListener("click", async () => {
         submitTaskBtn.disabled = true;
 
         try {
-            const res = await fetch("/create-task/", {
+            const response = await fetch("/create-task/", {
                 method: "POST",
                 credentials: "same-origin",
                 headers: {
                     "Content-Type": "application/json",
-                    "X-CSRFToken": getCookie("csrftoken")
+                    "X-CSRFToken": getCookie("csrftoken"),
                 },
                 body: JSON.stringify({
                     platform,
                     followers: quantity,
                     link,
-                    task_type: taskType
-                })
+                    task_type: taskType,
+                }),
             });
 
-            const data = await parseJsonResponse(res);
+            const data = await parseJsonResponse(response);
 
-            if (!res.ok) {
+            if (!response.ok) {
                 alert(data.error || "Something went wrong.");
                 return;
             }
 
             alert("Task created successfully.");
-
-            setText("balanceAmount", money(data.new_balance));
-
-            if (taskModal) {
-                taskModal.style.display = "none";
-            }
-
-            loadUser();
-
-        } catch (err) {
-            console.error("TASK CREATE ERROR:", err);
-            alert("Something went wrong. Check console.");
+            closeModal(taskModal);
+            await refreshUserSummary();
+        } catch (error) {
+            console.error("TASK CREATE ERROR:", error);
+            alert("Something went wrong.");
         } finally {
             submitTaskBtn.disabled = false;
         }
     });
 
-// ==========================================================
-// ADMIN CAMPAIGN MODAL
-// ==========================================================
+    // ==========================================================
+    // ADMIN CAMPAIGN MODAL
+    // ==========================================================
 
-const campaignModal = document.getElementById("campaignModal");
-const openCampaignBtn = document.getElementById("openCampaignModal");
-const campaignClose = document.getElementById("campaignClose");
-const createCampaignBtn = document.getElementById("createCampaignBtn");
+    const campaignModal = byId("campaignModal");
+    const openCampaignBtn = byId("openCampaignModal");
+    const campaignClose = byId("campaignClose");
+    const createCampaignBtn = byId("createCampaignBtn");
 
-const campaignTitle = document.getElementById("campaignTitle");
-const campaignDescription = document.getElementById("campaignDescription");
-const campaignReward = document.getElementById("campaignReward");
-const campaignPlatform = document.getElementById("campaignPlatform");
-const campaignParticipants = document.getElementById("campaignParticipants");
-const campaignStartDate = document.getElementById("campaignStartDate");
-const campaignEndDate = document.getElementById("campaignEndDate");
-const campaignStatus = document.getElementById("campaignStatus");
-const campaignImage = document.getElementById("campaignImage");
-const campaignBudget = document.getElementById("campaignBudget");
+    const campaignTitle = byId("campaignTitle");
+    const campaignDescription = byId("campaignDescription");
+    const campaignReward = byId("campaignReward");
+    const campaignPlatform = byId("campaignPlatform");
+    const campaignParticipants = byId("campaignParticipants");
+    const campaignStartDate = byId("campaignStartDate");
+    const campaignEndDate = byId("campaignEndDate");
+    const campaignStatus = byId("campaignStatus");
+    const campaignImage = byId("campaignImage");
+    const campaignBudget = byId("campaignBudget");
 
+    function updateCampaignBudget() {
+        const reward = Number.parseFloat(
+            campaignReward?.value || 0
+        ) || 0;
 
-function updateCampaignBudget() {
+        const participants = Number.parseInt(
+            campaignParticipants?.value || "0",
+            10
+        ) || 0;
 
-    const reward = parseFloat(campaignReward?.value) || 0;
-    const participants = parseInt(campaignParticipants?.value || "0", 10) || 0;
-
-    if (campaignBudget) {
-        campaignBudget.textContent =
-            "£" + (reward * participants).toFixed(2);
-    }
-}
-
-campaignReward?.addEventListener("input", updateCampaignBudget);
-campaignParticipants?.addEventListener("input", updateCampaignBudget);
-
-
-openCampaignBtn?.addEventListener("click", () => {
-    openModal(campaignModal);
-});
-
-
-campaignClose?.addEventListener("click", () => {
-    closeModal(campaignModal);
-});
-
-
-window.addEventListener("click", (e) => {
-    if (e.target === campaignModal) {
-        closeModal(campaignModal);
-    }
-});
-
-
-createCampaignBtn?.addEventListener("click", async () => {
-
-    const form = new FormData();
-
-    form.append("title", campaignTitle?.value.trim() || "");
-    form.append("description", campaignDescription?.value.trim() || "");
-    form.append("reward", campaignReward?.value || "");
-    form.append("platform", campaignPlatform?.value || "");
-    form.append("max_participants", campaignParticipants?.value || "");
-    form.append("start_date", campaignStartDate?.value || "");
-    form.append("end_date", campaignEndDate?.value || "");
-    form.append("status", campaignStatus?.value || "draft");
-
-    if (campaignImage?.files?.length) {
-        form.append("image", campaignImage.files[0]);
+        if (campaignBudget) {
+            campaignBudget.textContent = money(
+                reward * participants
+            );
+        }
     }
 
-    createCampaignBtn.disabled = true;
-    createCampaignBtn.textContent = "Creating...";
+    campaignReward?.addEventListener(
+        "input",
+        updateCampaignBudget
+    );
 
-    try {
+    campaignParticipants?.addEventListener(
+        "input",
+        updateCampaignBudget
+    );
 
-        const response = await fetch("/api/admin/create-campaign/", {
+    openCampaignBtn?.addEventListener(
+        "click",
+        () => openModal(campaignModal)
+    );
 
-            method: "POST",
+    campaignClose?.addEventListener(
+        "click",
+        () => closeModal(campaignModal)
+    );
 
-            credentials: "same-origin",
+    createCampaignBtn?.addEventListener("click", async () => {
+        const form = new FormData();
 
-            headers: {
-                "X-CSRFToken": getCookie("csrftoken")
-            },
+        form.append(
+            "title",
+            campaignTitle?.value.trim() || ""
+        );
 
-            body: form
+        form.append(
+            "description",
+            campaignDescription?.value.trim() || ""
+        );
 
-        });
+        form.append(
+            "reward",
+            campaignReward?.value || ""
+        );
 
-        const data = await parseJsonResponse(response);
+        form.append(
+            "platform",
+            campaignPlatform?.value || ""
+        );
 
-        if (!response.ok) {
-            alert(data.error || "Unable to create campaign.");
-            return;
+        form.append(
+            "max_participants",
+            campaignParticipants?.value || ""
+        );
+
+        form.append(
+            "start_date",
+            campaignStartDate?.value || ""
+        );
+
+        form.append(
+            "end_date",
+            campaignEndDate?.value || ""
+        );
+
+        form.append(
+            "status",
+            campaignStatus?.value || "draft"
+        );
+
+        if (campaignImage?.files?.length) {
+            form.append(
+                "image",
+                campaignImage.files[0]
+            );
         }
 
-        alert("Campaign created successfully!");
+        createCampaignBtn.disabled = true;
+        createCampaignBtn.textContent = "Creating...";
 
-        closeModal(campaignModal);
+        try {
+            const response = await fetch(
+                "/api/admin/create-campaign/",
+                {
+                    method: "POST",
+                    credentials: "same-origin",
+                    headers: {
+                        "X-CSRFToken": getCookie("csrftoken"),
+                    },
+                    body: form,
+                }
+            );
 
-        campaignTitle.value = "";
-        campaignDescription.value = "";
-        campaignReward.value = "";
-        campaignParticipants.value = "";
-        campaignPlatform.value = "";
-        campaignStartDate.value = "";
-        campaignEndDate.value = "";
-        campaignStatus.value = "draft";
-        campaignImage.value = "";
+            const data = await parseJsonResponse(response);
 
-        campaignBudget.textContent = "£0.00";
+            if (!response.ok) {
+                alert(
+                    data.error ||
+                    "Unable to create campaign."
+                );
+                return;
+            }
 
-    } catch (err) {
-
-        console.error(err);
-
-        alert("Network error.");
-
-    } finally {
-
-        createCampaignBtn.disabled = false;
-        createCampaignBtn.textContent = "Create Campaign";
-
-    }
-
-});
-
+            alert("Campaign created successfully!");
+            closeModal(campaignModal);
+        } catch (error) {
+            console.error("CAMPAIGN ERROR:", error);
+            alert("Network error.");
+        } finally {
+            createCampaignBtn.disabled = false;
+            createCampaignBtn.textContent = "Create Campaign";
+        }
+    });
 
     // ==========================================================
-    // MEMBERSHIP ACTIVATION
+    // MEMBERSHIP
     // ==========================================================
 
-    const membershipBtn = document.getElementById("activateMembershipBtn") || document.getElementById("membershipBtn");
+    const membershipBtn = (
+        byId("activateMembershipBtn") ||
+        byId("membershipBtn")
+    );
 
     membershipBtn?.addEventListener("click", async (event) => {
         if (membershipBtn.tagName === "A") {
@@ -972,27 +1122,36 @@ createCampaignBtn?.addEventListener("click", async () => {
         membershipBtn.textContent = "Activating...";
 
         try {
-            const res = await fetch("/pay-membership/", {
-                method: "POST",
-                credentials: "same-origin",
-                headers: {
-                    "Content-Type": "application/json",
-                    "X-CSRFToken": getCookie("csrftoken")
+            const response = await fetch(
+                "/pay-membership/",
+                {
+                    method: "POST",
+                    credentials: "same-origin",
+                    headers: {
+                        "Content-Type": "application/json",
+                        "X-CSRFToken": getCookie("csrftoken"),
+                    },
                 }
-            });
+            );
 
-            const data = await parseJsonResponse(res);
+            const data = await parseJsonResponse(response);
 
-            if (!res.ok) {
-                alert(data.error || "Membership payment failed.");
+            if (!response.ok) {
+                alert(
+                    data.error ||
+                    "Membership payment failed."
+                );
                 return;
             }
 
-            alert(data.message || "Membership activated.");
-            loadUser();
+            alert(
+                data.message ||
+                "Membership activated."
+            );
 
-        } catch (err) {
-            console.error("MEMBERSHIP ERROR:", err);
+            await refreshUserSummary();
+        } catch (error) {
+            console.error("MEMBERSHIP ERROR:", error);
             alert("Something went wrong.");
         } finally {
             membershipBtn.disabled = false;
@@ -1000,63 +1159,52 @@ createCampaignBtn?.addEventListener("click", async () => {
         }
     });
 
-
-   // ==========================================================
-// MOBILE MENU
-// ==========================================================
-
-if (mobileMenuBtn && mobileDropdown) {
-    mobileMenuBtn.addEventListener("click", (e) => {
-        e.preventDefault();
-        e.stopPropagation();
-
-        mobileDropdown.classList.toggle("show");
-    });
-
-    mobileDropdown.addEventListener("click", (e) => {
-        e.stopPropagation();
-    });
-
-    document.addEventListener("click", (e) => {
-        if (
-            !mobileDropdown.contains(e.target) &&
-            !mobileMenuBtn.contains(e.target)
-        ) {
-            mobileDropdown.classList.remove("show");
-        }
-    });
-
-    window.addEventListener("resize", () => {
-        if (window.innerWidth > 900) {
-            mobileDropdown.classList.remove("show");
-        }
-    });
-}
-
-
     // ==========================================================
-    // CLOSE MODALS WHEN CLICKING OUTSIDE
+    // MOBILE MENU / TASK EXPANSION
     // ==========================================================
 
-    window.addEventListener("click", (e) => {
-        if (taskModal && e.target === taskModal) {
-            taskModal.style.display = "none";
-        }
-    });
+    const mobileMenuBtn = byId("mobileMenuBtn");
+    const mobileDropdown = byId("mobileDropdown");
 
+    if (mobileMenuBtn && mobileDropdown) {
+        mobileMenuBtn.addEventListener("click", (event) => {
+            event.preventDefault();
+            event.stopPropagation();
+            mobileDropdown.classList.toggle("show");
+        });
 
-    // ==========================================================
-    // MOBILE TASK EXPANSION
-    // ==========================================================
+        mobileDropdown.addEventListener(
+            "click",
+            (event) => event.stopPropagation()
+        );
 
-    const tasksSection = document.querySelector(".tasks-section");
-    const mobileTaskToggle = document.getElementById("mobileTaskToggle");
+        document.addEventListener("click", (event) => {
+            if (
+                !mobileDropdown.contains(event.target) &&
+                !mobileMenuBtn.contains(event.target)
+            ) {
+                mobileDropdown.classList.remove("show");
+            }
+        });
+    }
+
+    const tasksSection = document.querySelector(
+        ".tasks-section"
+    );
+
+    const mobileTaskToggle = byId("mobileTaskToggle");
 
     mobileTaskToggle?.addEventListener("click", () => {
         if (!tasksSection) return;
 
-        const expanded = tasksSection.classList.toggle("mobile-expanded");
-        mobileTaskToggle.setAttribute("aria-expanded", String(expanded));
+        const expanded = tasksSection.classList.toggle(
+            "mobile-expanded"
+        );
+
+        mobileTaskToggle.setAttribute(
+            "aria-expanded",
+            String(expanded)
+        );
 
         const label = mobileTaskToggle.querySelector("span");
 
@@ -1067,10 +1215,22 @@ if (mobileMenuBtn && mobileDropdown) {
         }
     });
 
+    // ==========================================================
+    // GLOBAL MODAL CLOSING
+    // ==========================================================
 
-    // ==========================================================
-    // ESCAPE KEY / MODAL ACCESSIBILITY
-    // ==========================================================
+    window.addEventListener("click", (event) => {
+        [
+            fundModal,
+            withdrawModal,
+            taskModal,
+            campaignModal,
+        ].forEach((modal) => {
+            if (modal && event.target === modal) {
+                closeModal(modal);
+            }
+        });
+    });
 
     document.addEventListener("keydown", (event) => {
         if (event.key !== "Escape") return;
@@ -1083,12 +1243,6 @@ if (mobileMenuBtn && mobileDropdown) {
         mobileDropdown?.classList.remove("show");
     });
 
-
-    // ==========================================================
-    // INITIAL PAGE LOAD
-    // ==========================================================
-
-    loadUser();
-    loadNotifications();
-
+    // No loadUser() and no loadNotifications() here.
+    // The dashboard arrives already populated by Django.
 });
