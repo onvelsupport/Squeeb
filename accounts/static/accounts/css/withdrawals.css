@@ -1,3 +1,9 @@
+/* ==========================================================
+   SQUEEB READABLE TYPOGRAPHY UPDATE
+   Compact layout preserved. Small interface text has been
+   increased for better desktop and mobile readability.
+========================================================== */
+
 * {
     box-sizing: border-box;
 }
@@ -43,7 +49,7 @@
     display: block;
     margin-bottom: 6px;
     color: var(--withdraw-primary);
-    font-size: 10px;
+    font-size: 12px;
     font-weight: 900;
     letter-spacing: .12em;
 }
@@ -59,7 +65,7 @@
 .withdraw-app-header p {
     margin: 7px 0 0;
     color: var(--withdraw-muted);
-    font-size: 13px;
+    font-size: 14px;
 }
 
 .withdraw-header-icon {
@@ -113,7 +119,7 @@
 .withdraw-wallet-top span,
 .withdraw-wallet-meta span {
     color: rgba(255,255,255,.65);
-    font-size: 12px;
+    font-size: 13px;
     font-weight: 700;
 }
 
@@ -194,7 +200,7 @@
     display: block;
     margin-bottom: 3px;
     color: var(--withdraw-muted);
-    font-size: 9px;
+    font-size: 12px;
     font-weight: 900;
     letter-spacing: .08em;
     text-transform: uppercase;
@@ -203,13 +209,13 @@
 .status-copy strong {
     display: block;
     color: var(--withdraw-text);
-    font-size: 13px;
+    font-size: 14px;
 }
 
 .status-copy p {
     margin: 3px 0 0;
     color: var(--withdraw-muted);
-    font-size: 10px;
+    font-size: 12px;
     line-height: 1.4;
 }
 
@@ -228,7 +234,7 @@
 
 .status-fee-pill span {
     color: var(--withdraw-muted);
-    font-size: 8px;
+    font-size: 11px;
     text-transform: uppercase;
 }
 
@@ -264,12 +270,12 @@
 
 .membership-required-notice strong {
     display: block;
-    font-size: 12px;
+    font-size: 13px;
 }
 
 .membership-required-notice p {
     margin: 2px 0 0;
-    font-size: 10px;
+    font-size: 12px;
     line-height: 1.4;
 }
 
@@ -279,7 +285,7 @@
     padding: 9px 11px;
     color: #fff;
     background: #d97706;
-    font-size: 10px;
+    font-size: 12px;
     font-weight: 800;
     cursor: pointer;
 }
@@ -288,7 +294,7 @@
     color: var(--withdraw-success);
     background: #f0fdf4;
     border: 1px solid #bbf7d0;
-    font-size: 11px;
+    font-size: 13px;
     font-weight: 800;
 }
 
@@ -305,7 +311,7 @@
     display: block;
     margin-bottom: 4px;
     color: var(--withdraw-primary);
-    font-size: 9px;
+    font-size: 12px;
     font-weight: 900;
     letter-spacing: .12em;
 }
@@ -386,19 +392,19 @@
 }
 
 .method-copy strong {
-    font-size: 13px;
+    font-size: 14px;
 }
 
 .method-copy small {
     margin-top: 3px;
     color: var(--withdraw-muted);
-    font-size: 10px;
+    font-size: 12px;
 }
 
 .method-status {
     padding: 5px 7px;
     border-radius: 999px;
-    font-size: 8px;
+    font-size: 11px;
     font-weight: 900;
     text-transform: uppercase;
 }
@@ -415,7 +421,7 @@
 
 .method-arrow {
     color: #9aa1af;
-    font-size: 10px;
+    font-size: 12px;
 }
 
 /* STATS */
@@ -446,12 +452,12 @@
 .withdraw-stats span {
     margin-bottom: 3px;
     color: var(--withdraw-muted);
-    font-size: 9px;
+    font-size: 12px;
 }
 
 .withdraw-stats strong {
     color: var(--withdraw-text);
-    font-size: 13px;
+    font-size: 14px;
 }
 
 /* HISTORY */
@@ -484,18 +490,18 @@
 }
 
 .history-toggle strong {
-    font-size: 12px;
+    font-size: 13px;
 }
 
 .history-toggle small {
     margin-top: 3px;
     color: var(--withdraw-muted);
-    font-size: 9px;
+    font-size: 12px;
 }
 
 .history-toggle i {
     color: #747b89;
-    font-size: 10px;
+    font-size: 12px;
     transition: transform .2s ease;
 }
 
@@ -527,7 +533,7 @@
     background: #f1f5f9;
     border: 0;
     border-radius: 999px;
-    font-size: 10px;
+    font-size: 12px;
     font-weight: 800;
     cursor: pointer;
 }
@@ -553,13 +559,13 @@
 
 .withdraw-history-item h3 {
     margin: 0 0 3px;
-    font-size: 12px;
+    font-size: 13px;
 }
 
 .withdraw-history-item p {
     margin: 2px 0;
     color: var(--withdraw-muted);
-    font-size: 9px;
+    font-size: 12px;
 }
 
 .withdraw-history-amount {
@@ -568,7 +574,7 @@
 
 .withdraw-history-amount strong {
     display: block;
-    font-size: 12px;
+    font-size: 13px;
 }
 
 .status-badge {
@@ -576,7 +582,7 @@
     margin-top: 5px;
     padding: 4px 7px;
     border-radius: 999px;
-    font-size: 8px;
+    font-size: 11px;
     font-weight: 900;
     text-transform: uppercase;
 }
@@ -609,12 +615,12 @@
 .empty-withdraw h3 {
     margin: 8px 0 3px;
     color: var(--withdraw-text);
-    font-size: 12px;
+    font-size: 13px;
 }
 
 .empty-withdraw p {
     margin: 0;
-    font-size: 9px;
+    font-size: 12px;
 }
 
 /* MODALS */
@@ -684,7 +690,7 @@
 .withdraw-modal > p {
     margin: 6px 0 16px;
     color: var(--withdraw-muted);
-    font-size: 11px;
+    font-size: 13px;
     line-height: 1.5;
 }
 
@@ -699,7 +705,7 @@
     background: #f0fdf4;
     border: 1px solid #bbf7d0;
     border-radius: 999px;
-    font-size: 9px;
+    font-size: 12px;
     font-weight: 800;
 }
 
@@ -711,7 +717,7 @@
 .withdraw-modal label {
     margin-top: 3px;
     color: #334155;
-    font-size: 10px;
+    font-size: 12px;
     font-weight: 800;
 }
 
@@ -753,7 +759,7 @@
 
 .field-hint {
     color: var(--withdraw-muted);
-    font-size: 9px;
+    font-size: 12px;
 }
 
 .withdrawal-calculation {
@@ -770,7 +776,7 @@
     justify-content: space-between;
     gap: 12px;
     color: #475569;
-    font-size: 10px;
+    font-size: 12px;
 }
 
 .withdrawal-net-row {
@@ -799,7 +805,7 @@
     background: #eff6ff;
     border: 1px solid #bfdbfe;
     border-radius: 10px;
-    font-size: 10px;
+    font-size: 12px;
     font-weight: 800;
     cursor: pointer;
 }
@@ -815,14 +821,14 @@
 
 .withdrawal-warning p {
     margin: 0;
-    font-size: 9px;
+    font-size: 12px;
     line-height: 1.45;
 }
 
 .rate-attribution {
     margin: -2px 0 8px;
     color: var(--withdraw-muted);
-    font-size: 8px;
+    font-size: 11px;
     text-align: center;
 }
 
@@ -837,7 +843,7 @@
     background: var(--withdraw-primary);
     border: 0;
     border-radius: 11px;
-    font-size: 11px;
+    font-size: 13px;
     font-weight: 900;
     cursor: pointer;
 }
@@ -855,7 +861,7 @@
 .withdraw-msg {
     min-height: 16px;
     margin: 0;
-    font-size: 10px;
+    font-size: 12px;
     text-align: center;
 }
 
@@ -886,7 +892,7 @@ body.modal-open {
     }
 
     .withdraw-app-header p {
-        font-size: 11px;
+        font-size: 13px;
     }
 
     .withdraw-header-icon {
@@ -926,11 +932,11 @@ body.modal-open {
     }
 
     .withdraw-wallet-meta span {
-        font-size: 9px;
+        font-size: 12px;
     }
 
     .withdraw-wallet-meta strong {
-        font-size: 12px;
+        font-size: 13px;
     }
 
     .withdraw-status-card {
@@ -943,15 +949,15 @@ body.modal-open {
         width: 35px;
         height: 35px;
         border-radius: 11px;
-        font-size: 12px;
+        font-size: 13px;
     }
 
     .status-copy strong {
-        font-size: 11px;
+        font-size: 13px;
     }
 
     .status-copy p {
-        font-size: 9px;
+        font-size: 12px;
     }
 
     .status-fee-pill {
@@ -960,7 +966,7 @@ body.modal-open {
     }
 
     .status-fee-pill strong {
-        font-size: 12px;
+        font-size: 13px;
     }
 
     .withdraw-app-section {
@@ -985,11 +991,11 @@ body.modal-open {
     }
 
     .method-copy strong {
-        font-size: 12px;
+        font-size: 13px;
     }
 
     .method-copy small {
-        font-size: 9px;
+        font-size: 12px;
     }
 
     .withdraw-stats {
@@ -1001,11 +1007,11 @@ body.modal-open {
     }
 
     .withdraw-stats span {
-        font-size: 8px;
+        font-size: 11px;
     }
 
     .withdraw-stats strong {
-        font-size: 11px;
+        font-size: 13px;
     }
 
     .withdraw-history-section {

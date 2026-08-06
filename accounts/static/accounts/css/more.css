@@ -1,3 +1,9 @@
+/* ==========================================================
+   SQUEEB READABLE TYPOGRAPHY UPDATE
+   Compact layout preserved. Small interface text has been
+   increased for better desktop and mobile readability.
+========================================================== */
+
 *{
     margin:0;
     padding:0;
@@ -125,7 +131,7 @@ a{
     display:block;
     margin-bottom:3px;
     color:#9eafff;
-    font-size:8px;
+    font-size:11px;
     font-weight:900;
     letter-spacing:.12em;
 }
@@ -141,7 +147,7 @@ a{
 .more-profile-copy p{
     margin-top:3px;
     color:rgba(255,255,255,.6);
-    font-size:10px;
+    font-size:12px;
 }
 
 .more-edit-btn{
@@ -154,7 +160,7 @@ a{
     gap:7px;
     background:#fff;
     color:#171a23;
-    font-size:9px;
+    font-size:12px;
     font-weight:900;
 }
 
@@ -166,7 +172,7 @@ a{
     padding-top:14px;
     border-top:1px solid rgba(255,255,255,.12);
     color:rgba(255,255,255,.62);
-    font-size:9px;
+    font-size:12px;
 }
 
 
@@ -186,7 +192,7 @@ a{
     display:block;
     margin-bottom:4px;
     color:var(--more-blue);
-    font-size:8px;
+    font-size:11px;
     font-weight:900;
     letter-spacing:.12em;
 }
@@ -251,7 +257,7 @@ a{
 
 .setting-copy strong{
     color:var(--more-text);
-    font-size:11px;
+    font-size:13px;
 }
 
 .setting-copy small{
@@ -260,12 +266,12 @@ a{
     text-overflow:ellipsis;
     white-space:nowrap;
     color:var(--more-muted);
-    font-size:8px;
+    font-size:11px;
 }
 
 .setting-arrow{
     color:#a3a8b2;
-    font-size:8px;
+    font-size:11px;
 }
 
 .setting-badge{
@@ -273,7 +279,7 @@ a{
     border-radius:999px;
     background:#f1f5f9;
     color:#64748b;
-    font-size:7px;
+    font-size:11px;
     font-weight:900;
     text-transform:uppercase;
 }
@@ -304,19 +310,19 @@ a{
 .more-logout-card > div > span{
     margin-bottom:3px;
     color:#dc2626;
-    font-size:8px;
+    font-size:11px;
     font-weight:900;
     letter-spacing:.1em;
 }
 
 .more-logout-card > div > strong{
-    font-size:11px;
+    font-size:13px;
 }
 
 .more-logout-card > div > small{
     margin-top:3px;
     color:var(--more-muted);
-    font-size:8px;
+    font-size:11px;
 }
 
 .more-logout-btn{
@@ -329,7 +335,7 @@ a{
     gap:7px;
     background:#dc2626;
     color:#fff;
-    font-size:9px;
+    font-size:12px;
     font-weight:900;
 }
 
@@ -379,7 +385,7 @@ a{
     .more-account-note{
         margin-top:14px;
         padding-top:12px;
-        font-size:8px;
+        font-size:11px;
     }
 
     .more-section{
@@ -406,15 +412,15 @@ a{
         height:36px;
         min-width:36px;
         border-radius:11px;
-        font-size:13px;
+        font-size:14px;
     }
 
     .setting-copy strong{
-        font-size:10px;
+        font-size:12px;
     }
 
     .setting-copy small{
-        font-size:8px;
+        font-size:11px;
     }
 
     .more-logout-card{
@@ -426,7 +432,7 @@ a{
     .more-logout-btn{
         min-height:33px;
         padding:0 9px;
-        font-size:8px;
+        font-size:11px;
     }
 }
 

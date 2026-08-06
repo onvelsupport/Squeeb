@@ -1,3 +1,9 @@
+/* ==========================================================
+   SQUEEB READABLE TYPOGRAPHY UPDATE
+   Compact layout preserved. Small interface text has been
+   increased for better desktop and mobile readability.
+========================================================== */
+
 *{
     margin:0;
     padding:0;
@@ -66,7 +72,7 @@ a{
     display:block;
     margin-bottom:6px;
     color:var(--tasks-blue);
-    font-size:9px;
+    font-size:12px;
     font-weight:900;
     letter-spacing:.12em;
 }
@@ -81,7 +87,7 @@ a{
 .my-tasks-header p{
     margin-top:6px;
     color:var(--tasks-muted);
-    font-size:12px;
+    font-size:13px;
 }
 
 .create-task-btn{
@@ -95,7 +101,7 @@ a{
     flex:0 0 auto;
     background:var(--tasks-navy);
     color:#fff;
-    font-size:10px;
+    font-size:12px;
     font-weight:900;
 }
 
@@ -127,7 +133,7 @@ a{
 .tasks-summary span{
     margin-bottom:5px;
     color:var(--tasks-muted);
-    font-size:9px;
+    font-size:12px;
     font-weight:800;
 }
 
@@ -157,7 +163,7 @@ a{
     display:block;
     margin-bottom:4px;
     color:var(--tasks-blue);
-    font-size:8px;
+    font-size:11px;
     font-weight:900;
     letter-spacing:.12em;
 }
@@ -170,7 +176,7 @@ a{
 
 .section-heading > small{
     color:var(--tasks-muted);
-    font-size:8px;
+    font-size:11px;
 }
 
 
@@ -222,7 +228,7 @@ a{
     border-radius:999px;
     background:var(--tasks-blue-soft);
     color:var(--tasks-blue);
-    font-size:8px;
+    font-size:11px;
     font-weight:900;
     text-transform:capitalize;
 }
@@ -234,7 +240,7 @@ a{
     border-radius:999px;
     background:var(--tasks-green-soft);
     color:var(--tasks-green);
-    font-size:8px;
+    font-size:11px;
     font-weight:900;
 }
 
@@ -246,7 +252,7 @@ a{
 .posted-task-card h3{
     margin:0 0 5px;
     color:var(--tasks-text);
-    font-size:13px;
+    font-size:14px;
     line-height:1.3;
 }
 
@@ -256,7 +262,7 @@ a{
     -webkit-box-orient:vertical;
     -webkit-line-clamp:2;
     color:var(--tasks-muted);
-    font-size:9px;
+    font-size:12px;
     line-height:1.45;
 }
 
@@ -267,7 +273,7 @@ a{
     gap:8px 12px;
     margin-top:9px;
     color:#596171;
-    font-size:8px;
+    font-size:11px;
 }
 
 .task-meta span{
@@ -307,7 +313,7 @@ a{
     border-radius:9px;
     display:grid;
     place-items:center;
-    font-size:9px;
+    font-size:12px;
 }
 
 .stat-icon.blue{
@@ -336,14 +342,14 @@ a{
 }
 
 .stat-box strong{
-    font-size:12px;
+    font-size:13px;
     line-height:1;
 }
 
 .stat-box span{
     margin-top:3px;
     color:var(--tasks-muted);
-    font-size:7px;
+    font-size:11px;
 }
 
 .review-submissions-btn{
@@ -357,7 +363,7 @@ a{
     gap:6px;
     background:var(--tasks-navy);
     color:#fff;
-    font-size:8px;
+    font-size:11px;
     font-weight:900;
 }
 
@@ -375,7 +381,7 @@ a{
     display:block;
     margin-bottom:3px;
     color:var(--tasks-muted);
-    font-size:7px;
+    font-size:11px;
     text-transform:uppercase;
     letter-spacing:.07em;
 }
@@ -390,7 +396,7 @@ a{
     display:block;
     margin-top:3px;
     color:var(--tasks-muted);
-    font-size:7px;
+    font-size:11px;
 }
 
 
@@ -414,12 +420,12 @@ a{
 
 .empty-task h3{
     margin-bottom:4px;
-    font-size:12px;
+    font-size:13px;
 }
 
 .empty-task p{
     color:var(--tasks-muted);
-    font-size:9px;
+    font-size:12px;
 }
 
 
@@ -443,7 +449,7 @@ a{
     }
 
     .my-tasks-header p{
-        font-size:10px;
+        font-size:12px;
     }
 
     .create-task-btn{
@@ -470,7 +476,7 @@ a{
     }
 
     .tasks-summary span{
-        font-size:7px;
+        font-size:11px;
     }
 
     .tasks-summary strong{
@@ -489,7 +495,7 @@ a{
     }
 
     .posted-task-card h3{
-        font-size:12px;
+        font-size:13px;
     }
 
     .task-stats{
@@ -504,22 +510,22 @@ a{
         width:24px;
         height:24px;
         border-radius:8px;
-        font-size:8px;
+        font-size:11px;
     }
 
     .stat-box strong{
-        font-size:10px;
+        font-size:12px;
     }
 
     .stat-box span{
-        font-size:6px;
+        font-size:10px;
     }
 
     .review-submissions-btn{
         min-height:31px;
         margin-top:8px;
         padding:0 9px;
-        font-size:7px;
+        font-size:11px;
     }
 
     .task-status{
@@ -527,7 +533,7 @@ a{
     }
 
     .task-status strong{
-        font-size:13px;
+        font-size:14px;
     }
 }
 

@@ -1,3 +1,9 @@
+/* ==========================================================
+   SQUEEB READABLE TYPOGRAPHY UPDATE
+   Compact layout preserved. Small interface text has been
+   increased for better desktop and mobile readability.
+========================================================== */
+
 *{
     margin:0;
     padding:0;
@@ -71,7 +77,7 @@ input{
     display:block;
     margin-bottom:6px;
     color:var(--earn-primary);
-    font-size:10px;
+    font-size:12px;
     font-weight:900;
     letter-spacing:.12em;
 }
@@ -86,7 +92,7 @@ input{
 .earnings-app-header p{
     margin-top:7px;
     color:var(--earn-muted);
-    font-size:13px;
+    font-size:14px;
 }
 
 .earnings-create-btn{
@@ -100,7 +106,7 @@ input{
     flex:0 0 auto;
     background:#151824;
     color:#fff;
-    font-size:11px;
+    font-size:13px;
     font-weight:800;
 }
 
@@ -159,13 +165,13 @@ input{
 .earnings-user-row small{
     display:block;
     color:rgba(255,255,255,.55);
-    font-size:9px;
+    font-size:12px;
 }
 
 .earnings-user-row strong{
     display:block;
     margin:2px 0;
-    font-size:13px;
+    font-size:14px;
 }
 
 .earnings-wallet-icon{
@@ -184,7 +190,7 @@ input{
 
 .earnings-main-balance > span{
     color:rgba(255,255,255,.62);
-    font-size:11px;
+    font-size:13px;
     font-weight:700;
 }
 
@@ -225,7 +231,7 @@ input{
 
 .earnings-wallet-stats span{
     color:rgba(255,255,255,.58);
-    font-size:9px;
+    font-size:12px;
 }
 
 .earnings-wallet-stats strong{
@@ -264,20 +270,20 @@ input{
     display:block;
     margin-bottom:3px;
     color:var(--earn-primary);
-    font-size:8px;
+    font-size:11px;
     font-weight:900;
     letter-spacing:.08em;
 }
 
 .earnings-withdraw-copy > strong{
     display:block;
-    font-size:12px;
+    font-size:13px;
 }
 
 .earnings-withdraw-copy p{
     margin-top:3px;
     color:var(--earn-muted);
-    font-size:9px;
+    font-size:12px;
     line-height:1.4;
 }
 
@@ -302,13 +308,13 @@ input{
 
 .earnings-fee-pill span{
     color:var(--earn-muted);
-    font-size:7px;
+    font-size:11px;
     text-transform:uppercase;
 }
 
 .earnings-fee-pill strong{
     margin-top:2px;
-    font-size:12px;
+    font-size:13px;
 }
 
 .withdrawal-link{
@@ -320,7 +326,7 @@ input{
     justify-content:center;
     background:#151824;
     color:#fff;
-    font-size:9px;
+    font-size:12px;
     font-weight:800;
 }
 
@@ -347,13 +353,13 @@ input{
 
 .earning-banner strong{
     display:block;
-    font-size:10px;
+    font-size:12px;
 }
 
 .earning-banner p{
     margin-top:2px;
     color:#5e6675;
-    font-size:8px;
+    font-size:11px;
 }
 
 .activate-membership-btn,
@@ -361,7 +367,7 @@ input{
     min-height:32px;
     padding:0 10px;
     border-radius:9px;
-    font-size:8px;
+    font-size:11px;
     font-weight:900;
 }
 
@@ -403,7 +409,7 @@ input{
     display:block;
     margin-bottom:4px;
     color:var(--earn-primary);
-    font-size:9px;
+    font-size:12px;
     font-weight:900;
     letter-spacing:.11em;
 }
@@ -416,7 +422,7 @@ input{
 
 .earnings-app-section-heading > small{
     color:var(--earn-muted);
-    font-size:9px;
+    font-size:12px;
 }
 
 /* TASKS */
@@ -472,20 +478,20 @@ input{
     border-radius:999px;
     background:var(--earn-soft);
     color:var(--earn-primary);
-    font-size:8px;
+    font-size:11px;
     font-weight:900;
 }
 
 .task-reward{
     color:var(--earn-primary);
-    font-size:10px;
+    font-size:12px;
     font-weight:900;
     white-space:nowrap;
 }
 
 .earn-task-card h3{
     margin:0 0 6px;
-    font-size:13px;
+    font-size:14px;
     line-height:1.3;
 }
 
@@ -495,7 +501,7 @@ input{
     -webkit-box-orient:vertical;
     -webkit-line-clamp:2;
     color:var(--earn-muted);
-    font-size:9px;
+    font-size:12px;
     line-height:1.45;
 }
 
@@ -503,7 +509,7 @@ input{
     display:block;
     margin-top:6px;
     color:var(--earn-muted);
-    font-size:8px;
+    font-size:11px;
 }
 
 .select-task-btn{
@@ -514,7 +520,7 @@ input{
     border-radius:10px;
     background:#151824;
     color:#fff;
-    font-size:9px;
+    font-size:12px;
     font-weight:800;
     cursor:pointer;
 }
@@ -539,12 +545,12 @@ input{
 
 .empty-task h3{
     margin-bottom:4px;
-    font-size:12px;
+    font-size:13px;
 }
 
 .empty-task p{
     color:var(--earn-muted);
-    font-size:9px;
+    font-size:12px;
 }
 
 /* SUBMISSIONS */
@@ -568,7 +574,7 @@ input{
     border-radius:999px;
     background:#fff;
     color:#596171;
-    font-size:9px;
+    font-size:12px;
     font-weight:900;
     cursor:pointer;
 }
@@ -602,13 +608,13 @@ input{
 
 .submission-card h3{
     margin:7px 0;
-    font-size:12px;
+    font-size:13px;
 }
 
 .submission-card p{
     margin-top:3px;
     color:var(--earn-muted);
-    font-size:8px;
+    font-size:11px;
 }
 
 .submission-status,
@@ -618,7 +624,7 @@ input{
     gap:4px;
     padding:4px 7px;
     border-radius:999px;
-    font-size:7px;
+    font-size:11px;
     font-weight:900;
 }
 
@@ -660,13 +666,13 @@ input{
 .submission-money span,
 .submission-money small{
     color:var(--earn-muted);
-    font-size:7px;
+    font-size:11px;
 }
 
 .submission-money strong{
     margin:2px 0;
     color:var(--earn-primary);
-    font-size:13px;
+    font-size:14px;
 }
 
 .submission-links{
@@ -678,7 +684,7 @@ input{
 
 .submission-links a{
     color:var(--earn-primary);
-    font-size:8px;
+    font-size:11px;
     font-weight:800;
 }
 
@@ -708,7 +714,7 @@ input{
 
 .activity-item p{
     color:#505766;
-    font-size:9px;
+    font-size:12px;
     line-height:1.4;
 }
 
@@ -756,7 +762,7 @@ input{
 .task-modal-eyebrow{
     margin-bottom:4px;
     color:var(--earn-primary);
-    font-size:8px;
+    font-size:11px;
     font-weight:900;
     text-transform:uppercase;
 }
@@ -799,7 +805,7 @@ input{
     border-radius:11px;
     background:#f8fafc;
     color:#475569;
-    font-size:10px;
+    font-size:12px;
     line-height:1.5;
 }
 
@@ -816,7 +822,7 @@ input{
     border-radius:10px;
     background:#151824;
     color:#fff;
-    font-size:9px;
+    font-size:12px;
     font-weight:800;
 }
 
@@ -829,7 +835,7 @@ input{
 .proof-upload-group label{
     display:block;
     margin-bottom:5px;
-    font-size:10px;
+    font-size:12px;
     font-weight:800;
 }
 
@@ -847,7 +853,7 @@ input{
 .proof-help{
     margin-top:5px;
     color:var(--earn-muted);
-    font-size:8px;
+    font-size:11px;
 }
 
 .task-modal-footer{
@@ -862,7 +868,7 @@ input{
 
 .task-modal-footer span{
     color:var(--earn-muted);
-    font-size:8px;
+    font-size:11px;
 }
 
 .task-modal-footer h3{
@@ -878,7 +884,7 @@ input{
     border-radius:11px;
     background:var(--earn-primary);
     color:#fff;
-    font-size:10px;
+    font-size:12px;
     font-weight:900;
     cursor:pointer;
 }
@@ -905,7 +911,7 @@ input{
     }
 
     .earnings-app-header p{
-        font-size:11px;
+        font-size:13px;
     }
 
     .earnings-create-btn{
@@ -956,11 +962,11 @@ input{
     }
 
     .earnings-wallet-stats span{
-        font-size:7px;
+        font-size:11px;
     }
 
     .earnings-wallet-stats strong{
-        font-size:11px;
+        font-size:13px;
     }
 
     .earnings-withdraw-card{
@@ -973,7 +979,7 @@ input{
         width:35px;
         height:35px;
         border-radius:10px;
-        font-size:12px;
+        font-size:13px;
     }
 
     .earnings-withdraw-copy p{
@@ -992,7 +998,7 @@ input{
     .withdrawal-link{
         min-height:31px;
         padding:0 8px;
-        font-size:8px;
+        font-size:11px;
     }
 
     .earning-banner{
@@ -1017,7 +1023,7 @@ input{
     }
 
     .earnings-app-section-heading > small{
-        font-size:8px;
+        font-size:11px;
     }
 
     .earnings-task-list{
@@ -1037,18 +1043,18 @@ input{
     }
 
     .earn-task-card h3{
-        font-size:12px;
+        font-size:13px;
     }
 
     .earn-task-card p{
-        font-size:8px;
+        font-size:11px;
     }
 
     .select-task-btn{
         min-width:64px;
         min-height:31px;
         padding:0 8px;
-        font-size:8px;
+        font-size:11px;
     }
 
     .submission-card{
