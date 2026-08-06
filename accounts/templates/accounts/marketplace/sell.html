@@ -2,7 +2,7 @@
 {% load static %}
 
 {% block title %}
-Sell Product | SQUEEB
+Create Listing | SQUEEB
 {% endblock %}
 
 {% block extra_css %}
@@ -12,338 +12,533 @@ Sell Product | SQUEEB
 
 {% block content %}
 
-<div class="sell-page">
+<div class="listing-page">
 
-    <section class="sell-hero">
+    <!-- ==========================================================
+         PAGE HEADER
+    ========================================================== -->
 
-        <div>
-            <span class="eyebrow">SQUEEB MARKET</span>
+    <section class="listing-header">
 
-            <h1>List a product for sale</h1>
+        <div class="listing-header-copy">
+
+            <a href="{% url 'marketplace' %}" class="back-market-link">
+                <i class="fa-solid fa-arrow-left"></i>
+                Marketplace
+            </a>
+
+            <span class="listing-kicker">
+                CREATE LISTING
+            </span>
+
+            <h1>Sell something on SQUEEB.</h1>
 
             <p>
-                Add your product details, upload photos, edit them,
-                and preview everything before publishing.
+                Add the details buyers need, upload clear photos,
+                and preview your listing before publishing.
             </p>
+
         </div>
 
-        <a href="{% url 'marketplace' %}" class="back-btn">
-            <i class="fa-solid fa-arrow-left"></i>
-            Back to Marketplace
-        </a>
+
+        <div class="listing-status">
+            <span class="status-dot"></span>
+
+            <div>
+                <strong>New listing</strong>
+                <small>Not published yet</small>
+            </div>
+        </div>
 
     </section>
 
 
-    <section class="sell-layout">
+    <!-- ==========================================================
+         MAIN LAYOUT
+    ========================================================== -->
 
-        <div class="sell-card">
+    <div class="listing-layout">
 
-            <div class="form-heading">
-                <span>PRODUCT LISTING</span>
-                <h2>Product details</h2>
-                <p>Fill in the information buyers will see.</p>
-            </div>
+        <!-- ======================================================
+             LEFT: FORM
+        ======================================================= -->
 
+        <section class="listing-editor">
 
             <form
                 method="POST"
                 enctype="multipart/form-data"
-                class="sell-form">
+                class="sell-form"
+                id="sellForm"
+            >
 
                 {% csrf_token %}
 
 
-                <div class="form-group">
+                <!-- ==================================================
+                     SECTION 1
+                =================================================== -->
 
-                    <label for="title">
-                        Product title
-                    </label>
+                <div class="editor-section">
 
-                    <input
-                        id="title"
-                        name="title"
-                        type="text"
-                        placeholder="e.g. iPhone 15 Pro Max"
-                        required>
+                    <div class="section-number">
+                        01
+                    </div>
 
-                </div>
+                    <div class="section-content">
 
+                        <div class="section-title">
 
-                <div class="form-row">
+                            <div>
+                                <h2>Basic information</h2>
 
-                    <div class="form-group">
-
-                        <label for="price">
-                            Price (£)
-                        </label>
-
-                        <div class="price-input-wrap">
-
-                            <span>£</span>
-
-                            <input
-                                id="price"
-                                name="price"
-                                type="number"
-                                step="0.01"
-                                min="0.01"
-                                placeholder="0.00"
-                                required>
+                                <p>
+                                    Start with the most important product details.
+                                </p>
+                            </div>
 
                         </div>
 
-                    </div>
 
+                        <div class="form-group">
 
-                    <div class="form-group">
-
-                        <label for="category">
-                            Category
-                        </label>
-
-                        <select
-                            id="category"
-                            name="category"
-                            required>
-
-                            <option value="">
-                                Select category
-                            </option>
-
-                            <option value="beauty">
-                                Health &amp; Beauty
-                            </option>
-
-                            <option value="grocery">
-                                Grocery
-                            </option>
-
-                            <option value="phones">
-                                Phones &amp; Tablets
-                            </option>
-
-                            <option value="fashion">
-                                Fashion
-                            </option>
-
-                            <option value="electronics">
-                                Electronics
-                            </option>
-
-                            <option value="books">
-                                Books
-                            </option>
-
-                            <option value="car_rent">
-                                Cars
-                            </option>
-
-                        </select>
-
-                    </div>
-
-                </div>
-
-
-                <div class="form-group">
-
-                    <label for="description">
-                        Description
-                    </label>
-
-                    <textarea
-                        id="description"
-                        name="description"
-                        rows="6"
-                        maxlength="1000"
-                        placeholder="Describe the product condition, features, size, colour and any other useful information."></textarea>
-
-                </div>
-
-
-                <div class="form-group">
-
-                    <div class="upload-heading">
-
-                        <div>
-                            <label for="images">
-                                Product photos
+                            <label for="title">
+                                Product title
                             </label>
 
-                            <small>
-                                Add clear images so buyers can see your item properly.
+                            <input
+                                type="text"
+                                id="title"
+                                name="title"
+                                maxlength="120"
+                                placeholder="What are you selling?"
+                                required
+                            >
+
+                            <small class="field-help">
+                                Keep it short and easy to understand.
                             </small>
+
                         </div>
 
-                    </div>
+
+                        <div class="form-grid">
+
+                            <div class="form-group">
+
+                                <label for="price">
+                                    Price
+                                </label>
+
+                                <div class="money-input">
+
+                                    <span>£</span>
+
+                                    <input
+                                        type="number"
+                                        id="price"
+                                        name="price"
+                                        step="0.01"
+                                        min="0.01"
+                                        placeholder="0.00"
+                                        required
+                                    >
+
+                                </div>
+
+                            </div>
 
 
-                    <label
-                        for="images"
-                        class="upload-box">
+                            <div class="form-group">
 
-                        <div class="upload-icon">
-                            <i class="fa-solid fa-cloud-arrow-up"></i>
+                                <label for="category">
+                                    Category
+                                </label>
+
+                                <select
+                                    id="category"
+                                    name="category"
+                                    required
+                                >
+
+                                    <option value="">
+                                        Choose category
+                                    </option>
+
+                                    <option value="beauty">
+                                        Health &amp; Beauty
+                                    </option>
+
+                                    <option value="grocery">
+                                        Grocery
+                                    </option>
+
+                                    <option value="phones">
+                                        Phones &amp; Tablets
+                                    </option>
+
+                                    <option value="fashion">
+                                        Fashion
+                                    </option>
+
+                                    <option value="electronics">
+                                        Electronics
+                                    </option>
+
+                                    <option value="books">
+                                        Books
+                                    </option>
+
+                                    <option value="car_rent">
+                                        Cars
+                                    </option>
+
+                                </select>
+
+                            </div>
+
                         </div>
 
-                        <strong>
-                            Upload product photos
-                        </strong>
-
-                        <span>
-                            Click to browse or drag and drop your images here
-                        </span>
-
-                        <small>
-                            JPG, PNG or WEBP
-                        </small>
-
-                    </label>
-
-
-                    <input
-                        id="images"
-                        name="images"
-                        type="file"
-                        accept="image/*"
-                        multiple
-                        required
-                        hidden>
-
-
-                    <p
-                        id="fileName"
-                        class="file-name">
-                        No photos selected
-                    </p>
-
-
-                    <div
-                        id="imagePreviewGrid"
-                        class="image-preview-grid">
                     </div>
 
                 </div>
 
 
-                <button
-                    type="submit"
-                    class="publish-btn">
+                <!-- ==================================================
+                     SECTION 2
+                =================================================== -->
 
-                    <span>
-                        Publish Product
-                    </span>
+                <div class="editor-section">
 
-                    <i class="fa-solid fa-arrow-right"></i>
+                    <div class="section-number">
+                        02
+                    </div>
 
-                </button>
+                    <div class="section-content">
+
+                        <div class="section-title">
+
+                            <div>
+                                <h2>Description</h2>
+
+                                <p>
+                                    Tell buyers what they should know before purchasing.
+                                </p>
+                            </div>
+
+                            <span
+                                id="descriptionCounter"
+                                class="character-counter"
+                            >
+                                0 / 1000
+                            </span>
+
+                        </div>
+
+
+                        <div class="form-group">
+
+                            <textarea
+                                id="description"
+                                name="description"
+                                rows="7"
+                                maxlength="1000"
+                                placeholder="Describe condition, colour, size, features, age, defects or anything else buyers should know..."
+                            ></textarea>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+
+                <!-- ==================================================
+                     SECTION 3
+                =================================================== -->
+
+                <div class="editor-section">
+
+                    <div class="section-number">
+                        03
+                    </div>
+
+                    <div class="section-content">
+
+                        <div class="section-title">
+
+                            <div>
+                                <h2>Product photos</h2>
+
+                                <p>
+                                    Add clear images from different angles.
+                                </p>
+                            </div>
+
+                        </div>
+
+
+                        <label
+                            for="images"
+                            class="upload-zone"
+                        >
+
+                            <div class="upload-zone-icon">
+                                <i class="fa-solid fa-image"></i>
+                            </div>
+
+                            <div class="upload-zone-copy">
+
+                                <strong>
+                                    Add product photos
+                                </strong>
+
+                                <span>
+                                    Click to browse or drag images here
+                                </span>
+
+                                <small>
+                                    JPG, PNG or WEBP
+                                </small>
+
+                            </div>
+
+
+                            <div class="upload-zone-button">
+                                Choose photos
+                            </div>
+
+                        </label>
+
+
+                        <input
+                            type="file"
+                            id="images"
+                            name="images"
+                            accept="image/*"
+                            multiple
+                            required
+                            hidden
+                        >
+
+
+                        <div class="upload-meta">
+
+                            <span id="fileName">
+                                No photos selected
+                            </span>
+
+                        </div>
+
+
+                        <div
+                            id="imagePreviewGrid"
+                            class="image-preview-grid"
+                        ></div>
+
+                    </div>
+
+                </div>
+
+
+                <!-- ==================================================
+                     PUBLISH
+                =================================================== -->
+
+                <div class="publish-section">
+
+                    <div class="publish-copy">
+
+                        <i class="fa-solid fa-circle-check"></i>
+
+                        <div>
+                            <strong>
+                                Ready to publish?
+                            </strong>
+
+                            <span>
+                                Check the preview before making your listing live.
+                            </span>
+                        </div>
+
+                    </div>
+
+
+                    <button
+                        type="submit"
+                        class="publish-btn"
+                    >
+
+                        <span>
+                            Publish Listing
+                        </span>
+
+                        <i class="fa-solid fa-arrow-right"></i>
+
+                    </button>
+
+                </div>
 
             </form>
 
-        </div>
+        </section>
 
 
-        <aside class="sell-sidebar">
+        <!-- ======================================================
+             RIGHT: LIVE PREVIEW
+        ======================================================= -->
 
-            <div class="sell-tips">
+        <aside class="listing-sidebar">
 
-                <span class="sidebar-label">
-                    SELLING GUIDE
-                </span>
+            <div class="preview-label-row">
 
-                <h3>
-                    Create a better listing
-                </h3>
-
-
-                <div class="tip">
-
-                    <div class="tip-icon">
-                        <i class="fa-solid fa-camera"></i>
-                    </div>
-
-                    <div>
-                        <strong>Use clear photos</strong>
-
-                        <p>
-                            Show the item from several angles in good lighting.
-                        </p>
-                    </div>
-
+                <div>
+                    <span>LIVE PREVIEW</span>
+                    <h3>Buyer view</h3>
                 </div>
 
-
-                <div class="tip">
-
-                    <div class="tip-icon">
-                        <i class="fa-solid fa-pen"></i>
-                    </div>
-
-                    <div>
-                        <strong>Describe it properly</strong>
-
-                        <p>
-                            Mention condition, size, colour and anything buyers should know.
-                        </p>
-                    </div>
-
-                </div>
-
-
-                <div class="tip">
-
-                    <div class="tip-icon">
-                        <i class="fa-solid fa-tag"></i>
-                    </div>
-
-                    <div>
-                        <strong>Price it fairly</strong>
-
-                        <p>
-                            Competitive pricing can help your item sell faster.
-                        </p>
-                    </div>
-
-                </div>
-
-
-                <div class="tip">
-
-                    <div class="tip-icon">
-                        <i class="fa-solid fa-shield-halved"></i>
-                    </div>
-
-                    <div>
-                        <strong>Keep listings genuine</strong>
-
-                        <p>
-                            Fake, unsafe or misleading products are not allowed.
-                        </p>
-                    </div>
-
-                </div>
+                <i class="fa-regular fa-eye"></i>
 
             </div>
 
 
-            <div class="seller-note">
+            <article class="listing-preview-card">
 
-                <i class="fa-solid fa-circle-info"></i>
+                <div class="listing-preview-image">
 
-                <div>
-                    <strong>Before you publish</strong>
+                    <img
+                        id="livePreviewImage"
+                        src="{% static 'accounts/img/no-image.png' %}"
+                        alt="Product preview"
+                    >
 
-                    <p>
-                        Double-check your photos, title and price. Buyers will see exactly what you submit.
+                    <span class="preview-photo-badge">
+                        <i class="fa-regular fa-images"></i>
+                        <span id="previewPhotoCount">0</span>
+                    </span>
+
+                </div>
+
+
+                <div class="listing-preview-body">
+
+                    <span
+                        class="preview-category"
+                        id="previewCategory"
+                    >
+                        Category
+                    </span>
+
+
+                    <h2 id="previewTitle">
+                        Your product title
+                    </h2>
+
+
+                    <p
+                        class="preview-description"
+                        id="previewDescription"
+                    >
+                        Your product description will appear here.
                     </p>
+
+
+                    <div class="preview-seller">
+
+                        <span>
+                            <i class="fa-solid fa-user"></i>
+                        </span>
+
+                        <div>
+                            <small>Sold by</small>
+                            <strong>{{ request.user.username }}</strong>
+                        </div>
+
+                    </div>
+
+
+                    <div class="preview-footer">
+
+                        <div>
+                            <small>Price</small>
+
+                            <strong id="previewPrice">
+                                £0.00
+                            </strong>
+                        </div>
+
+                        <span class="preview-buy-button">
+                            View Item
+                        </span>
+
+                    </div>
+
+                </div>
+
+            </article>
+
+
+            <div class="seller-checklist">
+
+                <div class="checklist-heading">
+
+                    <i class="fa-solid fa-lightbulb"></i>
+
+                    <strong>
+                        Quick checklist
+                    </strong>
+
+                </div>
+
+
+                <div class="checklist-item">
+
+                    <i class="fa-solid fa-check"></i>
+
+                    <span>
+                        Use a clear and descriptive title
+                    </span>
+
+                </div>
+
+
+                <div class="checklist-item">
+
+                    <i class="fa-solid fa-check"></i>
+
+                    <span>
+                        Upload multiple clear photos
+                    </span>
+
+                </div>
+
+
+                <div class="checklist-item">
+
+                    <i class="fa-solid fa-check"></i>
+
+                    <span>
+                        Mention any damage or defects
+                    </span>
+
+                </div>
+
+
+                <div class="checklist-item">
+
+                    <i class="fa-solid fa-check"></i>
+
+                    <span>
+                        Choose a reasonable price
+                    </span>
+
                 </div>
 
             </div>
 
         </aside>
 
-    </section>
+    </div>
 
 </div>
 
@@ -354,21 +549,23 @@ Sell Product | SQUEEB
 
 <div
     class="crop-modal"
-    id="cropModal">
+    id="cropModal"
+>
 
-    <div class="crop-box">
+    <div class="crop-dialog">
 
-        <div class="crop-header">
+        <div class="crop-dialog-header">
 
             <div>
-                <span>IMAGE EDITOR</span>
-                <h3>Edit photo</h3>
+                <span>PHOTO EDITOR</span>
+                <h3>Edit product photo</h3>
             </div>
 
             <button
                 type="button"
                 id="cancelCropIcon"
-                class="crop-close">
+                class="crop-close-btn"
+            >
                 <i class="fa-solid fa-xmark"></i>
             </button>
 
@@ -379,25 +576,28 @@ Sell Product | SQUEEB
 
             <img
                 id="cropImage"
-                alt="Crop preview">
+                alt="Crop preview"
+            >
 
         </div>
 
 
-        <div class="crop-actions">
+        <div class="crop-dialog-actions">
 
             <button
                 type="button"
                 id="cancelCropBtn"
-                class="crop-cancel">
+                class="cancel-crop-btn"
+            >
                 Cancel
             </button>
 
             <button
                 type="button"
                 id="saveCropBtn"
-                class="crop-save">
-                Save Edit
+                class="save-crop-btn"
+            >
+                Save Photo
             </button>
 
         </div>
@@ -410,6 +610,12 @@ Sell Product | SQUEEB
 
 
 {% block extra_js %}
+
 <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.2/cropper.min.js"></script>
-<script src="{% static 'accounts/js/sell.js' %}" defer></script>
+
+<script
+    src="{% static 'accounts/js/sell.js' %}"
+    defer
+></script>
+
 {% endblock %}

@@ -1,79 +1,81 @@
 /* ==========================================================
-   SELL PAGE
+   PAGE
 ========================================================== */
 
-.sell-page {
+.listing-page {
     width: min(94%, 1400px);
     margin: 0 auto;
-    padding: 36px 0 80px;
+    padding: 34px 0 80px;
 }
 
 
 /* ==========================================================
-   HERO
+   HEADER
 ========================================================== */
 
-.sell-hero {
-    padding: 42px 46px;
+.listing-header {
+    margin-bottom: 30px;
 
     display: flex;
-    align-items: center;
+    align-items: flex-end;
     justify-content: space-between;
 
     gap: 30px;
-
-    margin-bottom: 30px;
-
-    border-radius: 28px;
-
-    background:
-        linear-gradient(
-            135deg,
-            #0f172a 0%,
-            #1e3a8a 58%,
-            #2563eb 100%
-        );
-
-    color: #ffffff;
-
-    box-shadow:
-        0 22px 50px rgba(15, 23, 42, 0.14);
 }
 
 
-.eyebrow {
+.back-market-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+
+    margin-bottom: 24px;
+
+    color: #64748b;
+
+    font-size: 12px;
+    font-weight: 750;
+}
+
+
+.back-market-link:hover {
+    color: #2563eb;
+}
+
+
+.listing-kicker {
     display: block;
 
-    margin-bottom: 9px;
+    margin-bottom: 7px;
 
-    color: #93c5fd;
+    color: #2563eb;
 
     font-size: 10px;
     font-weight: 900;
 
-    letter-spacing: 0.11em;
-
-    text-transform: uppercase;
+    letter-spacing: .11em;
 }
 
 
-.sell-hero h1 {
+.listing-header h1 {
     margin: 0;
+
+    color: #0f172a;
 
     font-size: clamp(34px, 4vw, 48px);
 
-    line-height: 1.08;
+    line-height: 1.05;
 
-    letter-spacing: -0.04em;
+    letter-spacing: -.045em;
 }
 
 
-.sell-hero p {
-    max-width: 650px;
+.listing-header p {
+    max-width: 630px;
 
-    margin-top: 13px;
+    margin-top: 11px;
 
-    color: #cbd5e1;
+    color: #64748b;
 
     font-size: 14px;
 
@@ -81,37 +83,56 @@
 }
 
 
-.back-btn {
-    min-height: 47px;
+.listing-status {
+    padding: 13px 16px;
 
-    padding: 0 18px;
-
-    display: inline-flex;
+    display: flex;
     align-items: center;
-    justify-content: center;
 
-    gap: 8px;
+    gap: 10px;
 
     flex-shrink: 0;
+
+    border: 1px solid #e2e8f0;
 
     border-radius: 14px;
 
     background: #ffffff;
-
-    color: #111827;
-
-    font-size: 12px;
-    font-weight: 850;
-
-    transition: 0.2s ease;
 }
 
 
-.back-btn:hover {
-    transform: translateY(-2px);
+.status-dot {
+    width: 9px;
+    height: 9px;
+
+    border-radius: 50%;
+
+    background: #f59e0b;
 
     box-shadow:
-        0 14px 28px rgba(0, 0, 0, 0.18);
+        0 0 0 5px rgba(245, 158, 11, .12);
+}
+
+
+.listing-status strong,
+.listing-status small {
+    display: block;
+}
+
+
+.listing-status strong {
+    color: #334155;
+
+    font-size: 11px;
+}
+
+
+.listing-status small {
+    margin-top: 2px;
+
+    color: #94a3b8;
+
+    font-size: 9px;
 }
 
 
@@ -119,73 +140,117 @@
    LAYOUT
 ========================================================== */
 
-.sell-layout {
+.listing-layout {
     display: grid;
 
     grid-template-columns:
         minmax(0, 1fr)
-        360px;
+        370px;
 
-    gap: 25px;
+    gap: 26px;
 
     align-items: start;
 }
 
 
 /* ==========================================================
-   MAIN CARD
+   EDITOR
 ========================================================== */
 
-.sell-card {
-    padding: 32px;
+.listing-editor {
+    overflow: hidden;
 
-    border: 1px solid #e8edf4;
+    border: 1px solid #e7edf4;
 
     border-radius: 23px;
 
     background: #ffffff;
 
     box-shadow:
-        0 10px 30px rgba(15, 23, 42, 0.05);
+        0 10px 35px rgba(15, 23, 42, .045);
 }
 
 
-.form-heading {
-    margin-bottom: 28px;
+/* ==========================================================
+   SECTION
+========================================================== */
+
+.editor-section {
+    padding: 30px;
+
+    display: grid;
+
+    grid-template-columns:
+        48px
+        minmax(0, 1fr);
+
+    gap: 20px;
+
+    border-bottom: 1px solid #edf1f5;
 }
 
 
-.form-heading > span {
-    display: block;
+.section-number {
+    width: 42px;
+    height: 42px;
 
-    margin-bottom: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    border-radius: 13px;
+
+    background: #eff6ff;
 
     color: #2563eb;
 
-    font-size: 9px;
+    font-size: 10px;
     font-weight: 900;
-
-    letter-spacing: 0.1em;
 }
 
 
-.form-heading h2 {
+.section-content {
+    min-width: 0;
+}
+
+
+.section-title {
+    margin-bottom: 23px;
+
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+
+    gap: 15px;
+}
+
+
+.section-title h2 {
     margin: 0;
 
     color: #111827;
 
-    font-size: 25px;
+    font-size: 20px;
 
-    letter-spacing: -0.025em;
+    letter-spacing: -.02em;
 }
 
 
-.form-heading p {
-    margin-top: 7px;
+.section-title p {
+    margin-top: 5px;
 
-    color: #64748b;
+    color: #94a3b8;
 
-    font-size: 13px;
+    font-size: 11px;
+}
+
+
+.character-counter {
+    color: #94a3b8;
+
+    font-size: 10px;
+
+    flex-shrink: 0;
 }
 
 
@@ -193,21 +258,15 @@
    FORM
 ========================================================== */
 
-.sell-form {
-    display: flex;
-    flex-direction: column;
-
-    gap: 22px;
-}
-
-
-.form-row {
+.form-grid {
     display: grid;
 
     grid-template-columns:
         repeat(2, minmax(0, 1fr));
 
-    gap: 17px;
+    gap: 16px;
+
+    margin-top: 19px;
 }
 
 
@@ -221,11 +280,10 @@
 }
 
 
-.form-group > label,
-.upload-heading label {
+.form-group label {
     color: #334155;
 
-    font-size: 12px;
+    font-size: 11px;
     font-weight: 800;
 }
 
@@ -235,9 +293,9 @@
 .form-group textarea {
     width: 100%;
 
-    border: 1px solid #dfe6ef;
+    border: 1px solid #dce4ed;
 
-    border-radius: 13px;
+    border-radius: 12px;
 
     background: #f8fafc;
 
@@ -247,26 +305,26 @@
 
     font-size: 13px;
 
-    transition: 0.2s ease;
+    transition: .2s ease;
 }
 
 
 .form-group input,
 .form-group select {
-    height: 49px;
+    height: 50px;
 
     padding: 0 14px;
 }
 
 
 .form-group textarea {
-    min-height: 145px;
+    min-height: 160px;
 
     padding: 14px;
 
     resize: vertical;
 
-    line-height: 1.6;
+    line-height: 1.65;
 }
 
 
@@ -278,26 +336,27 @@
     background: #ffffff;
 
     box-shadow:
-        0 0 0 4px rgba(37, 99, 235, 0.07);
+        0 0 0 4px rgba(37, 99, 235, .07);
 }
 
 
-.form-group input::placeholder,
-.form-group textarea::placeholder {
+.field-help {
     color: #94a3b8;
+
+    font-size: 9px;
 }
 
 
 /* ==========================================================
-   PRICE
+   MONEY
 ========================================================== */
 
-.price-input-wrap {
+.money-input {
     position: relative;
 }
 
 
-.price-input-wrap > span {
+.money-input span {
     position: absolute;
 
     top: 50%;
@@ -308,28 +367,11 @@
     color: #64748b;
 
     font-size: 13px;
-
-    z-index: 2;
 }
 
 
-.price-input-wrap input {
+.money-input input {
     padding-left: 30px;
-}
-
-
-/* ==========================================================
-   DESCRIPTION
-========================================================== */
-
-.description-counter {
-    align-self: flex-end;
-
-    margin-top: -2px;
-
-    color: #94a3b8;
-
-    font-size: 10px;
 }
 
 
@@ -337,70 +379,51 @@
    UPLOAD
 ========================================================== */
 
-.upload-heading {
-    display: flex;
-    align-items: flex-end;
-    justify-content: space-between;
+.upload-zone {
+    min-height: 120px;
 
-    gap: 15px;
-}
+    padding: 20px;
 
+    display: grid;
 
-.upload-heading small {
-    display: block;
-
-    margin-top: 3px;
-
-    color: #94a3b8;
-
-    font-size: 10px;
-}
-
-
-.upload-box {
-    min-height: 210px;
-
-    padding: 32px 20px;
-
-    display: flex;
-    flex-direction: column;
+    grid-template-columns:
+        auto
+        minmax(0, 1fr)
+        auto;
 
     align-items: center;
-    justify-content: center;
 
-    text-align: center;
+    gap: 16px;
 
-    border: 2px dashed #cbd5e1;
+    border: 1.5px dashed #cbd5e1;
 
-    border-radius: 18px;
+    border-radius: 16px;
 
     background: #f8fafc;
 
     cursor: pointer;
 
-    transition: 0.2s ease;
+    transition: .2s ease;
 }
 
 
-.upload-box:hover,
-.upload-box.dragging {
+.upload-zone:hover,
+.upload-zone.dragging {
     border-color: #2563eb;
 
     background: #eff6ff;
 }
 
 
-.upload-icon {
-    width: 55px;
-    height: 55px;
-
-    margin-bottom: 15px;
+.upload-zone-icon {
+    width: 50px;
+    height: 50px;
 
     display: flex;
     align-items: center;
     justify-content: center;
 
-    border-radius: 16px;
+    border-radius: 14px;
 
     background:
         linear-gradient(
@@ -411,60 +434,83 @@
 
     color: #2563eb;
 
-    font-size: 22px;
+    font-size: 19px;
 }
 
 
-.upload-box strong {
+.upload-zone-copy strong,
+.upload-zone-copy span,
+.upload-zone-copy small {
+    display: block;
+}
+
+
+.upload-zone-copy strong {
     color: #111827;
 
-    font-size: 14px;
+    font-size: 12px;
 }
 
 
-.upload-box > span {
-    margin-top: 5px;
+.upload-zone-copy span {
+    margin-top: 3px;
 
     color: #64748b;
 
-    font-size: 11px;
+    font-size: 10px;
 }
 
 
-.upload-box > small {
-    margin-top: 10px;
+.upload-zone-copy small {
+    margin-top: 5px;
 
     color: #94a3b8;
 
-    font-size: 9px;
+    font-size: 8px;
 }
 
 
-/* ==========================================================
-   FILE NAME
-========================================================== */
+.upload-zone-button {
+    padding: 10px 13px;
 
-.file-name {
+    border-radius: 10px;
+
+    background: #ffffff;
+
+    border: 1px solid #dbe4ef;
+
+    color: #334155;
+
+    font-size: 10px;
+    font-weight: 800;
+}
+
+
+.upload-meta {
+    margin-top: 10px;
+
     color: #64748b;
 
-    font-size: 11px;
+    font-size: 10px;
 }
 
 
 /* ==========================================================
-   PREVIEW GRID
+   IMAGE PREVIEW
 ========================================================== */
 
 .image-preview-grid {
+    margin-top: 14px;
+
     display: grid;
 
     grid-template-columns:
         repeat(
             auto-fill,
-            minmax(140px, 1fr)
+            minmax(130px, 1fr)
         );
 
-    gap: 12px;
+    gap: 10px;
 }
 
 
@@ -473,14 +519,14 @@
 
     border: 1px solid #e5eaf1;
 
-    border-radius: 14px;
+    border-radius: 13px;
 
     background: #ffffff;
 }
 
 
 .preview-image {
-    height: 140px;
+    height: 125px;
 
     overflow: hidden;
 
@@ -499,28 +545,24 @@
 
 
 .preview-actions {
-    padding: 8px;
+    padding: 7px;
 
     display: grid;
 
-    grid-template-columns: 1fr 1fr;
+    grid-template-columns:
+        1fr
+        1fr;
 
-    gap: 6px;
+    gap: 5px;
 }
 
 
 .preview-actions button {
-    min-height: 34px;
+    min-height: 32px;
 
     border: none;
 
-    display: flex;
-    align-items: center;
-    justify-content: center;
-
-    gap: 5px;
-
-    border-radius: 9px;
+    border-radius: 8px;
 
     font-size: 9px;
     font-weight: 800;
@@ -544,15 +586,62 @@
 
 
 /* ==========================================================
-   PUBLISH
+   PUBLISH SECTION
 ========================================================== */
 
+.publish-section {
+    padding: 22px 30px;
+
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    gap: 20px;
+
+    background: #f8fafc;
+}
+
+
+.publish-copy {
+    display: flex;
+    align-items: center;
+
+    gap: 10px;
+}
+
+
+.publish-copy > i {
+    color: #22c55e;
+
+    font-size: 18px;
+}
+
+
+.publish-copy strong,
+.publish-copy span {
+    display: block;
+}
+
+
+.publish-copy strong {
+    color: #334155;
+
+    font-size: 11px;
+}
+
+
+.publish-copy span {
+    margin-top: 2px;
+
+    color: #94a3b8;
+
+    font-size: 9px;
+}
+
+
 .publish-btn {
-    width: 100%;
-
-    min-height: 54px;
-
-    margin-top: 3px;
+    min-width: 190px;
+    min-height: 50px;
 
     padding: 0 18px;
 
@@ -562,7 +651,9 @@
     align-items: center;
     justify-content: space-between;
 
-    border-radius: 15px;
+    gap: 15px;
+
+    border-radius: 14px;
 
     background:
         linear-gradient(
@@ -574,15 +665,15 @@
 
     color: #ffffff;
 
-    font-size: 13px;
+    font-size: 12px;
     font-weight: 850;
 
     cursor: pointer;
 
     box-shadow:
-        0 14px 30px rgba(37, 99, 235, 0.22);
+        0 14px 28px rgba(30, 58, 138, .22);
 
-    transition: 0.2s ease;
+    transition: .2s ease;
 }
 
 
@@ -590,7 +681,7 @@
     transform: translateY(-2px);
 
     box-shadow:
-        0 18px 35px rgba(37, 99, 235, 0.28);
+        0 18px 34px rgba(30, 58, 138, .3);
 }
 
 
@@ -598,155 +689,321 @@
    SIDEBAR
 ========================================================== */
 
-.sell-sidebar {
-    display: flex;
-    flex-direction: column;
+.listing-sidebar {
+    position: sticky;
 
-    gap: 16px;
+    top: 100px;
 }
 
 
-.sell-tips {
-    padding: 27px;
+.preview-label-row {
+    margin-bottom: 12px;
 
-    border: 1px solid #e8edf4;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
 
-    border-radius: 22px;
+
+.preview-label-row span {
+    display: block;
+
+    margin-bottom: 3px;
+
+    color: #2563eb;
+
+    font-size: 8px;
+    font-weight: 900;
+
+    letter-spacing: .1em;
+}
+
+
+.preview-label-row h3 {
+    margin: 0;
+
+    color: #334155;
+
+    font-size: 15px;
+}
+
+
+.preview-label-row > i {
+    color: #94a3b8;
+}
+
+
+/* ==========================================================
+   PRODUCT PREVIEW CARD
+========================================================== */
+
+.listing-preview-card {
+    overflow: hidden;
+
+    border: 1px solid #e5eaf1;
+
+    border-radius: 20px;
 
     background: #ffffff;
 
     box-shadow:
-        0 10px 30px rgba(15, 23, 42, 0.045);
+        0 15px 40px rgba(15, 23, 42, .08);
 }
 
 
-.sidebar-label {
+.listing-preview-image {
+    position: relative;
+
+    height: 235px;
+
+    overflow: hidden;
+
+    background: #e2e8f0;
+}
+
+
+.listing-preview-image img {
+    width: 100%;
+    height: 100%;
+
     display: block;
 
-    margin-bottom: 7px;
-
-    color: #2563eb;
-
-    font-size: 9px;
-    font-weight: 900;
-
-    letter-spacing: 0.1em;
+    object-fit: cover;
 }
 
 
-.sell-tips h3 {
-    margin-bottom: 25px;
+.preview-photo-badge {
+    position: absolute;
 
-    color: #111827;
+    right: 12px;
+    bottom: 12px;
 
-    font-size: 20px;
-
-    letter-spacing: -0.02em;
-}
-
-
-.tip {
-    display: flex;
-
-    gap: 12px;
-
-    padding: 15px 0;
-
-    border-bottom: 1px solid #edf1f5;
-}
-
-
-.tip:last-child {
-    border-bottom: none;
-
-    padding-bottom: 0;
-}
-
-
-.tip-icon {
-    width: 38px;
-    height: 38px;
-
-    flex-shrink: 0;
+    padding: 7px 10px;
 
     display: flex;
     align-items: center;
-    justify-content: center;
 
-    border-radius: 12px;
+    gap: 5px;
+
+    border-radius: 999px;
+
+    background: rgba(15, 23, 42, .8);
+
+    color: #ffffff;
+
+    font-size: 9px;
+}
+
+
+.listing-preview-body {
+    padding: 18px;
+}
+
+
+.preview-category {
+    display: inline-flex;
+
+    padding: 5px 8px;
+
+    border-radius: 7px;
 
     background: #eff6ff;
 
     color: #2563eb;
 
-    font-size: 13px;
+    font-size: 9px;
+    font-weight: 800;
 }
 
 
-.tip strong {
-    display: block;
+.listing-preview-body h2 {
+    margin: 11px 0 0;
 
-    color: #334155;
+    color: #111827;
 
-    font-size: 12px;
+    font-size: 18px;
+
+    line-height: 1.35;
 }
 
 
-.tip p {
-    margin-top: 4px;
+.preview-description {
+    min-height: 39px;
+
+    margin-top: 8px;
 
     color: #64748b;
 
-    font-size: 10px;
+    font-size: 11px;
 
-    line-height: 1.55;
+    line-height: 1.6;
+}
+
+
+.preview-seller {
+    margin-top: 15px;
+
+    display: flex;
+    align-items: center;
+
+    gap: 8px;
+}
+
+
+.preview-seller > span {
+    width: 30px;
+    height: 30px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    border-radius: 50%;
+
+    background: #f1f5f9;
+
+    color: #64748b;
+
+    font-size: 9px;
+}
+
+
+.preview-seller small,
+.preview-seller strong {
+    display: block;
+}
+
+
+.preview-seller small {
+    color: #94a3b8;
+
+    font-size: 8px;
+}
+
+
+.preview-seller strong {
+    margin-top: 1px;
+
+    color: #475569;
+
+    font-size: 10px;
+}
+
+
+.preview-footer {
+    margin-top: 16px;
+    padding-top: 15px;
+
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+
+    border-top: 1px solid #edf1f5;
+}
+
+
+.preview-footer small {
+    display: block;
+
+    color: #94a3b8;
+
+    font-size: 8px;
+    font-weight: 900;
+
+    text-transform: uppercase;
+}
+
+
+.preview-footer strong {
+    display: block;
+
+    margin-top: 3px;
+
+    color: #111827;
+
+    font-size: 22px;
+}
+
+
+.preview-buy-button {
+    padding: 10px 13px;
+
+    border-radius: 10px;
+
+    background: #2563eb;
+
+    color: #ffffff;
+
+    font-size: 9px;
+    font-weight: 800;
 }
 
 
 /* ==========================================================
-   SELLER NOTE
+   CHECKLIST
 ========================================================== */
 
-.seller-note {
+.seller-checklist {
+    margin-top: 15px;
+
     padding: 18px;
 
-    display: flex;
-
-    gap: 11px;
+    border: 1px solid #e7edf4;
 
     border-radius: 16px;
 
-    background:
-        linear-gradient(
-            135deg,
-            #0f172a,
-            #1e3a8a
-        );
-
-    color: #ffffff;
+    background: #ffffff;
 }
 
 
-.seller-note > i {
-    margin-top: 2px;
+.checklist-heading {
+    margin-bottom: 14px;
 
-    color: #93c5fd;
-}
+    display: flex;
+    align-items: center;
 
+    gap: 8px;
 
-.seller-note strong {
+    color: #334155;
+
     font-size: 11px;
 }
 
 
-.seller-note p {
-    margin-top: 4px;
+.checklist-heading i {
+    color: #f59e0b;
+}
 
-    color: #cbd5e1;
+
+.checklist-item {
+    padding: 7px 0;
+
+    display: flex;
+    align-items: center;
+
+    gap: 8px;
+
+    color: #64748b;
 
     font-size: 9px;
+}
 
-    line-height: 1.55;
+
+.checklist-item i {
+    width: 18px;
+    height: 18px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    border-radius: 50%;
+
+    background: #ecfdf5;
+
+    color: #16a34a;
+
+    font-size: 7px;
 }
 
 
@@ -766,14 +1023,13 @@ body.crop-open {
 
     z-index: 5000;
 
-    padding: 20px;
-
     display: none;
     align-items: center;
     justify-content: center;
 
-    background:
-        rgba(15, 23, 42, 0.82);
+    padding: 20px;
+
+    background: rgba(15, 23, 42, .82);
 
     backdrop-filter: blur(6px);
 }
@@ -784,22 +1040,19 @@ body.crop-open {
 }
 
 
-.crop-box {
+.crop-dialog {
     width: min(100%, 720px);
 
     padding: 22px;
 
-    border-radius: 22px;
+    border-radius: 20px;
 
     background: #ffffff;
-
-    box-shadow:
-        0 30px 80px rgba(0, 0, 0, 0.3);
 }
 
 
-.crop-header {
-    margin-bottom: 16px;
+.crop-dialog-header {
+    margin-bottom: 15px;
 
     display: flex;
     align-items: center;
@@ -807,30 +1060,28 @@ body.crop-open {
 }
 
 
-.crop-header span {
+.crop-dialog-header span {
     display: block;
-
-    margin-bottom: 3px;
 
     color: #2563eb;
 
-    font-size: 9px;
+    font-size: 8px;
     font-weight: 900;
 }
 
 
-.crop-header h3 {
-    margin: 0;
+.crop-dialog-header h3 {
+    margin: 3px 0 0;
 
     color: #111827;
 
-    font-size: 20px;
+    font-size: 19px;
 }
 
 
-.crop-close {
-    width: 37px;
-    height: 37px;
+.crop-close-btn {
+    width: 36px;
+    height: 36px;
 
     border: none;
 
@@ -845,27 +1096,25 @@ body.crop-open {
 
 
 .crop-area {
-    width: 100%;
-
     max-height: 460px;
 
     overflow: hidden;
 
-    border-radius: 14px;
+    border-radius: 13px;
 
     background: #0f172a;
 }
 
 
 .crop-area img {
-    display: block;
-
     max-width: 100%;
+
+    display: block;
 }
 
 
-.crop-actions {
-    margin-top: 17px;
+.crop-dialog-actions {
+    margin-top: 16px;
 
     display: flex;
     justify-content: flex-end;
@@ -874,30 +1123,30 @@ body.crop-open {
 }
 
 
-.crop-actions button {
+.crop-dialog-actions button {
     min-height: 42px;
 
     padding: 0 17px;
 
     border: none;
 
-    border-radius: 11px;
+    border-radius: 10px;
 
-    font-size: 11px;
+    font-size: 10px;
     font-weight: 800;
 
     cursor: pointer;
 }
 
 
-.crop-cancel {
+.cancel-crop-btn {
     background: #f1f5f9;
 
     color: #334155;
 }
 
 
-.crop-save {
+.save-crop-btn {
     background:
         linear-gradient(
             135deg,
@@ -916,19 +1165,16 @@ body.crop-open {
 
 @media (max-width: 1000px) {
 
-    .sell-layout {
+    .listing-layout {
         grid-template-columns: 1fr;
     }
 
+    .listing-sidebar {
+        position: static;
+    }
 
-    .sell-sidebar {
-        display: grid;
-
-        grid-template-columns:
-            minmax(0, 1fr)
-            minmax(0, 1fr);
-
-        align-items: start;
+    .listing-preview-card {
+        max-width: 500px;
     }
 
 }
@@ -940,89 +1186,75 @@ body.crop-open {
 
 @media (max-width: 700px) {
 
-    .sell-page {
+    .listing-page {
         width: 92%;
 
-        padding:
-            24px
-            0
-            60px;
+        padding-top: 24px;
     }
 
 
-    .sell-hero {
-        padding: 30px 24px;
-
-        flex-direction: column;
-
+    .listing-header {
         align-items: flex-start;
 
-        border-radius: 22px;
+        flex-direction: column;
     }
 
 
-    .sell-hero h1 {
-        font-size: 34px;
-    }
-
-
-    .back-btn {
+    .listing-status {
         width: 100%;
     }
 
 
-    .sell-card {
-        padding: 22px;
+    .editor-section {
+        padding: 22px 18px;
 
-        border-radius: 19px;
+        grid-template-columns: 1fr;
+
+        gap: 13px;
     }
 
 
-    .form-row {
+    .section-number {
+        width: 36px;
+        height: 36px;
+    }
+
+
+    .form-grid {
         grid-template-columns: 1fr;
     }
 
 
-    .sell-sidebar {
-        display: flex;
+    .upload-zone {
+        grid-template-columns: auto 1fr;
     }
 
 
-    .upload-box {
-        min-height: 190px;
+    .upload-zone-button {
+        display: none;
+    }
 
-        padding:
-            27px
-            17px;
+
+    .publish-section {
+        align-items: stretch;
+
+        flex-direction: column;
+    }
+
+
+    .publish-btn {
+        width: 100%;
+    }
+
+
+    .listing-preview-card {
+        max-width: none;
     }
 
 
     .image-preview-grid {
         grid-template-columns:
-            repeat(
-                2,
-                minmax(0, 1fr)
-            );
-    }
-
-
-    .preview-image {
-        height: 120px;
-    }
-
-
-    .crop-box {
-        padding: 17px;
-    }
-
-
-    .crop-actions {
-        flex-direction: column-reverse;
-    }
-
-
-    .crop-actions button {
-        width: 100%;
+            repeat(2, minmax(0, 1fr));
     }
 
 }

@@ -3,19 +3,30 @@ document.addEventListener("DOMContentLoaded", () => {
     const imageInput = document.getElementById("images");
     const fileName = document.getElementById("fileName");
     const previewGrid = document.getElementById("imagePreviewGrid");
+    const uploadZone = document.querySelector(".upload-zone");
 
     const cropModal = document.getElementById("cropModal");
     const cropImage = document.getElementById("cropImage");
-
     const saveCropBtn = document.getElementById("saveCropBtn");
     const cancelCropBtn = document.getElementById("cancelCropBtn");
     const cancelCropIcon = document.getElementById("cancelCropIcon");
 
-    const priceInput = document.getElementById("price");
-    const description = document.getElementById("description");
+    const form = document.getElementById("sellForm");
 
-    const form = document.querySelector(".sell-form");
-    const uploadBox = document.querySelector(".upload-box");
+    const titleInput = document.getElementById("title");
+    const priceInput = document.getElementById("price");
+    const categoryInput = document.getElementById("category");
+    const descriptionInput = document.getElementById("description");
+
+    const previewTitle = document.getElementById("previewTitle");
+    const previewPrice = document.getElementById("previewPrice");
+    const previewCategory = document.getElementById("previewCategory");
+    const previewDescription = document.getElementById("previewDescription");
+    const previewImage = document.getElementById("livePreviewImage");
+    const previewPhotoCount = document.getElementById("previewPhotoCount");
+
+    const descriptionCounter =
+        document.getElementById("descriptionCounter");
 
     let selectedFiles = [];
     let cropper = null;
@@ -23,44 +34,93 @@ document.addEventListener("DOMContentLoaded", () => {
 
 
     /* ==========================================================
-       IMAGE SELECTION
+       LIVE PREVIEW
     ========================================================== */
 
-    imageInput?.addEventListener("change", () => {
+    titleInput?.addEventListener("input", () => {
 
-        const newFiles =
-            Array.from(imageInput.files).filter(file =>
-                file.type.startsWith("image/")
-            );
+        previewTitle.textContent =
+            titleInput.value.trim() ||
+            "Your product title";
 
-        selectedFiles = [
-            ...selectedFiles,
-            ...newFiles
-        ];
+    });
 
-        updateFileInput();
-        renderImagePreviews();
+
+    priceInput?.addEventListener("input", () => {
+
+        const value =
+            Number(priceInput.value);
+
+        previewPrice.textContent =
+            value > 0
+                ? `£${value.toFixed(2)}`
+                : "£0.00";
+
+    });
+
+
+    categoryInput?.addEventListener("change", () => {
+
+        const option =
+            categoryInput.options[
+                categoryInput.selectedIndex
+            ];
+
+        previewCategory.textContent =
+            categoryInput.value
+                ? option.text
+                : "Category";
+
+    });
+
+
+    descriptionInput?.addEventListener("input", () => {
+
+        previewDescription.textContent =
+            descriptionInput.value.trim() ||
+            "Your product description will appear here.";
+
+        descriptionCounter.textContent =
+            `${descriptionInput.value.length} / 1000`;
 
     });
 
 
     /* ==========================================================
-       IMAGE PREVIEW
+       IMAGES
     ========================================================== */
 
-    function renderImagePreviews() {
+    imageInput?.addEventListener("change", () => {
 
-        if (!previewGrid || !fileName) {
-            return;
-        }
+        const files =
+            Array.from(
+                imageInput.files
+            ).filter(file =>
+                file.type.startsWith("image/")
+            );
+
+        selectedFiles = [
+            ...selectedFiles,
+            ...files
+        ];
+
+        updateFileInput();
+        renderImages();
+
+    });
+
+
+    function renderImages() {
 
         previewGrid.innerHTML = "";
 
-
-        if (selectedFiles.length === 0) {
+        if (!selectedFiles.length) {
 
             fileName.textContent =
                 "No photos selected";
+
+            previewPhotoCount.textContent =
+                "0";
 
             return;
 
@@ -69,100 +129,122 @@ document.addEventListener("DOMContentLoaded", () => {
 
         fileName.textContent =
             selectedFiles.length === 1
-                ? selectedFiles[0].name
+                ? "1 photo selected"
                 : `${selectedFiles.length} photos selected`;
 
 
-        selectedFiles.forEach((file, index) => {
-
-            const reader =
-                new FileReader();
+        previewPhotoCount.textContent =
+            selectedFiles.length;
 
 
-            reader.onload = event => {
+        selectedFiles.forEach(
+            (file, index) => {
 
-                const card =
-                    document.createElement("div");
-
-
-                card.className =
-                    "preview-card";
+                const reader =
+                    new FileReader();
 
 
-                card.innerHTML = `
+                reader.onload = event => {
 
-                    <div class="preview-image">
-                        <img
-                            src="${event.target.result}"
-                            alt="Selected product image">
-                    </div>
-
-                    <div class="preview-actions">
-
-                        <button
-                            type="button"
-                            class="edit-img-btn"
-                            data-index="${index}">
-                            <i class="fa-solid fa-crop-simple"></i>
-                            Edit
-                        </button>
-
-                        <button
-                            type="button"
-                            class="remove-img-btn"
-                            data-index="${index}">
-                            <i class="fa-regular fa-trash-can"></i>
-                            Remove
-                        </button>
-
-                    </div>
-
-                `;
+                    if (index === 0) {
+                        previewImage.src =
+                            event.target.result;
+                    }
 
 
-                previewGrid.appendChild(card);
+                    const card =
+                        document.createElement("div");
 
-            };
+
+                    card.className =
+                        "preview-card";
 
 
-            reader.readAsDataURL(file);
+                    card.innerHTML = `
+                        <div class="preview-image">
+                            <img
+                                src="${event.target.result}"
+                                alt="Product photo"
+                            >
+                        </div>
 
-        });
+                        <div class="preview-actions">
+
+                            <button
+                                type="button"
+                                class="edit-img-btn"
+                                data-index="${index}"
+                            >
+                                Edit
+                            </button>
+
+                            <button
+                                type="button"
+                                class="remove-img-btn"
+                                data-index="${index}"
+                            >
+                                Remove
+                            </button>
+
+                        </div>
+                    `;
+
+
+                    previewGrid.appendChild(card);
+
+                };
+
+
+                reader.readAsDataURL(file);
+
+            }
+        );
 
     }
 
 
     /* ==========================================================
-       PREVIEW ACTIONS
+       PREVIEW BUTTON ACTIONS
     ========================================================== */
 
     previewGrid?.addEventListener(
         "click",
         event => {
 
-            const editBtn =
-                event.target.closest(".edit-img-btn");
+            const editButton =
+                event.target.closest(
+                    ".edit-img-btn"
+                );
 
-            const removeBtn =
-                event.target.closest(".remove-img-btn");
+
+            const removeButton =
+                event.target.closest(
+                    ".remove-img-btn"
+                );
 
 
-            if (editBtn) {
+            if (editButton) {
 
                 editingIndex =
-                    Number(editBtn.dataset.index);
+                    Number(
+                        editButton.dataset.index
+                    );
 
                 openCropModal(
-                    selectedFiles[editingIndex]
+                    selectedFiles[
+                        editingIndex
+                    ]
                 );
 
             }
 
 
-            if (removeBtn) {
+            if (removeButton) {
 
                 const index =
-                    Number(removeBtn.dataset.index);
+                    Number(
+                        removeButton.dataset.index
+                    );
 
 
                 selectedFiles.splice(
@@ -172,7 +254,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
 
                 updateFileInput();
-                renderImagePreviews();
+                renderImages();
 
             }
 
@@ -181,16 +263,12 @@ document.addEventListener("DOMContentLoaded", () => {
 
 
     /* ==========================================================
-       OPEN CROP
+       CROP
     ========================================================== */
 
     function openCropModal(file) {
 
-        if (
-            !file ||
-            !cropModal ||
-            !cropImage
-        ) {
+        if (!file) {
             return;
         }
 
@@ -205,30 +283,30 @@ document.addEventListener("DOMContentLoaded", () => {
                 event.target.result;
 
 
-            cropModal.classList.add("show");
+            cropModal.classList.add(
+                "show"
+            );
+
 
             document.body.classList.add(
                 "crop-open"
             );
 
 
-            if (cropper) {
-                cropper.destroy();
-            }
+            cropper?.destroy();
 
 
             cropper =
                 new Cropper(
                     cropImage,
                     {
-                        aspectRatio: NaN,
                         viewMode: 1,
                         autoCropArea: 1,
+                        responsive: true,
                         movable: true,
                         zoomable: true,
                         rotatable: true,
                         scalable: true,
-                        responsive: true,
                         background: false
                     }
                 );
@@ -240,10 +318,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
     }
 
-
-    /* ==========================================================
-       SAVE CROP
-    ========================================================== */
 
     saveCropBtn?.addEventListener(
         "click",
@@ -280,40 +354,31 @@ document.addEventListener("DOMContentLoaded", () => {
                         ];
 
 
-                    const editedFile =
-                        new File(
-                            [blob],
-                            oldFile.name,
-                            {
-                                type: "image/jpeg",
-                                lastModified:
-                                    Date.now()
-                            }
-                        );
-
-
                     selectedFiles[
                         editingIndex
-                    ] = editedFile;
+                    ] = new File(
+                        [blob],
+                        oldFile.name,
+                        {
+                            type: "image/jpeg",
+                            lastModified:
+                                Date.now()
+                        }
+                    );
 
 
                     updateFileInput();
-                    renderImagePreviews();
-
+                    renderImages();
                     closeCropModal();
 
                 },
                 "image/jpeg",
-                0.9
+                .9
             );
 
         }
     );
 
-
-    /* ==========================================================
-       CLOSE CROP
-    ========================================================== */
 
     cancelCropBtn?.addEventListener(
         "click",
@@ -332,23 +397,7 @@ document.addEventListener("DOMContentLoaded", () => {
         event => {
 
             if (
-                event.target ===
-                cropModal
-            ) {
-                closeCropModal();
-            }
-
-        }
-    );
-
-
-    document.addEventListener(
-        "keydown",
-        event => {
-
-            if (
-                event.key === "Escape" &&
-                cropModal?.classList.contains("show")
+                event.target === cropModal
             ) {
                 closeCropModal();
             }
@@ -359,61 +408,119 @@ document.addEventListener("DOMContentLoaded", () => {
 
     function closeCropModal() {
 
-        cropModal?.classList.remove("show");
+        cropModal.classList.remove(
+            "show"
+        );
+
 
         document.body.classList.remove(
             "crop-open"
         );
 
 
-        if (cropper) {
+        cropper?.destroy();
 
-            cropper.destroy();
-            cropper = null;
-
-        }
-
-
-        if (cropImage) {
-            cropImage.src = "";
-        }
-
-
+        cropper = null;
         editingIndex = null;
+
+        cropImage.src = "";
 
     }
 
 
     /* ==========================================================
-       UPDATE REAL FILE INPUT
+       DRAG DROP
+    ========================================================== */
+
+    uploadZone?.addEventListener(
+        "dragover",
+        event => {
+
+            event.preventDefault();
+
+            uploadZone.classList.add(
+                "dragging"
+            );
+
+        }
+    );
+
+
+    uploadZone?.addEventListener(
+        "dragleave",
+        () => {
+
+            uploadZone.classList.remove(
+                "dragging"
+            );
+
+        }
+    );
+
+
+    uploadZone?.addEventListener(
+        "drop",
+        event => {
+
+            event.preventDefault();
+
+            uploadZone.classList.remove(
+                "dragging"
+            );
+
+
+            const files =
+                Array.from(
+                    event.dataTransfer.files
+                ).filter(file =>
+                    file.type.startsWith(
+                        "image/"
+                    )
+                );
+
+
+            selectedFiles = [
+                ...selectedFiles,
+                ...files
+            ];
+
+
+            updateFileInput();
+            renderImages();
+
+        }
+    );
+
+
+    /* ==========================================================
+       DATA TRANSFER
     ========================================================== */
 
     function updateFileInput() {
 
-        if (!imageInput) {
-            return;
-        }
-
-
-        const dataTransfer =
+        const transfer =
             new DataTransfer();
 
 
-        selectedFiles.forEach(file => {
+        selectedFiles.forEach(
+            file => {
 
-            dataTransfer.items.add(file);
+                transfer.items.add(
+                    file
+                );
 
-        });
+            }
+        );
 
 
         imageInput.files =
-            dataTransfer.files;
+            transfer.files;
 
     }
 
 
     /* ==========================================================
-       PRICE FORMAT
+       FORMAT PRICE
     ========================================================== */
 
     priceInput?.addEventListener(
@@ -439,73 +546,16 @@ document.addEventListener("DOMContentLoaded", () => {
 
 
     /* ==========================================================
-       DESCRIPTION COUNTER
-    ========================================================== */
-
-    if (description) {
-
-        const counter =
-            document.createElement("small");
-
-
-        counter.className =
-            "description-counter";
-
-
-        description.parentNode.appendChild(
-            counter
-        );
-
-
-        function updateCounter() {
-
-            counter.textContent =
-                `${description.value.length}/1000`;
-
-        }
-
-
-        updateCounter();
-
-
-        description.addEventListener(
-            "input",
-            updateCounter
-        );
-
-    }
-
-
-    /* ==========================================================
-       FORM VALIDATION
+       VALIDATION
     ========================================================== */
 
     form?.addEventListener(
         "submit",
         event => {
 
-            const title =
-                document
-                    .getElementById("title")
-                    ?.value
-                    .trim();
-
-
-            const price =
-                Number(
-                    document
-                        .getElementById("price")
-                        ?.value
-                );
-
-
-            const category =
-                document
-                    .getElementById("category")
-                    ?.value;
-
-
-            if (!title) {
+            if (
+                !titleInput.value.trim()
+            ) {
 
                 event.preventDefault();
 
@@ -519,8 +569,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
 
             if (
-                !price ||
-                price <= 0
+                Number(priceInput.value) <= 0
             ) {
 
                 event.preventDefault();
@@ -534,12 +583,12 @@ document.addEventListener("DOMContentLoaded", () => {
             }
 
 
-            if (!category) {
+            if (!categoryInput.value) {
 
                 event.preventDefault();
 
                 alert(
-                    "Please select a category."
+                    "Please choose a category."
                 );
 
                 return;
@@ -563,74 +612,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
 
             updateFileInput();
-
-        }
-    );
-
-
-    /* ==========================================================
-       DRAG AND DROP
-    ========================================================== */
-
-    uploadBox?.addEventListener(
-        "dragover",
-        event => {
-
-            event.preventDefault();
-
-            uploadBox.classList.add(
-                "dragging"
-            );
-
-        }
-    );
-
-
-    uploadBox?.addEventListener(
-        "dragleave",
-        () => {
-
-            uploadBox.classList.remove(
-                "dragging"
-            );
-
-        }
-    );
-
-
-    uploadBox?.addEventListener(
-        "drop",
-        event => {
-
-            event.preventDefault();
-
-            uploadBox.classList.remove(
-                "dragging"
-            );
-
-
-            const droppedFiles =
-                Array
-                    .from(
-                        event
-                            .dataTransfer
-                            .files
-                    )
-                    .filter(file =>
-                        file.type.startsWith(
-                            "image/"
-                        )
-                    );
-
-
-            selectedFiles = [
-                ...selectedFiles,
-                ...droppedFiles
-            ];
-
-
-            updateFileInput();
-            renderImagePreviews();
 
         }
     );
