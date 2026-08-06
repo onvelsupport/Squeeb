@@ -1,17 +1,20 @@
 document.addEventListener("DOMContentLoaded", () => {
 
-    /* ======================================================
-       PUBLIC MOBILE MENU
-       ====================================================== */
-
     const menuBtn =
         document.getElementById("menuBtn");
 
     const navMenu =
         document.getElementById("navMenu");
 
+    const mobileMenuBtn =
+        document.getElementById("mobileMenuBtn");
+
+    const mobileDropdown =
+        document.getElementById("mobileDropdown");
+
 
     function setPublicMenu(open) {
+
         if (!menuBtn || !navMenu) {
             return;
         }
@@ -43,6 +46,42 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
 
+    function setDashboardMenu(open) {
+
+        if (
+            !mobileMenuBtn ||
+            !mobileDropdown
+        ) {
+            return;
+        }
+
+        mobileDropdown.classList.toggle(
+            "show",
+            open
+        );
+
+        mobileMenuBtn.setAttribute(
+            "aria-expanded",
+            String(open)
+        );
+
+        const icon =
+            mobileMenuBtn.querySelector("i");
+
+        if (icon) {
+            icon.classList.toggle(
+                "fa-bars",
+                !open
+            );
+
+            icon.classList.toggle(
+                "fa-xmark",
+                open
+            );
+        }
+    }
+
+
     menuBtn?.addEventListener(
         "click",
         (event) => {
@@ -57,134 +96,6 @@ document.addEventListener("DOMContentLoaded", () => {
             setPublicMenu(open);
         }
     );
-
-
-    navMenu?.addEventListener(
-        "click",
-        (event) => {
-
-            const link =
-                event.target.closest("a");
-
-            if (!link) {
-                return;
-            }
-
-            setPublicMenu(false);
-        }
-    );
-
-
-    document.addEventListener(
-        "click",
-        (event) => {
-
-            if (
-                !menuBtn ||
-                !navMenu ||
-                !navMenu.classList.contains(
-                    "active"
-                )
-            ) {
-                return;
-            }
-
-            if (
-                navMenu.contains(event.target) ||
-                menuBtn.contains(event.target)
-            ) {
-                return;
-            }
-
-            setPublicMenu(false);
-        }
-    );
-
-
-    document.addEventListener(
-        "keydown",
-        (event) => {
-
-            if (event.key === "Escape") {
-                setPublicMenu(false);
-                setDashboardMenu(false);
-            }
-        }
-    );
-
-
-    window.addEventListener(
-        "resize",
-        () => {
-
-            if (
-                window.innerWidth > 1050
-            ) {
-                setPublicMenu(false);
-            }
-
-            if (
-                window.innerWidth > 900
-            ) {
-                setDashboardMenu(false);
-            }
-        }
-    );
-
-
-    /* ======================================================
-       AUTHENTICATED MOBILE MENU FALLBACK
-       ====================================================== */
-
-    const mobileMenuBtn =
-        document.getElementById(
-            "mobileMenuBtn"
-        );
-
-    const mobileDropdown =
-        document.getElementById(
-            "mobileDropdown"
-        );
-
-
-    function setDashboardMenu(open) {
-
-        if (
-            !mobileMenuBtn ||
-            !mobileDropdown
-        ) {
-            return;
-        }
-
-        mobileDropdown.hidden = !open;
-
-        mobileDropdown.classList.toggle(
-            "show",
-            open
-        );
-
-        mobileMenuBtn.setAttribute(
-            "aria-expanded",
-            String(open)
-        );
-
-        const icon =
-            mobileMenuBtn.querySelector(
-                "i"
-            );
-
-        if (icon) {
-            icon.classList.toggle(
-                "fa-bars",
-                !open
-            );
-
-            icon.classList.toggle(
-                "fa-xmark",
-                open
-            );
-        }
-    }
 
 
     mobileMenuBtn?.addEventListener(
@@ -203,14 +114,26 @@ document.addEventListener("DOMContentLoaded", () => {
     );
 
 
+    navMenu?.addEventListener(
+        "click",
+        (event) => {
+
+            if (
+                event.target.closest("a")
+            ) {
+                setPublicMenu(false);
+            }
+        }
+    );
+
+
     mobileDropdown?.addEventListener(
         "click",
         (event) => {
 
-            const link =
-                event.target.closest("a");
-
-            if (link) {
+            if (
+                event.target.closest("a")
+            ) {
                 setDashboardMenu(false);
             }
         }
@@ -222,25 +145,66 @@ document.addEventListener("DOMContentLoaded", () => {
         (event) => {
 
             if (
-                !mobileMenuBtn ||
-                !mobileDropdown ||
-                mobileDropdown.hidden
-            ) {
-                return;
-            }
-
-            if (
-                mobileDropdown.contains(
+                navMenu &&
+                menuBtn &&
+                navMenu.classList.contains(
+                    "active"
+                ) &&
+                !navMenu.contains(
                     event.target
-                ) ||
-                mobileMenuBtn.contains(
+                ) &&
+                !menuBtn.contains(
                     event.target
                 )
             ) {
+                setPublicMenu(false);
+            }
+
+
+            if (
+                mobileDropdown &&
+                mobileMenuBtn &&
+                mobileDropdown.classList.contains(
+                    "show"
+                ) &&
+                !mobileDropdown.contains(
+                    event.target
+                ) &&
+                !mobileMenuBtn.contains(
+                    event.target
+                )
+            ) {
+                setDashboardMenu(false);
+            }
+        }
+    );
+
+
+    document.addEventListener(
+        "keydown",
+        (event) => {
+
+            if (event.key !== "Escape") {
                 return;
             }
 
+            setPublicMenu(false);
             setDashboardMenu(false);
+        }
+    );
+
+
+    window.addEventListener(
+        "resize",
+        () => {
+
+            if (window.innerWidth > 1050) {
+                setPublicMenu(false);
+            }
+
+            if (window.innerWidth > 900) {
+                setDashboardMenu(false);
+            }
         }
     );
 
