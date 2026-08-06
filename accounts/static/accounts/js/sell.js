@@ -23,6 +23,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const previewCategory = document.getElementById("previewCategory");
     const previewDescription = document.getElementById("previewDescription");
     const previewImage = document.getElementById("livePreviewImage");
+    const previewImagePlaceholder = document.getElementById("previewImagePlaceholder");
     const previewPhotoCount = document.getElementById("previewPhotoCount");
 
     const descriptionCounter =
@@ -116,6 +117,14 @@ document.addEventListener("DOMContentLoaded", () => {
 
         if (!selectedFiles.length) {
 
+
+            previewImage.src = "";
+previewImage.hidden = true;
+
+if (previewImagePlaceholder) {
+    previewImagePlaceholder.style.display = "flex";
+}
+
             fileName.textContent =
                 "No photos selected";
 
@@ -147,9 +156,13 @@ document.addEventListener("DOMContentLoaded", () => {
                 reader.onload = event => {
 
                     if (index === 0) {
-                        previewImage.src =
-                            event.target.result;
-                    }
+    previewImage.src = event.target.result;
+    previewImage.hidden = false;
+
+    if (previewImagePlaceholder) {
+        previewImagePlaceholder.style.display = "none";
+    }
+}
 
 
                     const card =

@@ -406,11 +406,17 @@ Create Listing | SQUEEB
 
                 <div class="listing-preview-image">
 
-                    <img
-                        id="livePreviewImage"
-                        src="{% static 'accounts/img/no-image.png' %}"
-                        alt="Product preview"
-                    >
+                    <div class="preview-image-placeholder" id="previewImagePlaceholder">
+    <i class="fa-regular fa-image"></i>
+    <span>Your first photo will appear here</span>
+</div>
+
+<img
+    id="livePreviewImage"
+    src=""
+    alt="Product preview"
+    hidden
+>
 
                     <span class="preview-photo-badge">
                         <i class="fa-regular fa-images"></i>
