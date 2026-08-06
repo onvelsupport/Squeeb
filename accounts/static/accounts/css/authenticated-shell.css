@@ -531,30 +531,152 @@ body.notification-open{
 
     .dashboard-topbar{
         width:calc(100% - 16px);
-        min-height:60px;
+        min-height:62px;
         margin-top:8px;
         padding:7px 8px 7px 12px;
-        grid-template-columns:auto minmax(0,1fr) auto auto;
+
+        display:grid;
+        grid-template-columns:auto 1fr auto auto auto;
+        align-items:center;
         gap:7px;
+
         border-radius:15px;
+    }
+
+    .dashboard-brand{
+        min-width:0;
     }
 
     .dashboard-brand img{
         width:108px;
     }
 
+
+    /* ======================================================
+       MOBILE SEARCH — ICON FIRST
+       ====================================================== */
+
     .dashboard-search{
+        position:static;
         min-width:0;
+
+        display:flex;
+        justify-content:flex-end;
+        align-items:center;
+    }
+
+    .dashboard-search > i{
+        position:static;
+        top:auto;
+        left:auto;
+        z-index:1;
+
+        width:40px;
+        height:40px;
+
+        display:grid;
+        place-items:center;
+
+        transform:none;
+
+        color:#344054;
+        background:#f3f6ff;
+
+        border:1px solid #e7ebf5;
+        border-radius:50%;
+
+        font-size:15px;
+
+        cursor:pointer;
+        pointer-events:none;
     }
 
     .dashboard-search input{
+        position:absolute;
+
+        width:40px;
+        height:40px;
         min-height:40px;
-        padding-left:34px;
-        font-size:12px;
+
+        padding:0;
+
+        opacity:0;
+
+        border:0;
+        outline:none;
+
+        cursor:pointer;
     }
 
     .dashboard-search input::placeholder{
         color:transparent;
+    }
+
+
+    /* Search opens as a floating field */
+
+    .dashboard-search:focus-within input{
+        position:fixed;
+
+        top:78px;
+        left:10px;
+        right:10px;
+
+        z-index:1750;
+
+        width:calc(100% - 20px);
+        height:52px;
+        min-height:52px;
+
+        padding:0 18px;
+
+        opacity:1;
+
+        color:var(--shell-text);
+        background:#fff;
+
+        border:1px solid #e5e7eb;
+        border-radius:15px;
+
+        box-shadow:
+            0 14px 40px
+            rgba(15,23,42,.16);
+
+        font-size:14px;
+
+        cursor:text;
+    }
+
+    .dashboard-search:focus-within input::placeholder{
+        color:#98a2b3;
+    }
+
+
+    /* Results appear directly below floating search */
+
+    .search-results{
+        position:fixed;
+
+        top:137px;
+        left:10px;
+        right:10px;
+
+        z-index:1750;
+
+        max-height:55dvh;
+
+        border-radius:15px;
+    }
+
+
+    /* ======================================================
+       MOBILE HEADER ACTIONS
+       ====================================================== */
+
+    .top-actions{
+        display:flex;
+        align-items:center;
+        gap:7px;
     }
 
     .top-actions .logout-btn{
@@ -563,17 +685,10 @@ body.notification-open{
 
     .icon-btn,
     .mobile-menu-btn{
-        width:39px;
-        height:39px;
-        border-radius:10px;
-    }
+        width:40px;
+        height:40px;
 
-    .search-results{
-        position:fixed;
-        top:76px;
-        left:8px;
-        right:8px;
-        max-height:55dvh;
+        border-radius:50%;
     }
 
     .notification-panel{
@@ -581,43 +696,45 @@ body.notification-open{
     }
 }
 
+
 @media(max-width:430px){
 
     .dashboard-topbar{
-        grid-template-columns:auto 1fr auto auto;
+        grid-template-columns:auto 1fr auto auto auto;
+        gap:6px;
     }
 
     .dashboard-brand img{
-        width:96px;
+        width:98px;
     }
 
-    .dashboard-search input{
-        width:40px;
-        padding:0;
-        color:transparent;
-        cursor:pointer;
+    .dashboard-search > i,
+    .dashboard-search input,
+    .icon-btn,
+    .mobile-menu-btn{
+        width:39px;
+        height:39px;
     }
 
-    .dashboard-search input:focus{
-        position:fixed;
-        top:8px;
+    .dashboard-search:focus-within input{
+        top:76px;
         left:8px;
         right:8px;
-        z-index:1750;
+
         width:calc(100% - 16px);
-        padding:0 42px 0 39px;
-        color:var(--shell-text);
-        background:#fff;
-        border-radius:13px;
-        box-shadow:0 14px 38px rgba(15,23,42,.18);
-        cursor:text;
+        height:50px;
+        min-height:50px;
+
+        padding:0 16px;
+
+        border-radius:14px;
     }
 
-    .dashboard-search input:focus::placeholder{
-        color:#98a2b3;
-    }
+    .search-results{
+        top:133px;
+        left:8px;
+        right:8px;
 
-    .dashboard-search > i{
-        left:13px;
+        border-radius:14px;
     }
 }
