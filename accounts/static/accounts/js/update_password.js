@@ -210,61 +210,84 @@ document.addEventListener("DOMContentLoaded", () => {
         }
 
         try {
-            const response = await fetch(
-                "/api/update-password/",
-                {
-                    method: "POST",
-                    credentials: "same-origin",
-                    headers: {
-                        "Content-Type": "application/json",
-                        "Accept": "application/json",
-                        "X-CSRFToken": getCookie("csrftoken"),
-                        "X-Requested-With": "XMLHttpRequest",
-                    },
-                    body: JSON.stringify({
-                        current_password: current,
-                        new_password: next,
-                        confirm_password: confirm,
-                    }),
-                }
-            );
-
-            const data = await parseJson(response);
-
-            if (!response.ok) {
-                throw new Error(
-                    data.error ||
-                    data.message ||
-                    "Could not update your password."
-                );
-            }
-
-            showMessage(
-                data.message ||
-                "Your password has been updated successfully.",
-                "success"
-            );
-
-            form.reset();
-            evaluatePassword();
-
-        } catch (error) {
-            console.error(
-                "UPDATE PASSWORD ERROR:",
-                error
-            );
-
-            showMessage(
-                error.message ||
-                "Could not update your password."
-            );
-
-        } finally {
-            if (updateButton) {
-                updateButton.disabled = false;
-                updateButton.innerHTML = originalButton;
-            }
+    const response = await fetch(
+        "/api/update-password/",
+        {
+            method: "POST",
+            credentials: "same-origin",
+            headers: {
+                "Content-Type": "application/json",
+                "Accept": "application/json",
+                "X-CSRFToken": getCookie("csrftoken"),
+                "X-Requested-With": "XMLHttpRequest",
+            },
+            body: JSON.stringify({
+                current_password: current,
+                new_password: next,
+                confirm_password: confirm,
+            }),
         }
+    );
+
+    const responseText = await response.text();
+
+    console.log(
+        "UPDATE PASSWORD STATUS:",
+        response.status
+    );
+
+    console.log(
+        "UPDATE PASSWORD RESPONSE:",
+        responseText
+    );
+
+    let data = {};
+
+    try {
+        data = JSON.parse(responseText);
+    } catch {
+        console.error(
+            "Django returned non-JSON:",
+            responseText
+        );
+    }
+
+    if (!response.ok) {
+        throw new Error(
+            data.error ||
+            data.message ||
+            `Password update failed (${response.status})`
+        );
+    }
+
+    showMessage(
+        data.message ||
+        "Your password has been updated successfully.",
+        "success"
+    );
+
+    form.reset();
+    evaluatePassword();
+
+} catch (error) {
+
+    console.error(
+        "UPDATE PASSWORD ERROR:",
+        error
+    );
+
+    showMessage(
+        error.message ||
+        "Could not update your password."
+    );
+
+} finally {
+
+    if (updateButton) {
+        updateButton.disabled = false;
+        updateButton.innerHTML = originalButton;
+    }
+}
     });
 
 });

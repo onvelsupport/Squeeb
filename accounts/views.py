@@ -33,7 +33,11 @@ from django.contrib.auth import (
     get_user_model,
     login as django_login,
     logout,
+    update_session_auth_hash,
 )
+
+from django.contrib.auth.password_validation import validate_password
+from django.core.exceptions import ValidationError
 
 from django.contrib.auth.decorators import login_required
 from django.core.cache import cache
@@ -3977,7 +3981,6 @@ def update_password_api(request):
             status=400
         )
 
-
     # -----------------------------------------
     # VERIFY CURRENT PASSWORD
     # -----------------------------------------
@@ -3993,7 +3996,6 @@ def update_password_api(request):
             status=400
         )
 
-
     # -----------------------------------------
     # CONFIRM PASSWORD MATCH
     # -----------------------------------------
@@ -4006,7 +4008,6 @@ def update_password_api(request):
             },
             status=400
         )
-
 
     # -----------------------------------------
     # NEW PASSWORD MUST BE DIFFERENT
@@ -4024,6 +4025,54 @@ def update_password_api(request):
             status=400
         )
 
+    # -----------------------------------------
+    # FRONTEND PASSWORD RULES
+    # -----------------------------------------
+
+    if len(new_password) < 8:
+        return JsonResponse(
+            {
+                "error":
+                "Password must contain at least 8 characters."
+            },
+            status=400
+        )
+
+    if not any(
+        char.isupper()
+        for char in new_password
+    ):
+        return JsonResponse(
+            {
+                "error":
+                "Password must contain at least one uppercase letter."
+            },
+            status=400
+        )
+
+    if not any(
+        char.islower()
+        for char in new_password
+    ):
+        return JsonResponse(
+            {
+                "error":
+                "Password must contain at least one lowercase letter."
+            },
+            status=400
+        )
+
+    if not any(
+        char.isdigit()
+        for char in new_password
+    ):
+        return JsonResponse(
+            {
+                "error":
+                "Password must contain at least one number."
+            },
+            status=400
+        )
 
     # -----------------------------------------
     # DJANGO PASSWORD VALIDATION
@@ -4038,13 +4087,11 @@ def update_password_api(request):
     except ValidationError as error:
         return JsonResponse(
             {
-                "error": " ".join(
-                    error.messages
-                )
+                "error":
+                " ".join(error.messages)
             },
             status=400
         )
-
 
     # -----------------------------------------
     # CHANGE PASSWORD
@@ -4055,12 +4102,8 @@ def update_password_api(request):
             new_password
         )
 
-        request.user.save(
-            update_fields=["password"]
-        )
+        request.user.save()
 
-        # IMPORTANT:
-        # Keeps the user logged in after password change.
         update_session_auth_hash(
             request,
             request.user
@@ -4080,7 +4123,6 @@ def update_password_api(request):
             },
             status=500
         )
-
 
     return JsonResponse(
         {
