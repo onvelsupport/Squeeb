@@ -12,6 +12,7 @@ from .views import (
     approve_task_completion,
     approve_withdrawal,
     bank_details,
+    bank_details_api,
     cart_page,
     cookie_policy,
     complete_task,
@@ -260,6 +261,12 @@ urlpatterns = [
         "api/referrals/",
         referrals_api,
         name="referrals_api",
+    ),
+
+    path(
+        "api/bank-details/",
+        bank_details_api,
+        name="bank_details_api",
     ),
 
     path(

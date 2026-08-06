@@ -803,6 +803,358 @@ def edit_profile(request):
 def bank_details(request):
     return render(request, "accounts/dashboard/bank_details.html")
 
+
+@login_required
+def bank_details_api(request):
+
+    user = request.user
+
+    country = str(
+        getattr(user, "country", "") or ""
+    ).strip().lower()
+
+    is_nigeria = (
+        country == "nigeria"
+        or country == "ng"
+        or "nigeria" in country
+    )
+
+    # -----------------------------------------
+    # GET SAVED BANK DETAILS
+    # -----------------------------------------
+
+    if request.method == "GET":
+
+        return JsonResponse(
+            {
+                "account_name":
+                    getattr(
+                        user,
+                        "bank_account_name",
+                        ""
+                    ) or "",
+
+                "bank_name":
+                    getattr(
+                        user,
+                        "bank_name",
+                        ""
+                    ) or "",
+
+                "sort_code":
+                    getattr(
+                        user,
+                        "sort_code",
+                        ""
+                    ) or "",
+
+                "account_number":
+                    getattr(
+                        user,
+                        "account_number",
+                        ""
+                    ) or "",
+
+                "country":
+                    country,
+
+                "is_nigeria":
+                    is_nigeria,
+            }
+        )
+
+
+    # -----------------------------------------
+    # POST ONLY
+    # -----------------------------------------
+
+    if request.method != "POST":
+        return JsonResponse(
+            {
+                "error":
+                    "Method not allowed."
+            },
+            status=405
+        )
+
+
+    # -----------------------------------------
+    # READ JSON
+    # -----------------------------------------
+
+    try:
+        data = json.loads(
+            request.body.decode("utf-8")
+        )
+
+    except (
+        json.JSONDecodeError,
+        UnicodeDecodeError
+    ):
+        return JsonResponse(
+            {
+                "error":
+                    "Invalid request data."
+            },
+            status=400
+        )
+
+
+    account_name = str(
+        data.get("account_name", "")
+    ).strip()
+
+    bank_name = str(
+        data.get("bank_name", "")
+    ).strip()
+
+    account_number = str(
+        data.get("account_number", "")
+    ).strip()
+
+    sort_code = str(
+        data.get("sort_code", "")
+    ).strip()
+
+
+    # -----------------------------------------
+    # CLEAN NUMBERS
+    # -----------------------------------------
+
+    account_number_digits = "".join(
+        char
+        for char in account_number
+        if char.isdigit()
+    )
+
+    sort_code_digits = "".join(
+        char
+        for char in sort_code
+        if char.isdigit()
+    )
+
+
+    # -----------------------------------------
+    # REQUIRED FIELDS
+    # -----------------------------------------
+
+    if not account_name:
+        return JsonResponse(
+            {
+                "error":
+                    "Account name is required."
+            },
+            status=400
+        )
+
+    if not bank_name:
+        return JsonResponse(
+            {
+                "error":
+                    "Bank name is required."
+            },
+            status=400
+        )
+
+
+    # -----------------------------------------
+    # NIGERIA VALIDATION
+    # -----------------------------------------
+
+    if is_nigeria:
+
+        if len(account_number_digits) != 10:
+            return JsonResponse(
+                {
+                    "error":
+                        "Enter a valid 10-digit "
+                        "Nigerian account number."
+                },
+                status=400
+            )
+
+        # Nigeria does not use UK sort codes
+        sort_code_digits = ""
+
+
+    # -----------------------------------------
+    # UK VALIDATION
+    # -----------------------------------------
+
+    else:
+
+        if len(sort_code_digits) != 6:
+            return JsonResponse(
+                {
+                    "error":
+                        "Enter a valid 6-digit "
+                        "sort code."
+                },
+                status=400
+            )
+
+        if len(account_number_digits) != 8:
+            return JsonResponse(
+                {
+                    "error":
+                        "Enter a valid 8-digit "
+                        "UK account number."
+                },
+                status=400
+            )
+
+
+    # -----------------------------------------
+    # SAVE
+    # -----------------------------------------
+
+    try:
+
+        user.bank_account_name = (
+            account_name
+        )
+
+        user.bank_name = (
+            bank_name
+        )
+
+        user.account_number = (
+            account_number_digits
+        )
+
+        user.sort_code = (
+            sort_code_digits
+        )
+
+        user.save()
+
+    except Exception as error:
+
+        print(
+            "BANK DETAILS SAVE ERROR:",
+            repr(error)
+        )
+
+        return JsonResponse(
+            {
+                "error":
+                    "Could not save bank details."
+            },
+            status=500
+        )
+
+
+    # -----------------------------------------
+    # SECURITY NOTIFICATION
+    # -----------------------------------------
+
+    try:
+        Notification.objects.create(
+            user=user,
+            title="Bank Details Updated",
+            message=(
+                "Your payout bank details "
+                "were updated successfully."
+            ),
+        )
+
+    except Exception as error:
+        print(
+            "BANK DETAILS NOTIFICATION ERROR:",
+            repr(error)
+        )
+
+
+    # -----------------------------------------
+    # SECURITY EMAIL
+    # -----------------------------------------
+
+    try:
+        details = [
+            {
+                "label": "Account name",
+                "value": account_name,
+            },
+            {
+                "label": "Bank",
+                "value": bank_name,
+            },
+            {
+                "label": "Country",
+                "value":
+                    "Nigeria"
+                    if is_nigeria
+                    else country.title(),
+            },
+            {
+                "label": "Account ending",
+                "value":
+                    f"••••{account_number_digits[-4:]}",
+            },
+        ]
+
+        if not is_nigeria:
+            details.append(
+                {
+                    "label": "Sort code",
+                    "value":
+                        f"{sort_code_digits[:2]}-"
+                        f"{sort_code_digits[2:4]}-"
+                        f"{sort_code_digits[4:6]}",
+                }
+            )
+
+        send_account_email(
+            user=user,
+            subject=(
+                "Your SQUEEB bank details "
+                "were updated"
+            ),
+            heading="Bank details updated",
+            message=(
+                "Your payout bank details "
+                "were updated successfully."
+            ),
+            details=details,
+        )
+
+    except Exception as error:
+        print(
+            "BANK DETAILS EMAIL ERROR:",
+            repr(error)
+        )
+
+
+    # -----------------------------------------
+    # RESPONSE
+    # -----------------------------------------
+
+    return JsonResponse(
+        {
+            "success": True,
+            "message":
+                "Bank details saved successfully.",
+
+            "account_name":
+                account_name,
+
+            "bank_name":
+                bank_name,
+
+            "sort_code":
+                sort_code_digits,
+
+            "account_number":
+                account_number_digits,
+
+            "country":
+                "Nigeria"
+                if is_nigeria
+                else country,
+        },
+        status=200
+    )
+
 @login_required
 def my_tasks(request):
     return render(request, "accounts/dashboard/my_tasks.html")
