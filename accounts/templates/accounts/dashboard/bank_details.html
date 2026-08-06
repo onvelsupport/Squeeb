@@ -1,54 +1,93 @@
 {% extends 'accounts/base.html' %}
 {% load static %}
 
-{% block title %}
-Bank Details | SQUEEB
-{% endblock %}
+{% block title %}Bank Details | SQUEEB{% endblock %}
 
 {% block extra_css %}
 <link rel="stylesheet" href="{% static 'accounts/css/bank_details.css' %}">
 {% endblock %}
 
 {% block content %}
+<div class="bank-app-page">
+    <main class="bank-page">
+        <section class="bank-header">
+            <div>
+                <span class="bank-kicker">PAYOUT SETTINGS</span>
+                <h1>Bank Details</h1>
+                <p>Save your UK bank details for withdrawals.</p>
+            </div>
+            <a href="{% url 'more_page' %}" class="bank-back-btn">
+                <i class="fa-solid fa-arrow-left"></i>
+                <span>Back</span>
+            </a>
+        </section>
 
-<main class="bank-page">
+        <section class="bank-security-strip">
+            <div class="bank-security-icon"><i class="fa-solid fa-building-columns"></i></div>
+            <div>
+                <span>PAYOUT ACCOUNT</span>
+                <strong>Use an account that belongs to you</strong>
+                <small>Make sure your account name, sort code and account number are correct before saving.</small>
+            </div>
+        </section>
 
-    <section class="bank-hero">
-        <div>
-            <p class="eyebrow">Payout Settings</p>
-            <h1>Bank Details</h1>
-            <p>Save your UK bank details for withdrawals.</p>
-        </div>
+        <section class="bank-card">
+            <div class="bank-card-heading">
+                <div>
+                    <span>BANK INFORMATION</span>
+                    <h2>UK bank account</h2>
+                    <p>These details are used when processing eligible withdrawals.</p>
+                </div>
+                <div class="bank-card-icon"><i class="fa-solid fa-sterling-sign"></i></div>
+            </div>
 
-        <a href="{% url 'more_page' %}" class="back-btn">
-            Back to More
-        </a>
-    </section>
+            <form id="bankDetailsForm" class="bank-form" novalidate>
+                {% csrf_token %}
 
-    <form class="bank-card" id="bankDetailsForm">
+                <div class="form-group">
+                    <label for="accountName">Account Name</label>
+                    <input type="text" id="accountName" autocomplete="name" placeholder="Your full name" required>
+                </div>
 
-        <label>Account Name</label>
-        <input type="text" id="accountName" placeholder="Your full name">
+                <div class="form-group">
+                    <label for="bankName">Bank Name</label>
+                    <input type="text" id="bankName" placeholder="Bank name" required>
+                </div>
 
-        <label>Bank Name</label>
-        <input type="text" id="bankName" placeholder="Bank name">
+                <div class="bank-grid">
+                    <div class="form-group">
+                        <label for="sortCode">Sort Code</label>
+                        <input type="text" id="sortCode" inputmode="numeric" autocomplete="off" placeholder="12-34-56" maxlength="8" required>
+                        <small>6 digits, formatted automatically.</small>
+                    </div>
 
-        <label>Sort Code</label>
-        <input type="text" id="sortCode" placeholder="12-34-56" maxlength="8">
+                    <div class="form-group">
+                        <label for="accountNumber">Account Number</label>
+                        <input type="text" id="accountNumber" inputmode="numeric" autocomplete="off" placeholder="12345678" maxlength="8" required>
+                        <small>Enter your 8-digit account number.</small>
+                    </div>
+                </div>
 
-        <label>Account Number</label>
-        <input type="text" id="accountNumber" placeholder="12345678" maxlength="8">
+                <div id="bankMsg" class="bank-message" aria-live="polite" hidden></div>
 
-        <button type="submit">Save Bank Details</button>
+                <button type="submit" id="saveBankBtn" class="save-bank-btn">
+                    <i class="fa-solid fa-floppy-disk"></i>
+                    <span>Save Bank Details</span>
+                </button>
+            </form>
+        </section>
 
-        <p id="bankMsg"></p>
-
-    </form>
-
-</main>
-
+        <section class="bank-note">
+            <i class="fa-solid fa-shield-halved"></i>
+            <div>
+                <strong>Check your details carefully</strong>
+                <p>Incorrect payout details may delay or prevent a withdrawal from reaching your account.</p>
+            </div>
+        </section>
+    </main>
+</div>
 {% endblock %}
 
 {% block extra_js %}
-<script src="{% static 'accounts/js/bank_details.js' %}"></script>
+<script src="{% static 'accounts/js/bank_details.js' %}" defer></script>
 {% endblock %}
