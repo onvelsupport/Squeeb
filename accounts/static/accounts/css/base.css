@@ -1,3 +1,9 @@
+/* ==========================================================
+   SQUEEB BASE
+   Public navigation + footer + global reset only.
+   Authenticated header lives in authenticated-shell.css.
+   ========================================================== */
+
 html,
 body{
     width:100%;
@@ -54,6 +60,10 @@ input{
 
 button{
     -webkit-tap-highlight-color:transparent;
+}
+
+[hidden]{
+    display:none !important;
 }
 
 .site-main{
@@ -285,7 +295,7 @@ button{
 
 
 /* ==========================================================
-   PUBLIC MOBILE NAV
+   PUBLIC MOBILE
    ========================================================== */
 
 @media(max-width:1050px){
@@ -363,11 +373,6 @@ button{
     }
 }
 
-
-/* ==========================================================
-   FOOTER TABLET
-   ========================================================== */
-
 @media(max-width:1000px){
 
     .footer-top{
@@ -379,11 +384,6 @@ button{
         grid-column:1 / -1;
     }
 }
-
-
-/* ==========================================================
-   MOBILE
-   ========================================================== */
 
 @media(max-width:640px){
 
@@ -431,16 +431,13 @@ button{
         width:135px;
     }
 
-    .footer-brand p{
+    .footer-brand p,
+    .footer-column a{
         font-size:13px;
     }
 
     .footer-column h4{
         font-size:14px;
-    }
-
-    .footer-column a{
-        font-size:13px;
     }
 }
 
