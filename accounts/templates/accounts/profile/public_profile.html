@@ -6,113 +6,292 @@
 {% endblock %}
 
 {% block extra_css %}
-<link rel="stylesheet" href="{% static 'accounts/css/public_profile.css' %}">
+<link
+    rel="stylesheet"
+    href="{% static 'accounts/css/public_profile.css' %}"
+>
 {% endblock %}
 
 {% block content %}
 
-<main class="profile-page">
+<div class="public-profile-app">
 
-    <section class="profile-hero">
-        <div class="profile-info">
-            <img src="{% static 'accounts/img/avatar.png' %}" class="avatar" alt="Profile">
+    <main class="profile-page">
 
-            <div>
-                <p class="eyebrow">SQUEEBER</p>
-                <h1>{{ profile_user.username }}</h1>
-                <span>@{{ profile_user.username }}</span>
+        <section class="profile-header-card">
 
-                <div class="follow-stats">
-                    <div>
-                        <strong id="followersCount">{{ followers_count }}</strong>
-                        <small>Squeebers</small>
-                    </div>
+            <div class="profile-main">
 
-                    <div>
-                        <strong id="followingCount">{{ following_count }}</strong>
-                        <small>Connections</small>
-                    </div>
+                <div class="avatar-wrap">
+                    <img
+                        src="{% static 'accounts/img/avatar.png' %}"
+                        class="avatar"
+                        alt="{{ profile_user.username }}"
+                    >
 
-                    <div>
-                        <strong>{{ products|length }}</strong>
-                        <small>Products</small>
-                    </div>
+                    <span
+                        class="profile-status-dot"
+                        aria-hidden="true"
+                    ></span>
                 </div>
+
+
+                <div class="profile-copy">
+
+                    <span class="profile-kicker">
+                        SQUEEBER
+                    </span>
+
+                    <h1>
+                        {{ profile_user.username }}
+                    </h1>
+
+                    <p class="profile-handle">
+                        @{{ profile_user.username }}
+                    </p>
+
+
+                    <div class="profile-stats">
+
+                        <div class="profile-stat">
+                            <strong id="followersCount">
+                                {{ followers_count }}
+                            </strong>
+
+                            <span>Squeebers</span>
+                        </div>
+
+
+                        <div class="profile-stat">
+                            <strong id="followingCount">
+                                {{ following_count }}
+                            </strong>
+
+                            <span>Connections</span>
+                        </div>
+
+
+                        <div class="profile-stat">
+                            <strong>
+                                {{ products|length }}
+                            </strong>
+
+                            <span>Products</span>
+                        </div>
+
+                    </div>
+
+                </div>
+
             </div>
-        </div>
 
-        {% if request.user.is_authenticated and request.user != profile_user %}
-            {% csrf_token %}
-            <button
-                id="followBtn"
-                data-username="{{ profile_user.username }}"
-                class="follow-btn {% if is_following %}connected{% endif %}">
-                {% if is_following %}
-                    Connected
-                {% else %}
-                    Connect
-                {% endif %}
-            </button>
-        {% endif %}
-    </section>
 
-    <section class="profile-content">
-        <div class="section-heading">
-            <div>
-                <h2>Products for Sale</h2>
-                <p>Browse active products listed by {{ profile_user.username }}.</p>
-            </div>
+            <div class="profile-actions">
 
-            <a href="{% url 'marketplace' %}" class="market-btn">
-                Visit Marketplace
-            </a>
-        </div>
+                {% if request.user.is_authenticated and request.user != profile_user %}
 
-        <div class="product-grid">
-            {% for p in products %}
-                <article class="product-card">
-                    <div class="product-image">
-                        {% with first_image=p.images.first %}
-                            {% if first_image %}
-                                <img src="{{ first_image.image.url }}" alt="{{ p.title }}">
-                            {% elif p.image %}
-                                <img src="{{ p.image.url }}" alt="{{ p.title }}">
+                    {% csrf_token %}
+
+                    <button
+                        type="button"
+                        id="followBtn"
+                        data-username="{{ profile_user.username }}"
+                        class="follow-btn {% if is_following %}connected{% endif %}"
+                        aria-pressed="{% if is_following %}true{% else %}false{% endif %}"
+                    >
+
+                        <i
+                            class="fa-solid {% if is_following %}fa-user-check{% else %}fa-user-plus{% endif %}"
+                            id="followBtnIcon"
+                        ></i>
+
+                        <span id="followBtnText">
+                            {% if is_following %}
+                                Connected
                             {% else %}
-                                <img src="{% static 'accounts/img/no-image.png' %}" alt="No image">
+                                Connect
                             {% endif %}
-                        {% endwith %}
-                    </div>
+                        </span>
 
-                    <div class="product-body">
-                        <h3>{{ p.title }}</h3>
-                        <p class="price">£{{ p.price }}</p>
-                        <p class="desc">{{ p.description|truncatechars:90 }}</p>
+                    </button>
 
-                        {% if request.user == p.seller %}
-                            <a href="{% url 'edit_product' p.id %}" class="cart-btn">
-                                Edit Product
-                            </a>
-                        {% else %}
-                            <a href="{% url 'product_detail' p.id %}" class="cart-btn">
-                                View Product
-                            </a>
-                        {% endif %}
-                    </div>
-                </article>
-            {% empty %}
-                <div class="empty-state">
-                    <i class="fa fa-box-open"></i>
-                    <h3>No products yet</h3>
-                    <p>This user does not have any active products for sale.</p>
+                {% endif %}
+
+
+                <a
+                    href="{% url 'marketplace' %}"
+                    class="market-link"
+                >
+                    <i class="fa-solid fa-store"></i>
+                    <span>Marketplace</span>
+                </a>
+
+            </div>
+
+        </section>
+
+
+        <section class="profile-content">
+
+            <div class="section-heading">
+
+                <div>
+                    <span>MARKETPLACE</span>
+
+                    <h2>
+                        Products for Sale
+                    </h2>
+
+                    <p>
+                        Browse active listings from
+                        <strong>@{{ profile_user.username }}</strong>.
+                    </p>
                 </div>
-            {% endfor %}
-        </div>
-    </section>
 
-</main>
+
+                <div class="product-count-pill">
+                    <i class="fa-solid fa-box"></i>
+
+                    <span>
+                        {{ products|length }}
+                        item{{ products|length|pluralize }}
+                    </span>
+                </div>
+
+            </div>
+
+
+            <div class="product-grid">
+
+                {% for p in products %}
+
+                    <article class="product-card">
+
+                        <a
+                            href="{% url 'product_detail' p.id %}"
+                            class="product-image"
+                            aria-label="View {{ p.title }}"
+                        >
+
+                            {% with first_image=p.images.first %}
+
+                                {% if first_image %}
+
+                                    <img
+                                        src="{{ first_image.image.url }}"
+                                        alt="{{ p.title }}"
+                                        loading="lazy"
+                                    >
+
+                                {% elif p.image %}
+
+                                    <img
+                                        src="{{ p.image.url }}"
+                                        alt="{{ p.title }}"
+                                        loading="lazy"
+                                    >
+
+                                {% else %}
+
+                                    <img
+                                        src="{% static 'accounts/img/no-image.png' %}"
+                                        alt="No image available"
+                                        loading="lazy"
+                                    >
+
+                                {% endif %}
+
+                            {% endwith %}
+
+
+                            <span class="product-price-overlay">
+                                £{{ p.price }}
+                            </span>
+
+                        </a>
+
+
+                        <div class="product-body">
+
+                            <div class="product-copy">
+
+                                <h3 title="{{ p.title }}">
+                                    {{ p.title }}
+                                </h3>
+
+                                <p class="desc">
+                                    {{ p.description|truncatechars:95 }}
+                                </p>
+
+                            </div>
+
+
+                            {% if request.user == p.seller %}
+
+                                <a
+                                    href="{% url 'edit_product' p.id %}"
+                                    class="product-action secondary"
+                                >
+                                    <i class="fa-solid fa-pen"></i>
+                                    <span>Edit Product</span>
+                                </a>
+
+                            {% else %}
+
+                                <a
+                                    href="{% url 'product_detail' p.id %}"
+                                    class="product-action"
+                                >
+                                    <span>View Product</span>
+                                    <i class="fa-solid fa-arrow-right"></i>
+                                </a>
+
+                            {% endif %}
+
+                        </div>
+
+                    </article>
+
+                {% empty %}
+
+                    <div class="empty-state">
+
+                        <div class="empty-icon">
+                            <i class="fa-solid fa-box-open"></i>
+                        </div>
+
+                        <h3>
+                            No products yet
+                        </h3>
+
+                        <p>
+                            This SQUEEBER does not have any active marketplace listings right now.
+                        </p>
+
+                        <a
+                            href="{% url 'marketplace' %}"
+                            class="empty-market-link"
+                        >
+                            Browse Marketplace
+                        </a>
+
+                    </div>
+
+                {% endfor %}
+
+            </div>
+
+        </section>
+
+    </main>
+
+</div>
 
 {% endblock %}
 
 {% block extra_js %}
-<script src="{% static 'accounts/js/public_profile.js' %}"></script>
+<script
+    src="{% static 'accounts/js/public_profile.js' %}"
+    defer
+></script>
 {% endblock %}

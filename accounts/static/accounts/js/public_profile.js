@@ -1,49 +1,203 @@
 document.addEventListener("DOMContentLoaded", () => {
 
-    const followBtn = document.getElementById("followBtn");
-    const followersCount = document.getElementById("followersCount");
+    const followBtn =
+        document.getElementById("followBtn");
+
+    const followBtnText =
+        document.getElementById("followBtnText");
+
+    const followBtnIcon =
+        document.getElementById("followBtnIcon");
+
+    const followersCount =
+        document.getElementById("followersCount");
+
 
     function getCSRFToken() {
-        return document.querySelector("[name=csrfmiddlewaretoken]")?.value || "";
+        const input =
+            document.querySelector(
+                "[name=csrfmiddlewaretoken]"
+            );
+
+        if (input?.value) {
+            return input.value;
+        }
+
+        const cookies = document.cookie
+            ? document.cookie.split(";")
+            : [];
+
+        for (let cookie of cookies) {
+            cookie = cookie.trim();
+
+            if (
+                cookie.startsWith(
+                    "csrftoken="
+                )
+            ) {
+                return decodeURIComponent(
+                    cookie.substring(
+                        "csrftoken=".length
+                    )
+                );
+            }
+        }
+
+        return "";
     }
 
-    followBtn?.addEventListener("click", async () => {
-        const username = followBtn.dataset.username;
 
-        if (!username) return;
+    async function parseJson(response) {
+        const contentType =
+            response.headers.get(
+                "content-type"
+            ) || "";
 
-        followBtn.disabled = true;
+        if (
+            !contentType.includes(
+                "application/json"
+            )
+        ) {
+            return {};
+        }
 
         try {
-            const response = await fetch(`/api/follow/${username}/`, {
-                method: "POST",
-                credentials: "same-origin",
-                headers: {
-                    "Content-Type": "application/json",
-                    "X-CSRFToken": getCSRFToken()
-                }
-            });
+            return await response.json();
+        } catch {
+            return {};
+        }
+    }
 
-            const data = await response.json();
 
-            if (!response.ok) {
-                alert(data.error || "Unable to connect with user.");
+    function updateFollowUI(
+        isFollowing,
+        followerTotal
+    ) {
+        if (!followBtn) {
+            return;
+        }
+
+        followBtn.classList.toggle(
+            "connected",
+            Boolean(isFollowing)
+        );
+
+        followBtn.setAttribute(
+            "aria-pressed",
+            isFollowing
+                ? "true"
+                : "false"
+        );
+
+        if (followBtnText) {
+            followBtnText.textContent =
+                isFollowing
+                    ? "Connected"
+                    : "Connect";
+        }
+
+        if (followBtnIcon) {
+            followBtnIcon.className =
+                isFollowing
+                    ? "fa-solid fa-user-check"
+                    : "fa-solid fa-user-plus";
+        }
+
+        if (
+            followersCount &&
+            Number.isFinite(
+                Number(followerTotal)
+            )
+        ) {
+            followersCount.textContent =
+                String(followerTotal);
+        }
+    }
+
+
+    followBtn?.addEventListener(
+        "click",
+        async () => {
+
+            const username =
+                followBtn.dataset.username;
+
+            if (!username) {
                 return;
             }
 
-            followBtn.textContent = data.is_following ? "Connected" : "Connect";
-            followBtn.classList.toggle("connected", data.is_following);
+            const originalHTML =
+                followBtn.innerHTML;
 
-            if (followersCount) {
-                followersCount.textContent = data.followers_count;
+            followBtn.disabled = true;
+
+            followBtn.innerHTML = `
+                <i class="fa-solid fa-spinner fa-spin"></i>
+                <span>Updating...</span>
+            `;
+
+            try {
+                const response = await fetch(
+                    `/api/follow/${
+                        encodeURIComponent(username)
+                    }/`,
+                    {
+                        method: "POST",
+                        credentials:
+                            "same-origin",
+                        headers: {
+                            "Accept":
+                                "application/json",
+
+                            "X-CSRFToken":
+                                getCSRFToken(),
+
+                            "X-Requested-With":
+                                "XMLHttpRequest",
+                        },
+                    }
+                );
+
+                const data =
+                    await parseJson(response);
+
+                if (!response.ok) {
+                    throw new Error(
+                        data.error ||
+                        data.message ||
+                        "Unable to update connection."
+                    );
+                }
+
+                followBtn.innerHTML =
+                    originalHTML;
+
+                updateFollowUI(
+                    Boolean(
+                        data.is_following
+                    ),
+                    data.followers_count
+                );
+
+            } catch (error) {
+
+                console.error(
+                    "FOLLOW ERROR:",
+                    error
+                );
+
+                followBtn.innerHTML =
+                    originalHTML;
+
+                window.alert(
+                    error.message ||
+                    "Something went wrong."
+                );
+
+            } finally {
+                followBtn.disabled = false;
             }
-
-        } catch (error) {
-            console.error("FOLLOW ERROR:", error);
-            alert("Something went wrong.");
-        } finally {
-            followBtn.disabled = false;
         }
-    });
+    );
 
 });
