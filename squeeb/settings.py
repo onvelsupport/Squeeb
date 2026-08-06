@@ -121,7 +121,7 @@ LOGOUT_REDIRECT_URL = "/login/"
 # =============================
 LANGUAGE_CODE = "en-us"
 
-TIME_ZONE = "UTC"
+TTIME_ZONE = "Europe/London"
 
 USE_I18N = True
 USE_TZ = True

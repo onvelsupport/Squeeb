@@ -3912,6 +3912,185 @@ def complete_task(request, task_id):
     )
 
 
+@login_required
+def update_password_page(request):
+    return render(
+        request,
+        "accounts/update_password.html"
+    )
+
+@login_required
+@require_POST
+def update_password_api(request):
+    try:
+        data = json.loads(
+            request.body.decode("utf-8")
+        )
+    except (json.JSONDecodeError, UnicodeDecodeError):
+        return JsonResponse(
+            {
+                "error": "Invalid request."
+            },
+            status=400
+        )
+
+    current_password = str(
+        data.get("current_password", "")
+    ).strip()
+
+    new_password = str(
+        data.get("new_password", "")
+    )
+
+    confirm_password = str(
+        data.get("confirm_password", "")
+    )
+
+    # -----------------------------------------
+    # REQUIRED FIELDS
+    # -----------------------------------------
+
+    if not current_password:
+        return JsonResponse(
+            {
+                "error":
+                "Please enter your current password."
+            },
+            status=400
+        )
+
+    if not new_password:
+        return JsonResponse(
+            {
+                "error":
+                "Please enter a new password."
+            },
+            status=400
+        )
+
+    if not confirm_password:
+        return JsonResponse(
+            {
+                "error":
+                "Please confirm your new password."
+            },
+            status=400
+        )
+
+
+    # -----------------------------------------
+    # VERIFY CURRENT PASSWORD
+    # -----------------------------------------
+
+    if not request.user.check_password(
+        current_password
+    ):
+        return JsonResponse(
+            {
+                "error":
+                "Your current password is incorrect."
+            },
+            status=400
+        )
+
+
+    # -----------------------------------------
+    # CONFIRM PASSWORD MATCH
+    # -----------------------------------------
+
+    if new_password != confirm_password:
+        return JsonResponse(
+            {
+                "error":
+                "Your new passwords do not match."
+            },
+            status=400
+        )
+
+
+    # -----------------------------------------
+    # NEW PASSWORD MUST BE DIFFERENT
+    # -----------------------------------------
+
+    if request.user.check_password(
+        new_password
+    ):
+        return JsonResponse(
+            {
+                "error":
+                "Your new password must be different "
+                "from your current password."
+            },
+            status=400
+        )
+
+
+    # -----------------------------------------
+    # DJANGO PASSWORD VALIDATION
+    # -----------------------------------------
+
+    try:
+        validate_password(
+            new_password,
+            user=request.user
+        )
+
+    except ValidationError as error:
+        return JsonResponse(
+            {
+                "error": " ".join(
+                    error.messages
+                )
+            },
+            status=400
+        )
+
+
+    # -----------------------------------------
+    # CHANGE PASSWORD
+    # -----------------------------------------
+
+    try:
+        request.user.set_password(
+            new_password
+        )
+
+        request.user.save(
+            update_fields=["password"]
+        )
+
+        # IMPORTANT:
+        # Keeps the user logged in after password change.
+        update_session_auth_hash(
+            request,
+            request.user
+        )
+
+    except Exception as error:
+        print(
+            "UPDATE PASSWORD ERROR:",
+            repr(error)
+        )
+
+        return JsonResponse(
+            {
+                "error":
+                "Could not update your password. "
+                "Please try again."
+            },
+            status=500
+        )
+
+
+    return JsonResponse(
+        {
+            "success": True,
+            "message":
+                "Your password has been updated successfully."
+        },
+        status=200
+    )
+
 @csrf_exempt
 @login_required
 @transaction.atomic

@@ -79,6 +79,8 @@ from .views import (
     approve_campaign_submission,
     reject_campaign_submission,
     influencer_terms,
+    update_password_api,
+    update_password_page,
 )
 
 
@@ -277,6 +279,18 @@ urlpatterns = [
         transaction_history_api,
         name="transaction_history_api",
     ),
+
+    path(
+    "more/update-password/",
+    update_password_page,
+    name="update_password"
+),
+
+path(
+    "api/update-password/",
+    update_password_api,
+    name="update_password_api"
+),
 
 
     path(
