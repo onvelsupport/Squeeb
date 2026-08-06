@@ -806,99 +806,54 @@ def bank_details(request):
 
 @login_required
 def bank_details_api(request):
-
     user = request.user
 
-    country = str(
-        getattr(user, "country", "") or ""
-    ).strip().lower()
-
-    is_nigeria = (
-        country == "nigeria"
-        or country == "ng"
-        or "nigeria" in country
+    is_nigeria = _is_nigeria_country(
+        user.country
     )
 
-    # -----------------------------------------
-    # GET SAVED BANK DETAILS
-    # -----------------------------------------
-
     if request.method == "GET":
-
         return JsonResponse(
             {
-                "account_name":
-                    getattr(
-                        user,
-                        "bank_account_name",
-                        ""
-                    ) or "",
-
-                "bank_name":
-                    getattr(
-                        user,
-                        "bank_name",
-                        ""
-                    ) or "",
-
-                "sort_code":
-                    getattr(
-                        user,
-                        "sort_code",
-                        ""
-                    ) or "",
-
-                "account_number":
-                    getattr(
-                        user,
-                        "account_number",
-                        ""
-                    ) or "",
-
-                "country":
-                    country,
-
-                "is_nigeria":
-                    is_nigeria,
+                "success": True,
+                "country": (
+                    "Nigeria"
+                    if is_nigeria
+                    else user.country
+                ),
+                "is_nigeria": is_nigeria,
+                "account_name": user.bank_account_name or "",
+                "bank_name": user.bank_name or "",
+                "bank_code": user.bank_code or "",
+                "sort_code": user.sort_code or "",
+                "account_number": user.account_number or "",
             }
         )
-
-
-    # -----------------------------------------
-    # POST ONLY
-    # -----------------------------------------
 
     if request.method != "POST":
         return JsonResponse(
             {
-                "error":
-                    "Method not allowed."
+                "success": False,
+                "error": "Method not allowed.",
             },
-            status=405
+            status=405,
         )
-
-
-    # -----------------------------------------
-    # READ JSON
-    # -----------------------------------------
 
     try:
         data = json.loads(
-            request.body.decode("utf-8")
+            request.body.decode("utf-8") or "{}"
         )
-
     except (
         json.JSONDecodeError,
-        UnicodeDecodeError
+        UnicodeDecodeError,
     ):
         return JsonResponse(
             {
-                "error":
-                    "Invalid request data."
+                "success": False,
+                "error": "Invalid request data.",
             },
-            status=400
+            status=400,
         )
-
 
     account_name = str(
         data.get("account_name", "")
@@ -908,145 +863,156 @@ def bank_details_api(request):
         data.get("bank_name", "")
     ).strip()
 
-    account_number = str(
-        data.get("account_number", "")
+    bank_code = str(
+        data.get("bank_code", "")
     ).strip()
 
-    sort_code = str(
-        data.get("sort_code", "")
-    ).strip()
-
-
-    # -----------------------------------------
-    # CLEAN NUMBERS
-    # -----------------------------------------
-
-    account_number_digits = "".join(
+    account_number = "".join(
         char
-        for char in account_number
+        for char in str(
+            data.get("account_number", "")
+        )
         if char.isdigit()
     )
 
-    sort_code_digits = "".join(
+    sort_code = "".join(
         char
-        for char in sort_code
+        for char in str(
+            data.get("sort_code", "")
+        )
         if char.isdigit()
     )
-
-
-    # -----------------------------------------
-    # REQUIRED FIELDS
-    # -----------------------------------------
 
     if not account_name:
         return JsonResponse(
             {
-                "error":
-                    "Account name is required."
+                "success": False,
+                "error": "Account name is required.",
             },
-            status=400
+            status=400,
         )
-
-    if not bank_name:
-        return JsonResponse(
-            {
-                "error":
-                    "Bank name is required."
-            },
-            status=400
-        )
-
-
-    # -----------------------------------------
-    # NIGERIA VALIDATION
-    # -----------------------------------------
 
     if is_nigeria:
-
-        if len(account_number_digits) != 10:
+        if len(account_number) != 10:
             return JsonResponse(
                 {
-                    "error":
+                    "success": False,
+                    "error": (
                         "Enter a valid 10-digit "
                         "Nigerian account number."
+                    ),
                 },
-                status=400
+                status=400,
             )
 
-        # Nigeria does not use UK sort codes
-        sort_code_digits = ""
+        if not bank_code:
+            return JsonResponse(
+                {
+                    "success": False,
+                    "error": "Select your bank.",
+                },
+                status=400,
+            )
 
+        try:
+            banks = _get_nigerian_banks()
+        except RuntimeError as error:
+            return JsonResponse(
+                {
+                    "success": False,
+                    "error": str(error),
+                },
+                status=503,
+            )
 
-    # -----------------------------------------
-    # UK VALIDATION
-    # -----------------------------------------
+        selected_bank = next(
+            (
+                bank
+                for bank in banks
+                if str(bank["code"]) == bank_code
+            ),
+            None,
+        )
+
+        if not selected_bank:
+            return JsonResponse(
+                {
+                    "success": False,
+                    "error": (
+                        "The selected bank is invalid. "
+                        "Refresh the page and try again."
+                    ),
+                },
+                status=400,
+            )
+
+        bank_name = selected_bank["name"]
+        sort_code = ""
 
     else:
-
-        if len(sort_code_digits) != 6:
+        if not bank_name:
             return JsonResponse(
                 {
-                    "error":
-                        "Enter a valid 6-digit "
-                        "sort code."
+                    "success": False,
+                    "error": "Bank name is required.",
                 },
-                status=400
+                status=400,
             )
 
-        if len(account_number_digits) != 8:
+        if len(sort_code) != 6:
             return JsonResponse(
                 {
-                    "error":
-                        "Enter a valid 8-digit "
-                        "UK account number."
+                    "success": False,
+                    "error": (
+                        "Enter a valid 6-digit sort code."
+                    ),
                 },
-                status=400
+                status=400,
             )
 
+        if len(account_number) != 8:
+            return JsonResponse(
+                {
+                    "success": False,
+                    "error": (
+                        "Enter a valid 8-digit UK account number."
+                    ),
+                },
+                status=400,
+            )
 
-    # -----------------------------------------
-    # SAVE
-    # -----------------------------------------
+        bank_code = ""
 
     try:
+        user.bank_account_name = account_name
+        user.bank_name = bank_name
+        user.bank_code = bank_code
+        user.sort_code = sort_code
+        user.account_number = account_number
 
-        user.bank_account_name = (
-            account_name
+        user.save(
+            update_fields=[
+                "bank_account_name",
+                "bank_name",
+                "bank_code",
+                "sort_code",
+                "account_number",
+            ]
         )
-
-        user.bank_name = (
-            bank_name
-        )
-
-        user.account_number = (
-            account_number_digits
-        )
-
-        user.sort_code = (
-            sort_code_digits
-        )
-
-        user.save()
 
     except Exception as error:
-
         print(
             "BANK DETAILS SAVE ERROR:",
-            repr(error)
+            repr(error),
         )
 
         return JsonResponse(
             {
-                "error":
-                    "Could not save bank details."
+                "success": False,
+                "error": "Could not save bank details.",
             },
-            status=500
+            status=500,
         )
-
-
-    # -----------------------------------------
-    # SECURITY NOTIFICATION
-    # -----------------------------------------
 
     try:
         Notification.objects.create(
@@ -1057,17 +1023,11 @@ def bank_details_api(request):
                 "were updated successfully."
             ),
         )
-
     except Exception as error:
         print(
             "BANK DETAILS NOTIFICATION ERROR:",
-            repr(error)
+            repr(error),
         )
-
-
-    # -----------------------------------------
-    # SECURITY EMAIL
-    # -----------------------------------------
 
     try:
         details = [
@@ -1081,15 +1041,15 @@ def bank_details_api(request):
             },
             {
                 "label": "Country",
-                "value":
+                "value": (
                     "Nigeria"
                     if is_nigeria
-                    else country.title(),
+                    else str(user.country).title()
+                ),
             },
             {
                 "label": "Account ending",
-                "value":
-                    f"••••{account_number_digits[-4:]}",
+                "value": f"••••{account_number[-4:]}",
             },
         ]
 
@@ -1097,18 +1057,18 @@ def bank_details_api(request):
             details.append(
                 {
                     "label": "Sort code",
-                    "value":
-                        f"{sort_code_digits[:2]}-"
-                        f"{sort_code_digits[2:4]}-"
-                        f"{sort_code_digits[4:6]}",
+                    "value": (
+                        f"{sort_code[:2]}-"
+                        f"{sort_code[2:4]}-"
+                        f"{sort_code[4:6]}"
+                    ),
                 }
             )
 
         send_account_email(
             user=user,
             subject=(
-                "Your SQUEEB bank details "
-                "were updated"
+                "Your SQUEEB bank details were updated"
             ),
             heading="Bank details updated",
             message=(
@@ -1121,38 +1081,26 @@ def bank_details_api(request):
     except Exception as error:
         print(
             "BANK DETAILS EMAIL ERROR:",
-            repr(error)
+            repr(error),
         )
-
-
-    # -----------------------------------------
-    # RESPONSE
-    # -----------------------------------------
 
     return JsonResponse(
         {
             "success": True,
-            "message":
-                "Bank details saved successfully.",
-
-            "account_name":
-                account_name,
-
-            "bank_name":
-                bank_name,
-
-            "sort_code":
-                sort_code_digits,
-
-            "account_number":
-                account_number_digits,
-
-            "country":
+            "message": "Bank details saved successfully.",
+            "country": (
                 "Nigeria"
                 if is_nigeria
-                else country,
+                else user.country
+            ),
+            "is_nigeria": is_nigeria,
+            "account_name": account_name,
+            "bank_name": bank_name,
+            "bank_code": bank_code,
+            "sort_code": sort_code,
+            "account_number": account_number,
         },
-        status=200
+        status=200,
     )
 
 @login_required
@@ -1753,6 +1701,106 @@ def _flutterwave_request(path, *, method="GET", payload=None):
         raise RuntimeError(
             "The payment provider is temporarily unavailable."
         ) from exc
+
+
+NIGERIAN_BANKS_CACHE_KEY = "squeeb_nigerian_banks"
+NIGERIAN_BANKS_CACHE_SECONDS = 60 * 60 * 6
+
+
+def _get_nigerian_banks(force_refresh=False):
+    """
+    Fetch Flutterwave's supported Nigerian banks and cache
+    the public bank list for six hours.
+    """
+
+    if not force_refresh:
+        cached = cache.get(
+            NIGERIAN_BANKS_CACHE_KEY
+        )
+
+        if cached:
+            return cached
+
+    response = _flutterwave_request(
+        "/banks/NG",
+        method="GET",
+    )
+
+    if response.get("status") != "success":
+        raise RuntimeError(
+            response.get("message")
+            or "Unable to load Nigerian banks."
+        )
+
+    banks = []
+
+    for item in response.get("data") or []:
+        name = str(
+            item.get("name") or ""
+        ).strip()
+
+        code = str(
+            item.get("code") or ""
+        ).strip()
+
+        if not name or not code:
+            continue
+
+        banks.append(
+            {
+                "name": name,
+                "code": code,
+            }
+        )
+
+    banks.sort(
+        key=lambda bank:
+        bank["name"].lower()
+    )
+
+    cache.set(
+        NIGERIAN_BANKS_CACHE_KEY,
+        banks,
+        NIGERIAN_BANKS_CACHE_SECONDS,
+    )
+
+    return banks
+
+
+@login_required
+def nigerian_banks_api(request):
+    if not _is_nigeria_country(
+        request.user.country
+    ):
+        return JsonResponse(
+            {
+                "success": False,
+                "message": (
+                    "Nigerian banks are available "
+                    "to Nigerian users only."
+                ),
+            },
+            status=403,
+        )
+
+    try:
+        banks = _get_nigerian_banks()
+
+    except RuntimeError as error:
+        return JsonResponse(
+            {
+                "success": False,
+                "message": str(error),
+            },
+            status=503,
+        )
+
+    return JsonResponse(
+        {
+            "success": True,
+            "banks": banks,
+        }
+    )
 
 
 def _start_nigerian_funding(request, amount):
@@ -3087,6 +3135,7 @@ def request_withdrawal(request):
 
     account_name = ""
     bank_name = ""
+    bank_code = ""
     account_number = ""
     paypal_email = ""
     country = ""
@@ -3107,40 +3156,80 @@ def request_withdrawal(request):
                 status=403,
             )
 
-        account_name = request.POST.get(
-            "account_name",
-            "",
+        account_name = (
+            user.bank_account_name or ""
         ).strip()
 
-        bank_name = request.POST.get(
-            "bank_name",
-            "",
+        bank_name = (
+            user.bank_name or ""
         ).strip()
 
-        account_number = request.POST.get(
-            "account_number",
-            "",
+        bank_code = (
+            user.bank_code or ""
+        ).strip()
+
+        account_number = (
+            user.account_number or ""
         ).replace(" ", "").strip()
 
-        if not account_name or not bank_name or not account_number:
+        if (
+            not account_name
+            or not bank_name
+            or not bank_code
+            or not account_number
+        ):
             return JsonResponse(
                 {
                     "success": False,
+                    "bank_details_required": True,
                     "message": (
-                        "Account name, bank and account number "
-                        "are required."
+                        "Save your Nigerian bank details "
+                        "before requesting a withdrawal."
                     ),
                 },
                 status=400,
             )
 
-        if not account_number.isdigit() or len(account_number) != 10:
+        if (
+            not account_number.isdigit()
+            or len(account_number) != 10
+        ):
             return JsonResponse(
                 {
                     "success": False,
+                    "bank_details_required": True,
                     "message": (
-                        "Enter a valid 10-digit Nigerian "
-                        "bank account number."
+                        "Your saved Nigerian account number "
+                        "is invalid. Update your bank details."
+                    ),
+                },
+                status=400,
+            )
+
+        try:
+            supported_banks = _get_nigerian_banks()
+        except RuntimeError as error:
+            return JsonResponse(
+                {
+                    "success": False,
+                    "message": str(error),
+                },
+                status=503,
+            )
+
+        bank_is_valid = any(
+            str(bank["code"]) == bank_code
+            for bank in supported_banks
+        )
+
+        if not bank_is_valid:
+            return JsonResponse(
+                {
+                    "success": False,
+                    "bank_details_required": True,
+                    "message": (
+                        "Your saved bank is no longer "
+                        "available. Update your bank details."
                     ),
                 },
                 status=400,
@@ -3189,6 +3278,7 @@ def request_withdrawal(request):
         country=country,
         account_name=account_name or None,
         bank_name=bank_name or None,
+        bank_code=bank_code,
         account_number=account_number or None,
         paypal_email=paypal_email or None,
         payout_currency=payout_currency,
@@ -3224,6 +3314,7 @@ Net after fee: £{net_amount}
 Method: {method}
 Payout: {payout_summary}
 Bank: {withdrawal.bank_name or "-"}
+Bank code: {withdrawal.bank_code or "-"}
 Account name: {withdrawal.account_name or "-"}
 Account number: {withdrawal.account_number or "-"}
 PayPal: {withdrawal.paypal_email or "-"}
@@ -3247,6 +3338,12 @@ Approve after manual payment:
                 Bank
             </td>
             <td style="padding:12px;">{withdrawal.bank_name}</td>
+        </tr>
+        <tr>
+            <td style="padding:12px;background:#f9fafb;font-weight:bold;">
+                Bank Code
+            </td>
+            <td style="padding:12px;">{withdrawal.bank_code or "-"}</td>
         </tr>
         <tr>
             <td style="padding:12px;background:#f9fafb;font-weight:bold;">

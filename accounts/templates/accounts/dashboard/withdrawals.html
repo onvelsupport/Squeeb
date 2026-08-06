@@ -322,64 +322,59 @@
                 Refresh exchange rate
             </button>
 
-            <label for="bankName">Bank</label>
-            <select id="bankName" name="bank_name" required>
-                <option value="">Select your bank</option>
-                <option value="Access Bank">Access Bank</option>
-                <option value="Citibank Nigeria">Citibank Nigeria</option>
-                <option value="Ecobank Nigeria">Ecobank Nigeria</option>
-                <option value="Fidelity Bank">Fidelity Bank</option>
-                <option value="First Bank of Nigeria">First Bank of Nigeria</option>
-                <option value="First City Monument Bank">First City Monument Bank</option>
-                <option value="Globus Bank">Globus Bank</option>
-                <option value="Guaranty Trust Bank">Guaranty Trust Bank</option>
-                <option value="Jaiz Bank">Jaiz Bank</option>
-                <option value="Keystone Bank">Keystone Bank</option>
-                <option value="Kuda Bank">Kuda Bank</option>
-                <option value="Moniepoint Microfinance Bank">Moniepoint Microfinance Bank</option>
-                <option value="Opay">Opay</option>
-                <option value="PalmPay">PalmPay</option>
-                <option value="Polaris Bank">Polaris Bank</option>
-                <option value="Providus Bank">Providus Bank</option>
-                <option value="Stanbic IBTC Bank">Stanbic IBTC Bank</option>
-                <option value="Standard Chartered Bank Nigeria">Standard Chartered Bank Nigeria</option>
-                <option value="Sterling Bank">Sterling Bank</option>
-                <option value="United Bank for Africa">United Bank for Africa</option>
-                <option value="Unity Bank">Unity Bank</option>
-                <option value="Wema Bank">Wema Bank</option>
-                <option value="Zenith Bank">Zenith Bank</option>
-            </select>
-
-            <label for="bankAccountNumber">Account Number</label>
-            <input
-                type="text"
-                id="bankAccountNumber"
-                name="account_number"
-                inputmode="numeric"
-                pattern="[0-9]{10}"
-                maxlength="10"
-                placeholder="0123456789"
-                autocomplete="off"
-                required
+            <div
+                class="saved-withdraw-bank"
+                id="savedWithdrawBank"
             >
+                <div class="saved-withdraw-bank-icon">
+                    <i class="fa-solid fa-building-columns"></i>
+                </div>
 
-            <label for="bankAccountName">Account Name</label>
-            <input
-                type="text"
-                id="bankAccountName"
-                name="account_name"
-                maxlength="255"
-                placeholder="Name on the bank account"
-                autocomplete="name"
-                required
+                <div class="saved-withdraw-bank-copy">
+                    <span>WITHDRAWAL ACCOUNT</span>
+
+                    <strong id="savedWithdrawBankName">
+                        Loading saved bank...
+                    </strong>
+
+                    <small id="savedWithdrawBankAccount">
+                        Checking your payout settings
+                    </small>
+                </div>
+
+                <a
+                    href="{% url 'bank_details' %}"
+                    class="change-bank-link"
+                >
+                    Change
+                </a>
+            </div>
+
+            <div
+                class="missing-bank-details"
+                id="missingBankDetails"
+                hidden
             >
+                <i class="fa-solid fa-circle-exclamation"></i>
+
+                <div>
+                    <strong>No saved Nigerian bank account</strong>
+                    <p>
+                        Save your bank details before requesting a bank withdrawal.
+                    </p>
+                </div>
+
+                <a href="{% url 'bank_details' %}">
+                    Add bank
+                </a>
+            </div>
 
             <div class="withdrawal-warning">
                 <i class="fa-solid fa-circle-info"></i>
                 <p>
                     The Naira figure is an estimate based on the exchange rate
-                    locked when you submit the withdrawal. Check your bank details
-                    carefully before confirming.
+                    locked when you submit the withdrawal. Your saved payout account
+                    will be used automatically.
                 </p>
             </div>
 

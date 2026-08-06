@@ -106,6 +106,19 @@
 
             </div>
 
+            <div
+                id="savedBankStatus"
+                class="saved-bank-status"
+                hidden
+            >
+                <i class="fa-solid fa-circle-check"></i>
+
+                <div>
+                    <strong>Saved payout account</strong>
+                    <span id="savedBankSummary"></span>
+                </div>
+            </div>
+
 
             <form
                 id="bankDetailsForm"
@@ -134,20 +147,51 @@
                 </div>
 
 
-                <div class="form-group">
+                {% if request.user.country|lower == "nigeria" %}
 
-                    <label for="bankName">
-                        Bank Name
-                    </label>
+                    <div class="form-group">
 
-                    <input
-                        type="text"
-                        id="bankName"
-                        placeholder="Bank name"
-                        required
-                    >
+                        <label for="bankName">
+                            Select Bank
+                        </label>
 
-                </div>
+                        <div class="select-wrap">
+                            <select
+                                id="bankName"
+                                required
+                            >
+                                <option value="">
+                                    Loading Nigerian banks...
+                                </option>
+                            </select>
+
+                            <i class="fa-solid fa-chevron-down"></i>
+                        </div>
+
+                        <small>
+                            Choose the Nigerian bank linked to this account.
+                        </small>
+
+                    </div>
+
+                {% else %}
+
+                    <div class="form-group">
+
+                        <label for="bankName">
+                            Bank Name
+                        </label>
+
+                        <input
+                            type="text"
+                            id="bankName"
+                            placeholder="Bank name"
+                            required
+                        >
+
+                    </div>
+
+                {% endif %}
 
 
                 {% if request.user.country|lower == "nigeria" %}

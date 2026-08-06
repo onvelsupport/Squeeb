@@ -28,6 +28,7 @@ class WithdrawalRequest(models.Model):
     country = models.CharField(max_length=100, blank=True, default="")
     account_name = models.CharField(max_length=255, blank=True, null=True)
     bank_name = models.CharField(max_length=255, blank=True, null=True)
+    bank_code = models.CharField(max_length=30, blank=True, default="")
     sort_code = models.CharField(max_length=20, blank=True, null=True)
     account_number = models.CharField(max_length=20, blank=True, null=True)
 
@@ -95,6 +96,33 @@ class User(AbstractUser):
     first_withdrawal_completed = models.BooleanField(default=False)
     country = models.CharField(max_length=100, blank=True, default="")
     referral_code = models.CharField(max_length=20, unique=True, blank=True, null=True)
+
+    # Saved payout details.
+    bank_account_name = models.CharField(
+        max_length=255,
+        blank=True,
+        default="",
+    )
+    bank_name = models.CharField(
+        max_length=255,
+        blank=True,
+        default="",
+    )
+    bank_code = models.CharField(
+        max_length=30,
+        blank=True,
+        default="",
+    )
+    sort_code = models.CharField(
+        max_length=20,
+        blank=True,
+        default="",
+    )
+    account_number = models.CharField(
+        max_length=20,
+        blank=True,
+        default="",
+    )
 
     def save(self, *args, **kwargs):
         self.username = self.username.lower()

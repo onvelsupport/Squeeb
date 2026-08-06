@@ -13,6 +13,7 @@ from .views import (
     approve_withdrawal,
     bank_details,
     bank_details_api,
+    nigerian_banks_api,
     cart_page,
     cookie_policy,
     complete_task,
@@ -267,6 +268,12 @@ urlpatterns = [
         "api/bank-details/",
         bank_details_api,
         name="bank_details_api",
+    ),
+
+    path(
+        "api/nigerian-banks/",
+        nigerian_banks_api,
+        name="nigerian_banks_api",
     ),
 
     path(

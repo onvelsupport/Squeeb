@@ -7,6 +7,7 @@ document.addEventListener("DOMContentLoaded", () => {
     let availableBalance = 0;
     let currentGbpNgnRate = 0;
     let bankWithdrawalAvailable = false;
+    let savedBankDetails = null;
     let withdrawalHistoryLoaded = false;
     let withdrawalHistoryPromise = null;
 
@@ -55,6 +56,119 @@ document.addEventListener("DOMContentLoaded", () => {
         const value = String(country || "").trim().toLowerCase();
         return ["ng", "nga", "nigeria"].includes(value);
     };
+
+
+    const maskedAccount = (value) => {
+        const digits = String(value || "").replace(/\D/g, "");
+
+        return digits
+            ? `••••••${digits.slice(-4)}`
+            : "";
+    };
+
+    async function loadSavedBankDetails() {
+        const savedCard = byId("savedWithdrawBank");
+        const missingCard = byId("missingBankDetails");
+        const submitButton = byId("bankSubmitButton");
+
+        try {
+            const response = await fetch(
+                "/api/bank-details/",
+                {
+                    credentials: "same-origin",
+                    headers: {
+                        Accept: "application/json",
+                    },
+                }
+            );
+
+            const data = await response.json();
+
+            if (!response.ok) {
+                throw new Error(
+                    data.error ||
+                    data.message ||
+                    "Unable to load saved bank details."
+                );
+            }
+
+            const valid =
+                Boolean(data.bank_name) &&
+                Boolean(data.bank_code) &&
+                /^\d{10}$/.test(
+                    String(data.account_number || "")
+                        .replace(/\D/g, "")
+                );
+
+            if (!valid) {
+                savedBankDetails = null;
+
+                if (savedCard) {
+                    savedCard.hidden = true;
+                }
+
+                if (missingCard) {
+                    missingCard.hidden = false;
+                }
+
+                if (submitButton) {
+                    submitButton.disabled = true;
+                }
+
+                return false;
+            }
+
+            savedBankDetails = data;
+
+            setText(
+                "savedWithdrawBankName",
+                data.bank_name
+            );
+
+            setText(
+                "savedWithdrawBankAccount",
+                `${data.account_name || "Saved account"} · ${
+                    maskedAccount(data.account_number)
+                }`
+            );
+
+            if (savedCard) {
+                savedCard.hidden = false;
+            }
+
+            if (missingCard) {
+                missingCard.hidden = true;
+            }
+
+            if (submitButton) {
+                submitButton.disabled = false;
+            }
+
+            return true;
+
+        } catch (error) {
+            console.error(
+                "SAVED BANK DETAILS ERROR:",
+                error
+            );
+
+            savedBankDetails = null;
+
+            if (savedCard) {
+                savedCard.hidden = true;
+            }
+
+            if (missingCard) {
+                missingCard.hidden = false;
+            }
+
+            if (submitButton) {
+                submitButton.disabled = true;
+            }
+
+            return false;
+        }
+    }
 
     const getErrorMessage = async (response) => {
         try {
@@ -615,6 +729,10 @@ if (!Number.isFinite(amount) || amount < minimumAmount) {
 
             await loadUser();
 
+            if (modalId === "bankModal") {
+                await loadSavedBankDetails();
+            }
+
             if (withdrawalHistoryLoaded) {
                 withdrawalHistoryLoaded = false;
                 await loadWithdrawals();
@@ -675,13 +793,9 @@ if (!Number.isFinite(amount) || amount < minimumAmount) {
             return;
         }
 
-        const accountNumber = (
-            byId("bankAccountNumber")?.value || ""
-        ).replace(/\s+/g, "");
-
-        if (!/^\d{10}$/.test(accountNumber)) {
+        if (!savedBankDetails) {
             message.textContent =
-                "Enter a valid 10-digit Nigerian bank account number.";
+                "Save your Nigerian bank details before withdrawing.";
             message.className = "withdraw-msg error";
             return;
         }
@@ -707,6 +821,8 @@ if (!Number.isFinite(amount) || amount < minimumAmount) {
         }
 
         openModal("bankModal");
+
+        await loadSavedBankDetails();
 
         if (!currentGbpNgnRate) {
             await loadExchangeRate();

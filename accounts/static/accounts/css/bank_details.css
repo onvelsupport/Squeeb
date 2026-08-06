@@ -366,3 +366,78 @@ button{
         grid-template-columns:1fr;
     }
 }
+
+
+/* ==========================================================
+   NIGERIAN BANK SELECT + SAVED ACCOUNT
+   ========================================================== */
+
+.select-wrap{
+    position:relative;
+}
+
+.select-wrap select{
+    width:100%;
+    min-height:48px;
+    padding:0 42px 0 13px;
+    border:1px solid var(--bank-border);
+    border-radius:13px;
+    outline:none;
+    appearance:none;
+    background:#f8fafc;
+    color:var(--bank-text);
+    font-size:15px;
+    cursor:pointer;
+}
+
+.select-wrap select:focus{
+    border-color:var(--bank-blue);
+    background:#fff;
+    box-shadow:0 0 0 3px rgba(49,94,251,.1);
+}
+
+.select-wrap > i{
+    position:absolute;
+    top:50%;
+    right:14px;
+    transform:translateY(-50%);
+    color:var(--bank-muted);
+    font-size:12px;
+    pointer-events:none;
+}
+
+.saved-bank-status{
+    margin:0 0 17px;
+    padding:12px 13px;
+    display:flex;
+    align-items:center;
+    gap:10px;
+    border:1px solid #bbf7d0;
+    border-radius:13px;
+    background:#f0fdf4;
+    color:#166534;
+}
+
+.saved-bank-status > i{
+    flex:0 0 auto;
+    font-size:16px;
+}
+
+.saved-bank-status strong,
+.saved-bank-status span{
+    display:block;
+}
+
+.saved-bank-status strong{
+    font-size:14px;
+}
+
+.saved-bank-status span{
+    margin-top:2px;
+    font-size:12px;
+    line-height:1.4;
+}
+
+.saved-bank-status[hidden]{
+    display:none;
+}
