@@ -1,122 +1,111 @@
 document.addEventListener("DOMContentLoaded", () => {
 
-    /* ================= REMOVE ITEM CONFIRMATION ================= */
+    /* ==========================================================
+       REMOVE ITEM
+    ========================================================== */
 
     document.querySelectorAll(".remove-btn").forEach(button => {
 
-        button.addEventListener("click", function (e) {
+        button.addEventListener("click", event => {
 
-            const confirmed = confirm(
+            const confirmed = window.confirm(
                 "Remove this item from your cart?"
             );
 
             if (!confirmed) {
-                e.preventDefault();
+                event.preventDefault();
             }
 
         });
 
     });
 
-/* ================= CHECKOUT BUTTON ================= */
 
-const checkoutBtn = document.querySelector(".checkout-btn");
+    /* ==========================================================
+       CHECKOUT
+    ========================================================== */
 
-checkoutBtn?.addEventListener("click", async () => {
-    try {
-        checkoutBtn.disabled = true;
-        checkoutBtn.textContent = "Redirecting...";
+    const checkoutBtn =
+        document.querySelector(".checkout-btn");
 
-        const res = await fetch("/cart/create-checkout/", {
-            method: "POST",
-            credentials: "include",
-            headers: {
-                "Content-Type": "application/json"
-            }
-        });
 
-        const data = await res.json();
+    checkoutBtn?.addEventListener("click", async () => {
 
-        if (!res.ok) {
-            alert(data.error || "Checkout failed.");
-            checkoutBtn.disabled = false;
-            checkoutBtn.textContent = "Proceed to Checkout";
-            return;
-        }
+        const originalHTML =
+            checkoutBtn.innerHTML;
 
-        window.location.href = data.checkout_url;
+        try {
 
-    } catch (error) {
-        console.error(error);
-        alert("Network error. Please try again.");
+            checkoutBtn.disabled = true;
 
-        checkoutBtn.disabled = false;
-        checkoutBtn.textContent = "Proceed to Checkout";
-    }
-});
-
-});
-
-    // ==========================================================
-    // SEARCH BAR
-    // ==========================================================
-    const searchInput = document.getElementById("globalSearchInput");
-    const searchResults = document.getElementById("searchResults");
-
-searchInput?.addEventListener("input", async () => {
-
-    const query = searchInput.value.trim();
-
-    if (!query) {
-        searchResults.style.display = "none";
-        searchResults.innerHTML = "";
-        return;
-    }
-
-    try {
-
-        const res = await fetch(
-            `/api/search/?q=${encodeURIComponent(query)}`
-        );
-
-        const data = await res.json();
-
-        searchResults.innerHTML = "";
-
-        if (!data.results.length) {
-
-            searchResults.innerHTML =
-                `<div class="search-item">No results found</div>`;
-
-            searchResults.style.display = "block";
-
-            return;
-        }
-
-        data.results.forEach(item => {
-
-            searchResults.innerHTML += `
-                <a href="${item.url}" class="search-item">
-
-                    <strong>${item.name}</strong>
-
-                    <div class="search-type">
-                        ${item.type}
-                    </div>
-
-                </a>
+            checkoutBtn.innerHTML = `
+                <i class="fa-solid fa-spinner fa-spin"></i>
+                <span>Redirecting...</span>
             `;
 
-        });
 
-        searchResults.style.display = "block";
+            const response = await fetch(
+                "/cart/create-checkout/",
+                {
+                    method: "POST",
 
-    }
+                    credentials:
+                        "same-origin",
 
-    catch(err) {
+                    headers: {
+                        "Content-Type":
+                            "application/json"
+                    }
+                }
+            );
 
-        console.error(err);
 
-    }
+            const data =
+                await response.json();
+
+
+            if (!response.ok) {
+
+                throw new Error(
+                    data.error ||
+                    "Checkout failed."
+                );
+
+            }
+
+
+            if (!data.checkout_url) {
+
+                throw new Error(
+                    "Checkout URL was not returned."
+                );
+
+            }
+
+
+            window.location.href =
+                data.checkout_url;
+
+
+        } catch (error) {
+
+            console.error(
+                "Checkout error:",
+                error
+            );
+
+
+            alert(
+                error.message ||
+                "Unable to start checkout. Please try again."
+            );
+
+
+            checkoutBtn.disabled = false;
+            checkoutBtn.innerHTML = originalHTML;
+
+        }
+
+    });
 
 });
