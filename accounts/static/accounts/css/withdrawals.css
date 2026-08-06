@@ -1190,3 +1190,176 @@ body.modal-open {
         font-size:12px;
     }
 }
+
+
+/* ==========================================================
+   SAVED BANK ACCOUNT — NIGERIAN WITHDRAWAL
+   ========================================================== */
+
+.saved-withdraw-bank {
+    margin: 6px 0 16px;
+    padding: 13px;
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    align-items: center;
+    gap: 11px;
+    border: 1px solid #bbf7d0;
+    border-radius: 14px;
+    background: #f0fdf4;
+}
+
+.saved-withdraw-bank[hidden] {
+    display: none;
+}
+
+.saved-withdraw-bank-icon {
+    width: 42px;
+    height: 42px;
+    display: grid;
+    place-items: center;
+    flex: 0 0 auto;
+    color: #166534;
+    background: #dcfce7;
+    border-radius: 12px;
+    font-size: 16px;
+}
+
+.saved-withdraw-bank-copy {
+    min-width: 0;
+}
+
+.saved-withdraw-bank-copy span,
+.saved-withdraw-bank-copy strong,
+.saved-withdraw-bank-copy small {
+    display: block;
+}
+
+.saved-withdraw-bank-copy span {
+    margin-bottom: 3px;
+    color: #15803d;
+    font-size: 11px;
+    font-weight: 900;
+    letter-spacing: .08em;
+}
+
+.saved-withdraw-bank-copy strong {
+    overflow: hidden;
+    color: #16241a;
+    font-size: 15px;
+    font-weight: 900;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.saved-withdraw-bank-copy small {
+    margin-top: 3px;
+    color: #55705d;
+    font-size: 13px;
+    line-height: 1.4;
+}
+
+.change-bank-link {
+    min-height: 36px;
+    padding: 0 11px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    color: #166534;
+    background: #fff;
+    border: 1px solid #bbf7d0;
+    border-radius: 10px;
+    font-size: 12px;
+    font-weight: 900;
+    text-decoration: none;
+    transition: .18s ease;
+}
+
+.change-bank-link:hover {
+    background: #dcfce7;
+}
+
+
+/* ==========================================================
+   MISSING SAVED BANK STATE
+   ========================================================== */
+
+.missing-bank-details {
+    margin: 6px 0 16px;
+    padding: 13px;
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    align-items: center;
+    gap: 11px;
+    color: #991b1b;
+    background: #fff1f2;
+    border: 1px solid #fecaca;
+    border-radius: 14px;
+}
+
+.missing-bank-details[hidden] {
+    display: none;
+}
+
+.missing-bank-details > i {
+    font-size: 17px;
+}
+
+.missing-bank-details strong {
+    display: block;
+    font-size: 15px;
+}
+
+.missing-bank-details p {
+    margin: 3px 0 0;
+    color: #9f3030;
+    font-size: 13px;
+    line-height: 1.4;
+}
+
+.missing-bank-details a {
+    min-height: 36px;
+    padding: 0 11px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    color: #991b1b;
+    background: #fff;
+    border: 1px solid #fecaca;
+    border-radius: 10px;
+    font-size: 12px;
+    font-weight: 900;
+    text-decoration: none;
+}
+
+.missing-bank-details a:hover {
+    background: #fee2e2;
+}
+
+
+/* ==========================================================
+   SAVED BANK MOBILE
+   ========================================================== */
+
+@media (max-width: 520px) {
+
+    .saved-withdraw-bank,
+    .missing-bank-details {
+        grid-template-columns: auto minmax(0, 1fr);
+        gap: 10px;
+    }
+
+    .change-bank-link,
+    .missing-bank-details a {
+        grid-column: 2;
+        justify-self: start;
+    }
+
+    .saved-withdraw-bank-copy strong {
+        font-size: 15px;
+    }
+
+    .saved-withdraw-bank-copy small,
+    .missing-bank-details p {
+        font-size: 12px;
+    }
+}
