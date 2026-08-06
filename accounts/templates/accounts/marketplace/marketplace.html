@@ -1,214 +1,17 @@
+{% extends 'accounts/base.html' %}
 {% load static %}
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-    <title>SQUEEB Market</title>
+{% block title %}
+SQUEEB Marketplace
+{% endblock %}
 
-    <link rel="stylesheet" href="{% static 'accounts/css/marketplace.css' %}">
-    <link
-        rel="stylesheet"
-        href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
-    >
-</head>
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'accounts/css/marketplace.css' %}">
+{% endblock %}
 
-<body>
+{% block content %}
 
-<header class="market-topbar">
-
-    <div class="topbar-left">
-
-        <a href="{% url 'dashboard' %}" class="brand">
-            <img
-                src="{% static 'accounts/img/logo.png' %}"
-                alt="SQUEEB"
-            >
-        </a>
-
-        <div class="desktop-divider"></div>
-
-        <div class="market-label">
-            <span class="market-label-icon">
-                <i class="fa-solid fa-store"></i>
-            </span>
-
-            <div>
-                <strong>Marketplace</strong>
-                <small>Buy & sell on SQUEEB</small>
-            </div>
-        </div>
-
-    </div>
-
-
-    <div class="market-search">
-
-        <i class="fa-solid fa-magnifying-glass"></i>
-
-        <input
-            type="text"
-            id="globalSearchInput"
-            placeholder="Search SQUEEB..."
-            autocomplete="off"
-        >
-
-        <div
-            class="search-results"
-            id="searchResults">
-        </div>
-
-    </div>
-
-
-    <nav class="market-nav">
-
-        <a href="{% url 'dashboard' %}">
-            Dashboard
-        </a>
-
-        <a href="{% url 'marketplace' %}" class="active">
-            Marketplace
-        </a>
-
-        <a href="{% url 'sell' %}">
-            Sell
-        </a>
-
-        <a href="{% url 'seller_history' %}">
-            Sold Items
-        </a>
-
-    </nav>
-
-
-    <div class="topbar-actions">
-
-        <a
-            href="{% url 'sell' %}"
-            class="topbar-sell-btn">
-
-            <i class="fa-solid fa-plus"></i>
-            <span>Sell</span>
-
-        </a>
-
-
-        <button
-            type="button"
-            class="topbar-icon cart-button"
-            onclick="window.location.href='{% url 'cart' %}'"
-            aria-label="Cart">
-
-            <i class="fa-solid fa-bag-shopping"></i>
-
-            <span class="cart-count">
-                {{ request.session.cart|length|default:0 }}
-            </span>
-
-        </button>
-
-
-        <a
-            href="{% url 'logout' %}"
-            class="topbar-icon logout logout-icon"
-            aria-label="Logout">
-
-            <i class="fa-solid fa-arrow-right-from-bracket"></i>
-
-        </a>
-
-    </div>
-
-
-    <button
-        type="button"
-        class="mobile-menu-btn"
-        id="mobileMenuBtn"
-        aria-label="Open menu">
-
-        <i class="fa-solid fa-bars"></i>
-
-    </button>
-
-
-    <div
-        class="mobile-dropdown"
-        id="mobileDropdown">
-
-        <div class="mobile-menu-heading">
-
-            <div>
-                <strong>SQUEEB Market</strong>
-                <small>Marketplace navigation</small>
-            </div>
-
-            <button
-                type="button"
-                id="mobileMenuClose"
-                aria-label="Close menu">
-
-                <i class="fa-solid fa-xmark"></i>
-
-            </button>
-
-        </div>
-
-
-        <a href="{% url 'dashboard' %}">
-            <i class="fa-solid fa-house"></i>
-            Dashboard
-        </a>
-
-        <a
-            href="{% url 'marketplace' %}"
-            class="active">
-
-            <i class="fa-solid fa-store"></i>
-            Marketplace
-
-        </a>
-
-        <a href="{% url 'sell' %}">
-            <i class="fa-solid fa-plus"></i>
-            Sell Product
-        </a>
-
-        <a href="{% url 'seller_history' %}">
-            <i class="fa-solid fa-box"></i>
-            Sold Items
-        </a>
-
-        <a href="{% url 'cart' %}">
-            <i class="fa-solid fa-bag-shopping"></i>
-            Cart
-
-            <span class="mobile-cart-count">
-                {{ request.session.cart|length|default:0 }}
-            </span>
-        </a>
-
-        <a href="{% url 'more_page' %}">
-            <i class="fa-solid fa-ellipsis"></i>
-            More
-        </a>
-
-        <a
-            href="{% url 'logout' %}"
-            class="logout mobile-logout">
-
-            <i class="fa-solid fa-arrow-right-from-bracket"></i>
-            Logout
-
-        </a>
-
-    </div>
-
-</header>
-
-
-<main class="market-page">
+<div class="market-page">
 
     <!-- HERO -->
     <section class="market-hero">
@@ -233,69 +36,15 @@
 
             <div class="hero-actions">
 
-                <a
-                    href="{% url 'sell' %}"
-                    class="hero-primary-btn">
-
+                <a href="{% url 'sell' %}" class="hero-primary-btn">
                     <i class="fa-solid fa-plus"></i>
                     List a Product
-
                 </a>
 
-                <a
-                    href="{% url 'seller_history' %}"
-                    class="hero-secondary-btn">
-
+                <a href="{% url 'seller_history' %}" class="hero-secondary-btn">
                     <i class="fa-solid fa-box"></i>
                     My Sold Items
-
                 </a>
-
-            </div>
-
-        </div>
-
-
-        <div class="hero-visual">
-
-            <div class="hero-floating-card card-one">
-
-                <span class="hero-icon purple">
-                    <i class="fa-solid fa-shirt"></i>
-                </span>
-
-                <div>
-                    <small>Fashion</small>
-                    <strong>Shop & Resell</strong>
-                </div>
-
-            </div>
-
-
-            <div class="hero-floating-card card-two">
-
-                <span class="hero-icon blue">
-                    <i class="fa-solid fa-mobile-screen"></i>
-                </span>
-
-                <div>
-                    <small>Tech</small>
-                    <strong>Find great deals</strong>
-                </div>
-
-            </div>
-
-
-            <div class="hero-floating-card card-three">
-
-                <span class="hero-icon pink">
-                    <i class="fa-solid fa-wallet"></i>
-                </span>
-
-                <div>
-                    <small>Sell</small>
-                    <strong>Make extra money</strong>
-                </div>
 
             </div>
 
@@ -304,16 +53,14 @@
     </section>
 
 
-    <!-- CATEGORY SECTION -->
-    <section class="market-section category-section">
+    <!-- CATEGORIES -->
+    <section class="market-section">
 
         <div class="section-heading">
-
             <div>
                 <span class="section-eyebrow">Explore</span>
                 <h2>Browse categories</h2>
             </div>
-
         </div>
 
 
@@ -322,73 +69,50 @@
             <a
                 href="?category=all"
                 class="category-pill {% if not request.GET.category or request.GET.category == 'all' %}active{% endif %}">
-
                 <i class="fa-solid fa-border-all"></i>
                 All Products
-
             </a>
 
             <a
                 href="?category=beauty"
                 class="category-pill {% if request.GET.category == 'beauty' %}active{% endif %}">
-
-                <i class="fa-solid fa-spa"></i>
-                Health & Beauty
-
+                Health &amp; Beauty
             </a>
 
             <a
                 href="?category=grocery"
                 class="category-pill {% if request.GET.category == 'grocery' %}active{% endif %}">
-
-                <i class="fa-solid fa-basket-shopping"></i>
                 Grocery
-
             </a>
 
             <a
                 href="?category=phones"
                 class="category-pill {% if request.GET.category == 'phones' %}active{% endif %}">
-
-                <i class="fa-solid fa-mobile-screen"></i>
-                Phones & Tablets
-
+                Phones &amp; Tablets
             </a>
 
             <a
                 href="?category=fashion"
                 class="category-pill {% if request.GET.category == 'fashion' %}active{% endif %}">
-
-                <i class="fa-solid fa-shirt"></i>
                 Fashion
-
             </a>
 
             <a
                 href="?category=electronics"
                 class="category-pill {% if request.GET.category == 'electronics' %}active{% endif %}">
-
-                <i class="fa-solid fa-laptop"></i>
                 Electronics
-
             </a>
 
             <a
                 href="?category=books"
                 class="category-pill {% if request.GET.category == 'books' %}active{% endif %}">
-
-                <i class="fa-solid fa-book"></i>
                 Books
-
             </a>
 
             <a
                 href="?category=car_rent"
                 class="category-pill {% if request.GET.category == 'car_rent' %}active{% endif %}">
-
-                <i class="fa-solid fa-car"></i>
                 Cars
-
             </a>
 
         </div>
@@ -396,39 +120,28 @@
     </section>
 
 
-    <!-- MARKETPLACE HEADER -->
+    <!-- TOOLBAR -->
     <section class="market-toolbar">
 
         <div>
+            <span class="section-eyebrow">Marketplace</span>
 
-            <span class="section-eyebrow">
-                Marketplace
-            </span>
-
-            <h2>
-                Latest listings
-            </h2>
+            <h2>Latest listings</h2>
 
             <p>
                 Browse products listed by the SQUEEB community.
             </p>
-
         </div>
 
-
-        <a
-            href="{% url 'sell' %}"
-            class="secondary-link">
-
+        <a href="{% url 'sell' %}" class="secondary-link">
             <i class="fa-solid fa-plus"></i>
             Add Product
-
         </a>
 
     </section>
 
 
-    <!-- PRODUCT GRID -->
+    <!-- PRODUCTS -->
     <section class="product-grid">
 
         {% for p in products %}
@@ -437,48 +150,33 @@
             class="product-card clickable-product"
             data-url="{% url 'product_detail' p.id %}">
 
-
             <div class="product-image-wrap">
 
                 {% if p.images.first %}
-
                     <img
                         src="{{ p.images.first.image.url }}"
                         alt="{{ p.title }}"
                         loading="lazy">
-
                 {% elif p.image %}
-
                     <img
                         src="{{ p.image.url }}"
                         alt="{{ p.title }}"
                         loading="lazy">
-
                 {% else %}
-
                     <img
                         src="{% static 'accounts/img/no-image.png' %}"
-                        alt="No image available"
-                        loading="lazy">
-
+                        alt="No image available">
                 {% endif %}
 
 
-                <div class="image-overlay"></div>
-
-
                 {% if p.is_sold %}
-
                     <span class="sold-badge">
-                        <i class="fa-solid fa-check"></i>
                         Sold
                     </span>
-
                 {% endif %}
 
 
                 <span class="photo-count">
-
                     <i class="fa-regular fa-images"></i>
 
                     {% if p.images.count %}
@@ -486,7 +184,6 @@
                     {% else %}
                         1
                     {% endif %}
-
                 </span>
 
             </div>
@@ -494,19 +191,14 @@
 
             <div class="product-body">
 
-
                 <div class="product-meta">
-
                     <span class="category-tag">
                         {{ p.get_category_display|default:p.category }}
                     </span>
-
                 </div>
 
 
-                <h3>
-                    {{ p.title }}
-                </h3>
+                <h3>{{ p.title }}</h3>
 
 
                 <p class="product-description">
@@ -530,7 +222,7 @@
 
                 <div class="product-bottom">
 
-                    <div class="product-price">
+                    <div>
 
                         <span class="price-label">
                             Price
@@ -550,23 +242,17 @@
                             <button
                                 class="card-btn disabled stop-card-click"
                                 disabled>
-
                                 Sold
-
                             </button>
 
                         {% else %}
-
 
                             {% if request.user == p.seller %}
 
                                 <a
                                     href="{% url 'edit_product' p.id %}"
                                     class="card-btn edit-btn stop-card-click">
-
-                                    <i class="fa-solid fa-pen"></i>
                                     Edit
-
                                 </a>
 
                             {% else %}
@@ -574,10 +260,7 @@
                                 <a
                                     href="{% url 'add_to_cart' p.id %}"
                                     class="card-btn stop-card-click">
-
-                                    <i class="fa-solid fa-bag-shopping"></i>
-                                    Add
-
+                                    Add to Cart
                                 </a>
 
                             {% endif %}
@@ -588,7 +271,7 @@
                                 <a
                                     href="{% url 'delete_product' p.id %}"
                                     class="delete-btn delete-product stop-card-click"
-                                    title="Delete product">
+                                    aria-label="Delete product">
 
                                     <i class="fa-solid fa-trash"></i>
 
@@ -611,25 +294,17 @@
 
         <div class="empty-market">
 
-            <div class="empty-icon">
-                <i class="fa-solid fa-box-open"></i>
-            </div>
+            <i class="fa-solid fa-box-open"></i>
 
-            <h3>
-                Nothing here yet
-            </h3>
+            <h3>No products found</h3>
 
             <p>
-                There are currently no products available in this category.
+                Be the first to add a product to this category.
             </p>
 
-            <a
-                href="{% url 'sell' %}"
-                class="hero-primary-btn">
-
+            <a href="{% url 'sell' %}" class="hero-primary-btn">
                 <i class="fa-solid fa-plus"></i>
-                Add a Product
-
+                Add Product
             </a>
 
         </div>
@@ -638,10 +313,11 @@
 
     </section>
 
-</main>
+</div>
+
+{% endblock %}
 
 
-<script src="{% static 'accounts/js/marketplace.js' %}"></script>
-
-</body>
-</html>
+{% block extra_js %}
+<script src="{% static 'accounts/js/marketplace.js' %}" defer></script>
+{% endblock %}
