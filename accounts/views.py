@@ -3930,13 +3930,18 @@ def update_password_api(request):
         data = json.loads(
             request.body.decode("utf-8")
         )
-    except (json.JSONDecodeError, UnicodeDecodeError):
+
+    except (
+        json.JSONDecodeError,
+        UnicodeDecodeError
+    ):
         return JsonResponse(
             {
                 "error": "Invalid request."
             },
             status=400
         )
+
 
     current_password = str(
         data.get("current_password", "")
@@ -3949,6 +3954,7 @@ def update_password_api(request):
     confirm_password = str(
         data.get("confirm_password", "")
     )
+
 
     # -----------------------------------------
     # REQUIRED FIELDS
@@ -3981,6 +3987,7 @@ def update_password_api(request):
             status=400
         )
 
+
     # -----------------------------------------
     # VERIFY CURRENT PASSWORD
     # -----------------------------------------
@@ -3996,6 +4003,7 @@ def update_password_api(request):
             status=400
         )
 
+
     # -----------------------------------------
     # CONFIRM PASSWORD MATCH
     # -----------------------------------------
@@ -4008,6 +4016,7 @@ def update_password_api(request):
             },
             status=400
         )
+
 
     # -----------------------------------------
     # NEW PASSWORD MUST BE DIFFERENT
@@ -4025,8 +4034,9 @@ def update_password_api(request):
             status=400
         )
 
+
     # -----------------------------------------
-    # FRONTEND PASSWORD RULES
+    # PASSWORD RULES
     # -----------------------------------------
 
     if len(new_password) < 8:
@@ -4074,6 +4084,7 @@ def update_password_api(request):
             status=400
         )
 
+
     # -----------------------------------------
     # DJANGO PASSWORD VALIDATION
     # -----------------------------------------
@@ -4088,10 +4099,13 @@ def update_password_api(request):
         return JsonResponse(
             {
                 "error":
-                " ".join(error.messages)
+                " ".join(
+                    error.messages
+                )
             },
             status=400
         )
+
 
     # -----------------------------------------
     # CHANGE PASSWORD
@@ -4104,6 +4118,7 @@ def update_password_api(request):
 
         request.user.save()
 
+        # Keep the current session active
         update_session_auth_hash(
             request,
             request.user
@@ -4123,6 +4138,72 @@ def update_password_api(request):
             },
             status=500
         )
+
+
+    # -----------------------------------------
+    # IN-APP SECURITY NOTIFICATION
+    # -----------------------------------------
+
+    try:
+        Notification.objects.create(
+            user=request.user,
+            title="Password Changed",
+            message=(
+                "Your SQUEEB account password "
+                "was updated successfully."
+            ),
+        )
+
+    except Exception as error:
+        print(
+            "PASSWORD NOTIFICATION ERROR:",
+            repr(error)
+        )
+
+
+    # -----------------------------------------
+    # SECURITY EMAIL
+    # -----------------------------------------
+
+    try:
+        send_account_email(
+            user=request.user,
+            subject="Your SQUEEB password was changed",
+            heading="Password updated",
+            message=(
+                "The password for your SQUEEB account "
+                "was changed successfully."
+            ),
+            details=[
+                {
+                    "label": "Account",
+                    "value": request.user.username,
+                },
+                {
+                    "label": "Security action",
+                    "value": "Password changed",
+                },
+                {
+                    "label": "Date",
+                    "value": timezone.localtime(
+                        timezone.now()
+                    ).strftime(
+                        "%d %b %Y, %I:%M %p"
+                    ),
+                },
+            ],
+        )
+
+    except Exception as error:
+        print(
+            "PASSWORD CHANGE EMAIL ERROR:",
+            repr(error)
+        )
+
+
+    # -----------------------------------------
+    # SUCCESS RESPONSE
+    # -----------------------------------------
 
     return JsonResponse(
         {
