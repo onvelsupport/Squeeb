@@ -1,46 +1,102 @@
 {% extends 'accounts/base.html' %}
 {% load static %}
 
-{% block title %}
-Transaction History | SQUEEB
-{% endblock %}
+{% block title %}Transaction History | SQUEEB{% endblock %}
 
 {% block extra_css %}
-<link rel="stylesheet" href="{% static 'accounts/css/transaction_history.css' %}">
+<link
+    rel="stylesheet"
+    href="{% static 'accounts/css/transaction_history.css' %}"
+>
 {% endblock %}
 
 {% block content %}
 
-<main class="transaction-page">
+<div class="transaction-app-page">
 
-    <section class="transaction-hero">
-        <div>
-            <p class="eyebrow">Wallet Activity</p>
-            <h1>Transaction History</h1>
-            <p>Review your deposits, withdrawals, and payment activity.</p>
-        </div>
+    <main class="transaction-page">
 
-        <a href="{% url 'more_page' %}" class="back-btn">
-            Back
-        </a>
-    </section>
+        <!-- HEADER -->
+        <section class="transaction-header">
 
-    <section class="transaction-card">
+            <div>
+                <span class="transaction-kicker">
+                    WALLET ACTIVITY
+                </span>
 
-        <div class="table-header">
-            <h2>Recent Transactions</h2>
-        </div>
+                <h1>Transaction History</h1>
 
-        <div id="transactionList" class="transaction-list">
-            <p class="loading">Loading transactions...</p>
-        </div>
+                <p>
+                    Review your deposits, withdrawals, and payment activity.
+                </p>
+            </div>
 
-    </section>
+            <a
+                href="{% url 'more_page' %}"
+                class="transaction-back-btn"
+            >
+                <i class="fa-solid fa-arrow-left"></i>
+                <span>Back</span>
+            </a>
 
-</main>
+        </section>
+
+
+        <!-- ACTIVITY STRIP -->
+        <section class="transaction-info-strip">
+
+            <div class="transaction-info-icon">
+                <i class="fa-solid fa-wallet"></i>
+            </div>
+
+            <div>
+                <span>ACCOUNT ACTIVITY</span>
+                <strong>Your recent wallet transactions</strong>
+                <small>
+                    Deposits, withdrawals and other balance movements appear here.
+                </small>
+            </div>
+
+        </section>
+
+
+        <!-- TRANSACTIONS -->
+        <section class="transaction-section">
+
+            <div class="transaction-section-heading">
+
+                <div>
+                    <span>HISTORY</span>
+                    <h2>Recent Transactions</h2>
+                </div>
+
+                <small id="transactionCount">Loading…</small>
+
+            </div>
+
+            <div
+                id="transactionList"
+                class="transaction-list"
+                aria-live="polite"
+            >
+                <div class="transaction-state">
+                    <i class="fa-solid fa-spinner fa-spin"></i>
+                    <h3>Loading transactions</h3>
+                    <p>Please wait while we fetch your wallet activity.</p>
+                </div>
+            </div>
+
+        </section>
+
+    </main>
+
+</div>
 
 {% endblock %}
 
 {% block extra_js %}
-<script src="{% static 'accounts/js/transaction_history.js' %}"></script>
+<script
+    src="{% static 'accounts/js/transaction_history.js' %}"
+    defer
+></script>
 {% endblock %}
