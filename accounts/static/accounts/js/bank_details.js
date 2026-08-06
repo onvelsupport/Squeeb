@@ -136,7 +136,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
         bankNameInput.disabled = true;
         bankNameInput.innerHTML = `
-            <option value="">Loading Nigerian banks...</option>
+            <option value="">Select your bank</option>
         `;
 
         try {
