@@ -1,39 +1,368 @@
-*{margin:0;padding:0;box-sizing:border-box}
-:root{--bank-bg:#f5f6f9;--bank-text:#12141b;--bank-muted:#717683;--bank-border:#e7e9ef;--bank-blue:#315efb;--bank-soft:#eef2ff;--bank-green:#15803d;--bank-green-soft:#dcfce7;--bank-red:#b91c1c;--bank-red-soft:#fee2e2;--bank-navy:#151824}
-body{background:var(--bank-bg);color:var(--bank-text)}
-input,button{font:inherit}
-.bank-app-page{min-height:100vh;background:radial-gradient(circle at top left,rgba(49,94,251,.06),transparent 24rem),var(--bank-bg)}
-.bank-page{width:min(94%,780px);margin:auto;padding:28px 0 58px}
-.bank-header{display:flex;justify-content:space-between;align-items:center;gap:18px;margin-bottom:14px}
-.bank-kicker{display:block;margin-bottom:6px;color:var(--bank-blue);font-size:12px;font-weight:900;letter-spacing:.12em}
-.bank-header h1{margin:0;font-size:clamp(30px,5vw,42px);line-height:1.05;letter-spacing:-.035em}
-.bank-header p{margin-top:7px;color:var(--bank-muted);font-size:15px;line-height:1.5}
-.bank-back-btn{min-height:43px;padding:0 14px;border-radius:12px;display:inline-flex;align-items:center;justify-content:center;gap:7px;background:var(--bank-navy);color:#fff;font-size:14px;font-weight:800;text-decoration:none;flex:0 0 auto}
-.bank-security-strip{margin-bottom:12px;padding:13px;display:grid;grid-template-columns:auto 1fr;align-items:center;gap:11px;border:1px solid var(--bank-border);border-radius:16px;background:#fff}
-.bank-security-icon{width:42px;height:42px;border-radius:12px;display:grid;place-items:center;background:var(--bank-soft);color:var(--bank-blue);font-size:16px}
-.bank-security-strip span,.bank-security-strip strong,.bank-security-strip small{display:block}
-.bank-security-strip span{margin-bottom:2px;color:var(--bank-blue);font-size:11px;font-weight:900;letter-spacing:.08em}
-.bank-security-strip strong{font-size:15px}
-.bank-security-strip small{margin-top:3px;color:var(--bank-muted);font-size:13px;line-height:1.4}
-.bank-card{padding:20px;border:1px solid var(--bank-border);border-radius:20px;background:#fff}
-.bank-card-heading{display:flex;justify-content:space-between;align-items:flex-start;gap:14px;margin-bottom:20px}
-.bank-card-heading>div:first-child>span{display:block;margin-bottom:5px;color:var(--bank-blue);font-size:12px;font-weight:900;letter-spacing:.11em}
-.bank-card-heading h2{margin:0;font-size:23px;letter-spacing:-.025em}
-.bank-card-heading p{margin-top:5px;color:var(--bank-muted);font-size:14px;line-height:1.5}
-.bank-card-icon{width:42px;height:42px;min-width:42px;border-radius:12px;display:grid;place-items:center;background:var(--bank-soft);color:var(--bank-blue);font-size:16px}
-.bank-form{display:grid;gap:16px}
-.bank-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}
-.form-group label{display:block;margin-bottom:7px;color:var(--bank-text);font-size:14px;font-weight:800}
-.form-group input{width:100%;min-height:48px;padding:0 13px;border:1px solid var(--bank-border);border-radius:13px;outline:none;background:#f8fafc;color:var(--bank-text);font-size:15px}
-.form-group input:focus{border-color:var(--bank-blue);background:#fff;box-shadow:0 0 0 3px rgba(49,94,251,.1)}
-.form-group small{display:block;margin-top:5px;color:var(--bank-muted);font-size:12px}
-.bank-message{padding:11px 12px;border-radius:12px;font-size:13px;font-weight:700;line-height:1.45}
-.bank-message.success{border:1px solid #bbf7d0;background:var(--bank-green-soft);color:var(--bank-green)}
-.bank-message.error{border:1px solid #fecaca;background:var(--bank-red-soft);color:var(--bank-red)}
-.save-bank-btn{width:100%;min-height:46px;border:0;border-radius:13px;display:flex;align-items:center;justify-content:center;gap:8px;background:var(--bank-navy);color:#fff;font-size:14px;font-weight:900;cursor:pointer}
-.save-bank-btn:disabled{opacity:.6;cursor:wait}
-.bank-note{margin-top:11px;padding:13px;display:flex;align-items:flex-start;gap:10px;border:1px solid #dce4ff;border-radius:15px;background:#f4f6ff}
-.bank-note>i{margin-top:2px;color:var(--bank-blue)}
-.bank-note strong{display:block;font-size:14px}
-.bank-note p{margin-top:3px;color:#5e6675;font-size:13px;line-height:1.45}
-@media(max-width:700px){.bank-page{width:calc(100% - 20px);padding:16px 0 44px}.bank-header h1{font-size:28px}.bank-header p{font-size:14px}.bank-back-btn{width:40px;height:40px;min-height:40px;padding:0}.bank-back-btn span{display:none}.bank-card{padding:15px;border-radius:17px}.bank-card-heading h2{font-size:21px}.bank-grid{grid-template-columns:1fr}}
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+}
+
+:root{
+    --bank-bg:#f5f6f9;
+    --bank-text:#12141b;
+    --bank-muted:#717683;
+    --bank-border:#e7e9ef;
+    --bank-blue:#315efb;
+    --bank-soft:#eef2ff;
+    --bank-green:#15803d;
+    --bank-green-soft:#dcfce7;
+    --bank-red:#b91c1c;
+    --bank-red-soft:#fee2e2;
+    --bank-navy:#151824;
+}
+
+body{
+    background:var(--bank-bg);
+    color:var(--bank-text);
+}
+
+input,
+button{
+    font:inherit;
+}
+
+.bank-app-page{
+    min-height:100vh;
+    background:
+        radial-gradient(
+            circle at top left,
+            rgba(49,94,251,.06),
+            transparent 24rem
+        ),
+        var(--bank-bg);
+}
+
+.bank-page{
+    width:min(94%,780px);
+    margin:auto;
+    padding:28px 0 58px;
+}
+
+
+/* HEADER */
+
+.bank-header{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    gap:18px;
+    margin-bottom:14px;
+}
+
+.bank-kicker{
+    display:block;
+    margin-bottom:6px;
+    color:var(--bank-blue);
+    font-size:12px;
+    font-weight:900;
+    letter-spacing:.12em;
+}
+
+.bank-header h1{
+    margin:0;
+    font-size:clamp(30px,5vw,42px);
+    line-height:1.05;
+    letter-spacing:-.035em;
+}
+
+.bank-header p{
+    margin-top:7px;
+    color:var(--bank-muted);
+    font-size:15px;
+    line-height:1.5;
+}
+
+.bank-back-btn{
+    min-height:43px;
+    padding:0 14px;
+    border-radius:12px;
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+    gap:7px;
+    background:var(--bank-navy);
+    color:#fff;
+    font-size:14px;
+    font-weight:800;
+    text-decoration:none;
+    flex:0 0 auto;
+}
+
+
+/* SECURITY STRIP */
+
+.bank-security-strip{
+    margin-bottom:12px;
+    padding:13px;
+    display:grid;
+    grid-template-columns:auto 1fr;
+    align-items:center;
+    gap:11px;
+    border:1px solid var(--bank-border);
+    border-radius:16px;
+    background:#fff;
+}
+
+.bank-security-icon{
+    width:42px;
+    height:42px;
+    border-radius:12px;
+    display:grid;
+    place-items:center;
+    background:var(--bank-soft);
+    color:var(--bank-blue);
+    font-size:16px;
+}
+
+.bank-security-strip span,
+.bank-security-strip strong,
+.bank-security-strip small{
+    display:block;
+}
+
+.bank-security-strip span{
+    margin-bottom:2px;
+    color:var(--bank-blue);
+    font-size:11px;
+    font-weight:900;
+    letter-spacing:.08em;
+}
+
+.bank-security-strip strong{
+    font-size:15px;
+}
+
+.bank-security-strip small{
+    margin-top:3px;
+    color:var(--bank-muted);
+    font-size:13px;
+    line-height:1.4;
+}
+
+
+/* CARD */
+
+.bank-card{
+    padding:20px;
+    border:1px solid var(--bank-border);
+    border-radius:20px;
+    background:#fff;
+}
+
+.bank-card-heading{
+    display:flex;
+    justify-content:space-between;
+    align-items:flex-start;
+    gap:14px;
+    margin-bottom:20px;
+}
+
+.bank-card-heading > div:first-child > span{
+    display:block;
+    margin-bottom:5px;
+    color:var(--bank-blue);
+    font-size:12px;
+    font-weight:900;
+    letter-spacing:.11em;
+}
+
+.bank-card-heading h2{
+    margin:0;
+    font-size:23px;
+    letter-spacing:-.025em;
+}
+
+.bank-card-heading p{
+    margin-top:5px;
+    color:var(--bank-muted);
+    font-size:14px;
+    line-height:1.5;
+}
+
+.bank-card-icon{
+    width:42px;
+    height:42px;
+    min-width:42px;
+    border-radius:12px;
+    display:grid;
+    place-items:center;
+    background:var(--bank-soft);
+    color:var(--bank-blue);
+    font-size:16px;
+    font-weight:900;
+}
+
+
+/* FORM */
+
+.bank-form{
+    display:grid;
+    gap:16px;
+}
+
+.bank-grid{
+    display:grid;
+    grid-template-columns:repeat(2,minmax(0,1fr));
+    gap:14px;
+}
+
+.form-group label{
+    display:block;
+    margin-bottom:7px;
+    color:var(--bank-text);
+    font-size:14px;
+    font-weight:800;
+}
+
+.form-group input{
+    width:100%;
+    min-height:48px;
+    padding:0 13px;
+    border:1px solid var(--bank-border);
+    border-radius:13px;
+    outline:none;
+    background:#f8fafc;
+    color:var(--bank-text);
+    font-size:15px;
+}
+
+.form-group input:focus{
+    border-color:var(--bank-blue);
+    background:#fff;
+    box-shadow:0 0 0 3px rgba(49,94,251,.1);
+}
+
+.form-group small{
+    display:block;
+    margin-top:5px;
+    color:var(--bank-muted);
+    font-size:12px;
+}
+
+
+/* MESSAGES */
+
+.bank-message{
+    padding:11px 12px;
+    border-radius:12px;
+    font-size:13px;
+    font-weight:700;
+    line-height:1.45;
+}
+
+.bank-message.success{
+    border:1px solid #bbf7d0;
+    background:var(--bank-green-soft);
+    color:var(--bank-green);
+}
+
+.bank-message.error{
+    border:1px solid #fecaca;
+    background:var(--bank-red-soft);
+    color:var(--bank-red);
+}
+
+
+/* BUTTON */
+
+.save-bank-btn{
+    width:100%;
+    min-height:46px;
+    border:0;
+    border-radius:13px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    gap:8px;
+    background:var(--bank-navy);
+    color:#fff;
+    font-size:14px;
+    font-weight:900;
+    cursor:pointer;
+}
+
+.save-bank-btn:disabled{
+    opacity:.6;
+    cursor:wait;
+}
+
+
+/* NOTE */
+
+.bank-note{
+    margin-top:11px;
+    padding:13px;
+    display:flex;
+    align-items:flex-start;
+    gap:10px;
+    border:1px solid #dce4ff;
+    border-radius:15px;
+    background:#f4f6ff;
+}
+
+.bank-note > i{
+    margin-top:2px;
+    color:var(--bank-blue);
+}
+
+.bank-note strong{
+    display:block;
+    font-size:14px;
+}
+
+.bank-note p{
+    margin-top:3px;
+    color:#5e6675;
+    font-size:13px;
+    line-height:1.45;
+}
+
+
+/* MOBILE */
+
+@media(max-width:700px){
+
+    .bank-page{
+        width:calc(100% - 20px);
+        padding:16px 0 44px;
+    }
+
+    .bank-header h1{
+        font-size:28px;
+    }
+
+    .bank-header p{
+        font-size:14px;
+    }
+
+    .bank-back-btn{
+        width:40px;
+        height:40px;
+        min-height:40px;
+        padding:0;
+    }
+
+    .bank-back-btn span{
+        display:none;
+    }
+
+    .bank-card{
+        padding:15px;
+        border-radius:17px;
+    }
+
+    .bank-card-heading h2{
+        font-size:21px;
+    }
+
+    .bank-grid{
+        grid-template-columns:1fr;
+    }
+}

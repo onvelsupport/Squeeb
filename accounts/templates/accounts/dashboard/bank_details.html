@@ -4,90 +4,277 @@
 {% block title %}Bank Details | SQUEEB{% endblock %}
 
 {% block extra_css %}
-<link rel="stylesheet" href="{% static 'accounts/css/bank_details.css' %}">
+<link
+    rel="stylesheet"
+    href="{% static 'accounts/css/bank_details.css' %}"
+>
 {% endblock %}
 
 {% block content %}
+
 <div class="bank-app-page">
+
     <main class="bank-page">
+
         <section class="bank-header">
+
             <div>
-                <span class="bank-kicker">PAYOUT SETTINGS</span>
+                <span class="bank-kicker">
+                    PAYOUT SETTINGS
+                </span>
+
                 <h1>Bank Details</h1>
-                <p>Save your UK bank details for withdrawals.</p>
+
+                {% if request.user.country|lower == "nigeria" %}
+                    <p>
+                        Save your Nigerian bank details for withdrawals.
+                    </p>
+                {% else %}
+                    <p>
+                        Save your UK bank details for withdrawals.
+                    </p>
+                {% endif %}
             </div>
-            <a href="{% url 'more_page' %}" class="bank-back-btn">
+
+            <a
+                href="{% url 'more_page' %}"
+                class="bank-back-btn"
+            >
                 <i class="fa-solid fa-arrow-left"></i>
                 <span>Back</span>
             </a>
+
         </section>
+
 
         <section class="bank-security-strip">
-            <div class="bank-security-icon"><i class="fa-solid fa-building-columns"></i></div>
+
+            <div class="bank-security-icon">
+                <i class="fa-solid fa-building-columns"></i>
+            </div>
+
             <div>
                 <span>PAYOUT ACCOUNT</span>
-                <strong>Use an account that belongs to you</strong>
-                <small>Make sure your account name, sort code and account number are correct before saving.</small>
+
+                <strong>
+                    Use an account that belongs to you
+                </strong>
+
+                {% if request.user.country|lower == "nigeria" %}
+                    <small>
+                        Make sure your account name, bank name and 10-digit account number are correct before saving.
+                    </small>
+                {% else %}
+                    <small>
+                        Make sure your account name, sort code and account number are correct before saving.
+                    </small>
+                {% endif %}
             </div>
+
         </section>
 
+
         <section class="bank-card">
+
             <div class="bank-card-heading">
+
                 <div>
                     <span>BANK INFORMATION</span>
-                    <h2>UK bank account</h2>
-                    <p>These details are used when processing eligible withdrawals.</p>
+
+                    {% if request.user.country|lower == "nigeria" %}
+                        <h2>Nigerian bank account</h2>
+
+                        <p>
+                            These details are used when processing eligible Nigerian withdrawals.
+                        </p>
+                    {% else %}
+                        <h2>UK bank account</h2>
+
+                        <p>
+                            These details are used when processing eligible UK withdrawals.
+                        </p>
+                    {% endif %}
                 </div>
-                <div class="bank-card-icon"><i class="fa-solid fa-sterling-sign"></i></div>
+
+                <div class="bank-card-icon">
+                    {% if request.user.country|lower == "nigeria" %}
+                        <span>₦</span>
+                    {% else %}
+                        <i class="fa-solid fa-sterling-sign"></i>
+                    {% endif %}
+                </div>
+
             </div>
 
-            <form id="bankDetailsForm" class="bank-form" novalidate>
+
+            <form
+                id="bankDetailsForm"
+                class="bank-form"
+                data-country="{{ request.user.country|default:''|lower }}"
+                novalidate
+            >
+
                 {% csrf_token %}
 
-                <div class="form-group">
-                    <label for="accountName">Account Name</label>
-                    <input type="text" id="accountName" autocomplete="name" placeholder="Your full name" required>
-                </div>
 
                 <div class="form-group">
-                    <label for="bankName">Bank Name</label>
-                    <input type="text" id="bankName" placeholder="Bank name" required>
+
+                    <label for="accountName">
+                        Account Name
+                    </label>
+
+                    <input
+                        type="text"
+                        id="accountName"
+                        autocomplete="name"
+                        placeholder="Your full name"
+                        required
+                    >
+
                 </div>
 
-                <div class="bank-grid">
-                    <div class="form-group">
-                        <label for="sortCode">Sort Code</label>
-                        <input type="text" id="sortCode" inputmode="numeric" autocomplete="off" placeholder="12-34-56" maxlength="8" required>
-                        <small>6 digits, formatted automatically.</small>
-                    </div>
 
-                    <div class="form-group">
-                        <label for="accountNumber">Account Number</label>
-                        <input type="text" id="accountNumber" inputmode="numeric" autocomplete="off" placeholder="12345678" maxlength="8" required>
-                        <small>Enter your 8-digit account number.</small>
-                    </div>
+                <div class="form-group">
+
+                    <label for="bankName">
+                        Bank Name
+                    </label>
+
+                    <input
+                        type="text"
+                        id="bankName"
+                        placeholder="Bank name"
+                        required
+                    >
+
                 </div>
 
-                <div id="bankMsg" class="bank-message" aria-live="polite" hidden></div>
 
-                <button type="submit" id="saveBankBtn" class="save-bank-btn">
+                {% if request.user.country|lower == "nigeria" %}
+
+                    <div class="form-group">
+
+                        <label for="accountNumber">
+                            Account Number
+                        </label>
+
+                        <input
+                            type="text"
+                            id="accountNumber"
+                            inputmode="numeric"
+                            autocomplete="off"
+                            placeholder="0123456789"
+                            maxlength="10"
+                            required
+                        >
+
+                        <small>
+                            Enter your 10-digit Nigerian bank account number.
+                        </small>
+
+                    </div>
+
+                {% else %}
+
+                    <div class="bank-grid">
+
+                        <div class="form-group">
+
+                            <label for="sortCode">
+                                Sort Code
+                            </label>
+
+                            <input
+                                type="text"
+                                id="sortCode"
+                                inputmode="numeric"
+                                autocomplete="off"
+                                placeholder="12-34-56"
+                                maxlength="8"
+                                required
+                            >
+
+                            <small>
+                                6 digits, formatted automatically.
+                            </small>
+
+                        </div>
+
+
+                        <div class="form-group">
+
+                            <label for="accountNumber">
+                                Account Number
+                            </label>
+
+                            <input
+                                type="text"
+                                id="accountNumber"
+                                inputmode="numeric"
+                                autocomplete="off"
+                                placeholder="12345678"
+                                maxlength="8"
+                                required
+                            >
+
+                            <small>
+                                Enter your 8-digit UK account number.
+                            </small>
+
+                        </div>
+
+                    </div>
+
+                {% endif %}
+
+
+                <div
+                    id="bankMsg"
+                    class="bank-message"
+                    aria-live="polite"
+                    hidden
+                ></div>
+
+
+                <button
+                    type="submit"
+                    id="saveBankBtn"
+                    class="save-bank-btn"
+                >
                     <i class="fa-solid fa-floppy-disk"></i>
                     <span>Save Bank Details</span>
                 </button>
+
             </form>
+
         </section>
 
+
         <section class="bank-note">
+
             <i class="fa-solid fa-shield-halved"></i>
+
             <div>
-                <strong>Check your details carefully</strong>
-                <p>Incorrect payout details may delay or prevent a withdrawal from reaching your account.</p>
+                <strong>
+                    Check your details carefully
+                </strong>
+
+                <p>
+                    Incorrect payout details may delay or prevent a withdrawal from reaching your account.
+                </p>
             </div>
+
         </section>
+
     </main>
+
 </div>
+
 {% endblock %}
 
 {% block extra_js %}
-<script src="{% static 'accounts/js/bank_details.js' %}" defer></script>
+<script
+    src="{% static 'accounts/js/bank_details.js' %}"
+    defer
+></script>
 {% endblock %}
