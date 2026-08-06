@@ -1,95 +1,222 @@
 {% extends 'accounts/base.html' %}
 {% load static %}
 
-{% block title %}
-Referrals | SQUEEB
-{% endblock %}
+{% block title %}Referrals | SQUEEB{% endblock %}
 
 {% block extra_css %}
-<link rel="stylesheet" href="{% static 'accounts/css/referrals.css' %}">
+<link
+    rel="stylesheet"
+    href="{% static 'accounts/css/referrals.css' %}"
+>
 {% endblock %}
 
 {% block content %}
 
-<main class="referrals-page">
+<div class="referrals-app-page">
 
-    <section class="referrals-hero">
-        <div>
-            <p class="eyebrow">Referral Programme</p>
-            <h1>Invite friends. Earn rewards.</h1>
-            <p>Share your SQUEEB referral link and track everyone who joins through you.</p>
-        </div>
+    <main class="referrals-page">
 
-        <a href="{% url 'more_page' %}" class="back-btn">
-            Back
-        </a>
-    </section>
+        <!-- HEADER -->
+        <section class="referrals-header">
 
-    <section class="referral-share-card">
+            <div>
+                <span class="referrals-kicker">
+                    REFERRAL PROGRAMME
+                </span>
 
-        <div class="share-box">
-            <label>Your Referral Code</label>
+                <h1>Invite friends. Earn rewards.</h1>
 
-            <div class="copy-row">
-                <input type="text" id="referralCode" readonly>
-                <button id="copyCodeBtn">Copy</button>
+                <p>
+                    Share your SQUEEB referral link and track everyone
+                    who joins through you.
+                </p>
             </div>
-        </div>
 
-        <div class="share-box">
-            <label>Your Referral Link</label>
+            <a
+                href="{% url 'more_page' %}"
+                class="referrals-back-btn"
+            >
+                <i class="fa-solid fa-arrow-left"></i>
+                <span>Back</span>
+            </a>
 
-            <div class="copy-row">
-                <input type="text" id="referralLink" readonly>
-                <button id="copyLinkBtn">Copy Link</button>
+        </section>
+
+
+        <!-- REFERRAL SHARE CARD -->
+        <section class="referral-share-card">
+
+            <div class="referral-share-heading">
+                <div class="referral-share-icon">
+                    <i class="fa-solid fa-user-plus"></i>
+                </div>
+
+                <div>
+                    <span>SHARE &amp; EARN</span>
+                    <strong>Your referral details</strong>
+                    <small>
+                        Copy your code or personal invite link and share it with friends.
+                    </small>
+                </div>
             </div>
-        </div>
 
-        <p id="copyMsg" class="copy-msg"></p>
 
-    </section>
+            <div class="referral-share-grid">
 
-    <section class="referral-stats">
+                <div class="share-box">
+                    <label for="referralCode">
+                        Referral Code
+                    </label>
 
-        <div class="stat-card">
-            <span id="totalReferrals">0</span>
-            <p>Total Referrals</p>
-        </div>
+                    <div class="copy-row">
+                        <input
+                            type="text"
+                            id="referralCode"
+                            readonly
+                            aria-label="Your referral code"
+                        >
 
-        <div class="stat-card">
-            <span id="pendingReferrals">0</span>
-            <p>Pending</p>
-        </div>
+                        <button
+                            type="button"
+                            id="copyCodeBtn"
+                        >
+                            <i class="fa-regular fa-copy"></i>
+                            <span>Copy</span>
+                        </button>
+                    </div>
+                </div>
 
-        <div class="stat-card">
-            <span id="successfulReferrals">0</span>
-            <p>Successful</p>
-        </div>
 
-        <div class="stat-card">
-            <span id="totalEarned">£0.00</span>
-            <p>Total Earned</p>
-        </div>
+                <div class="share-box">
+                    <label for="referralLink">
+                        Referral Link
+                    </label>
 
-    </section>
+                    <div class="copy-row">
+                        <input
+                            type="text"
+                            id="referralLink"
+                            readonly
+                            aria-label="Your referral link"
+                        >
 
-    <section class="referral-history">
+                        <button
+                            type="button"
+                            id="copyLinkBtn"
+                        >
+                            <i class="fa-solid fa-link"></i>
+                            <span>Copy Link</span>
+                        </button>
+                    </div>
+                </div>
 
-        <div class="history-header">
-            <h2>Recent Referrals</h2>
-            <p>People who joined using your referral link.</p>
-        </div>
+            </div>
 
-        <div id="referralList" class="referral-list">
-            <p class="loading">Loading referrals...</p>
-        </div>
+            <p
+                id="copyMsg"
+                class="copy-msg"
+                aria-live="polite"
+            ></p>
 
-    </section>
+        </section>
 
-</main>
+
+        <!-- STATS -->
+        <section class="referral-stats">
+
+            <article class="stat-card">
+                <div class="stat-icon blue">
+                    <i class="fa-solid fa-users"></i>
+                </div>
+
+                <div>
+                    <span id="totalReferrals">0</span>
+                    <p>Total Referrals</p>
+                </div>
+            </article>
+
+
+            <article class="stat-card">
+                <div class="stat-icon amber">
+                    <i class="fa-solid fa-clock"></i>
+                </div>
+
+                <div>
+                    <span id="pendingReferrals">0</span>
+                    <p>Pending</p>
+                </div>
+            </article>
+
+
+            <article class="stat-card">
+                <div class="stat-icon green">
+                    <i class="fa-solid fa-circle-check"></i>
+                </div>
+
+                <div>
+                    <span id="successfulReferrals">0</span>
+                    <p>Successful</p>
+                </div>
+            </article>
+
+
+            <article class="stat-card">
+                <div class="stat-icon purple">
+                    <i class="fa-solid fa-sterling-sign"></i>
+                </div>
+
+                <div>
+                    <span id="totalEarned">£0.00</span>
+                    <p>Total Earned</p>
+                </div>
+            </article>
+
+        </section>
+
+
+        <!-- HISTORY -->
+        <section class="referral-history">
+
+            <div class="history-header">
+
+                <div>
+                    <span>REFERRAL HISTORY</span>
+                    <h2>Recent Referrals</h2>
+                    <p>
+                        People who joined using your referral link.
+                    </p>
+                </div>
+
+                <small id="referralCount">Loading…</small>
+
+            </div>
+
+
+            <div
+                id="referralList"
+                class="referral-list"
+                aria-live="polite"
+            >
+                <div class="referral-state">
+                    <i class="fa-solid fa-spinner fa-spin"></i>
+                    <h3>Loading referrals</h3>
+                    <p>
+                        Please wait while we fetch your referral activity.
+                    </p>
+                </div>
+            </div>
+
+        </section>
+
+    </main>
+
+</div>
 
 {% endblock %}
 
 {% block extra_js %}
-<script src="{% static 'accounts/js/referrals.js' %}"></script>
+<script
+    src="{% static 'accounts/js/referrals.js' %}"
+    defer
+></script>
 {% endblock %}
