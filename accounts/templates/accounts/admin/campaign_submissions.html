@@ -1,39 +1,64 @@
 {% extends "accounts/base.html" %}
 {% load static %}
 
-{% block title %}
-Campaign Submissions | SQUEEB Admin
+{% block title %}Campaign Submissions | SQUEEB Admin{% endblock %}
+
+{% block extra_css %}
+<link
+    rel="stylesheet"
+    href="{% static 'accounts/css/campaign_submissions_admin.css' %}"
+>
 {% endblock %}
 
 {% block content %}
-<div class="dashboard-page">
-    <main class="dashboard-main">
 
-        <section class="hero-section">
+<div class="campaign-admin-page">
+
+    <main class="campaign-admin-main">
+
+        <!-- HEADER -->
+        <section class="campaign-admin-header">
+
             <div>
-                <p class="eyebrow">SQUEEB Admin</p>
+                <span class="campaign-admin-kicker">
+                    SQUEEB ADMIN
+                </span>
+
                 <h1>Campaign Submissions</h1>
-                <p class="hero-text">
+
+                <p>
                     Review campaign videos and screenshot proof before paying users.
                 </p>
             </div>
 
-            <a href="{% url 'admin_campaigns' %}" class="pay-btn">
-                View Campaigns
+            <a
+                href="{% url 'admin_campaigns' %}"
+                class="campaign-admin-back"
+            >
+                <i class="fa-solid fa-arrow-left"></i>
+                <span>Campaigns</span>
             </a>
+
         </section>
 
+
+        <!-- MESSAGES -->
         {% if messages %}
-            <div class="admin-message-list">
+            <section class="campaign-admin-messages">
                 {% for message in messages %}
-                    <div class="admin-message {{ message.tags }}">
+                    <div class="campaign-admin-message {{ message.tags }}">
                         {{ message }}
                     </div>
                 {% endfor %}
-            </div>
+            </section>
         {% endif %}
 
-        <div class="admin-filter-tabs">
+
+        <!-- FILTERS -->
+        <nav
+            class="campaign-admin-tabs"
+            aria-label="Submission status filters"
+        >
             <a
                 href="?status=pending"
                 class="{% if status_filter == 'pending' %}active{% endif %}"
@@ -61,56 +86,82 @@ Campaign Submissions | SQUEEB Admin
             >
                 All
             </a>
-        </div>
+        </nav>
 
-        <section class="admin-submission-list">
+
+        <!-- LIST -->
+        <section class="campaign-admin-list">
 
             {% for submission in submissions %}
-                <article class="admin-submission-card">
 
-                    <div class="admin-submission-main">
-                        <div class="admin-submission-heading">
+                <article class="campaign-submission-card">
+
+                    <div class="campaign-submission-main">
+
+                        <div class="campaign-submission-heading">
+
                             <div>
-                                <span class="submission-type-badge campaign">
+                                <span class="campaign-type-badge">
+                                    <i class="fa-solid fa-bullhorn"></i>
                                     SQUEEB Campaign
                                 </span>
 
-                                <h3>{{ submission.campaign.title }}</h3>
+                                <h2>
+                                    {{ submission.campaign.title }}
+                                </h2>
                             </div>
 
-                            <span class="submission-status {{ submission.status }}">
+                            <span
+                                class="campaign-status-pill {{ submission.status }}"
+                            >
                                 {{ submission.get_status_display }}
                             </span>
+
                         </div>
 
-                        <div class="admin-submission-meta">
-                            <p>
-                                <strong>User:</strong>
-                                {{ submission.user.username }}
-                            </p>
 
-                            <p>
-                                <strong>Email:</strong>
-                                {{ submission.user.email|default:"Not provided" }}
-                            </p>
+                        <div class="campaign-submission-meta">
 
-                            <p>
-                                <strong>Platform:</strong>
-                                {{ submission.campaign.get_platform_display }}
-                            </p>
+                            <div>
+                                <span>User</span>
+                                <strong>
+                                    @{{ submission.user.username }}
+                                </strong>
+                            </div>
 
-                            <p>
-                                <strong>Reward:</strong>
-                                £{{ submission.campaign.reward }}
-                            </p>
+                            <div>
+                                <span>Email</span>
+                                <strong>
+                                    {{ submission.user.email|default:"Not provided" }}
+                                </strong>
+                            </div>
 
-                            <p>
-                                <strong>Submitted:</strong>
-                                {{ submission.created_at|date:"d M Y, H:i" }}
-                            </p>
+                            <div>
+                                <span>Platform</span>
+                                <strong>
+                                    {{ submission.campaign.get_platform_display }}
+                                </strong>
+                            </div>
+
+                            <div>
+                                <span>Reward</span>
+                                <strong>
+                                    £{{ submission.campaign.reward }}
+                                </strong>
+                            </div>
+
+                            <div>
+                                <span>Submitted</span>
+                                <strong>
+                                    {{ submission.created_at|date:"d M Y, H:i" }}
+                                </strong>
+                            </div>
+
                         </div>
 
-                        <div class="admin-proof-links">
+
+                        <div class="campaign-proof-links">
+
                             <a
                                 href="{{ submission.video_link }}"
                                 target="_blank"
@@ -130,18 +181,34 @@ Campaign Submissions | SQUEEB Admin
                                     View Screenshot
                                 </a>
                             {% endif %}
+
                         </div>
 
+
                         {% if submission.rejection_reason %}
-                            <div class="admin-rejection-box">
+                            <div class="campaign-rejection-box">
                                 <strong>Rejection reason</strong>
-                                <p>{{ submission.rejection_reason }}</p>
+                                <p>
+                                    {{ submission.rejection_reason }}
+                                </p>
                             </div>
                         {% endif %}
+
                     </div>
 
+
                     {% if submission.status == "pending" %}
-                        <div class="admin-review-actions">
+
+                        <aside class="campaign-review-actions">
+
+                            <div class="campaign-review-heading">
+                                <span>REVIEW</span>
+                                <strong>Take action</strong>
+                                <small>
+                                    Approval credits the campaign reward.
+                                </small>
+                            </div>
+
 
                             <form
                                 method="post"
@@ -149,16 +216,20 @@ Campaign Submissions | SQUEEB Admin
                             >
                                 {% csrf_token %}
 
-                                <button type="submit" class="approve-btn">
+                                <button
+                                    type="submit"
+                                    class="campaign-approve-btn"
+                                >
                                     <i class="fa-solid fa-check"></i>
-                                    Approve & Pay
+                                    Approve &amp; Pay
                                 </button>
                             </form>
+
 
                             <form
                                 method="post"
                                 action="{% url 'reject_campaign_submission' submission.id %}"
-                                class="reject-form"
+                                class="campaign-reject-form"
                             >
                                 {% csrf_token %}
 
@@ -174,27 +245,39 @@ Campaign Submissions | SQUEEB Admin
                                     placeholder="Explain why this submission was rejected..."
                                 ></textarea>
 
-                                <button type="submit" class="reject-btn">
+                                <button
+                                    type="submit"
+                                    class="campaign-reject-btn"
+                                >
                                     <i class="fa-solid fa-xmark"></i>
                                     Reject
                                 </button>
                             </form>
 
-                        </div>
+                        </aside>
+
                     {% endif %}
 
                 </article>
 
             {% empty %}
-                <div class="admin-empty">
+
+                <div class="campaign-admin-empty">
                     <i class="fa-solid fa-inbox"></i>
+
                     <h3>No submissions found</h3>
-                    <p>Campaign submissions will appear here for review.</p>
+
+                    <p>
+                        Campaign submissions will appear here for review.
+                    </p>
                 </div>
+
             {% endfor %}
 
         </section>
 
     </main>
+
 </div>
+
 {% endblock %}

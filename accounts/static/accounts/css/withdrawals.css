@@ -1057,3 +1057,136 @@ body.modal-open {
         grid-row: 1 / span 2;
     }
 }
+
+
+/* ==========================================================
+   SQUEEB TYPOGRAPHY V2 — WITHDRAWALS
+========================================================== */
+.withdraw-app-kicker,
+.withdraw-section-heading span{
+    font-size:12px;
+}
+
+.withdraw-app-header p{
+    font-size:15px;
+}
+
+.withdraw-wallet-top span,
+.withdraw-wallet-meta span{
+    font-size:13px;
+}
+
+.withdraw-wallet-meta strong{
+    font-size:17px;
+}
+
+.status-label{
+    font-size:11px;
+}
+
+.status-copy strong{
+    font-size:15px;
+}
+
+.status-copy p{
+    font-size:13px;
+}
+
+.status-fee-pill span{
+    font-size:11px;
+}
+
+.status-fee-pill strong{
+    font-size:16px;
+}
+
+.membership-required-notice strong{
+    font-size:15px;
+}
+
+.membership-required-notice p{
+    font-size:13px;
+}
+
+.activate-membership-btn{
+    font-size:13px;
+}
+
+.membership-active-badge{
+    font-size:13px;
+}
+
+.withdraw-section-heading h2{
+    font-size:23px;
+}
+
+.method-copy strong{
+    font-size:15px;
+}
+
+.method-copy small{
+    font-size:13px;
+}
+
+.method-status{
+    font-size:11px;
+}
+
+.method-arrow{
+    font-size:13px;
+}
+
+.withdraw-stats span{
+    font-size:12px;
+}
+
+.withdraw-stats strong{
+    font-size:16px;
+}
+
+.history-toggle strong{
+    font-size:15px;
+}
+
+.history-toggle small{
+    font-size:12px;
+}
+
+.history-toggle i{
+    font-size:13px;
+}
+
+.withdraw-tab{
+    font-size:12px;
+}
+
+/* Broad readable floor for history/modal text */
+.withdraw-history-item,
+.withdraw-history-item p,
+.withdraw-history-item span,
+.withdraw-history-item small,
+.withdraw-modal,
+.withdraw-modal label,
+.withdraw-modal p,
+.withdraw-modal small,
+.withdraw-modal button{
+    font-size:13px;
+}
+
+@media(max-width:700px){
+    .withdraw-app-header p{
+        font-size:14px;
+    }
+
+    .withdraw-section-heading h2{
+        font-size:21px;
+    }
+
+    .method-copy strong{
+        font-size:15px;
+    }
+
+    .method-copy small{
+        font-size:12px;
+    }
+}

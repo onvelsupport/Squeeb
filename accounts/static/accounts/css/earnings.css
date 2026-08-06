@@ -1108,3 +1108,212 @@ input{
         width:100%;
     }
 }
+
+
+/* ==========================================================
+   SQUEEB TYPOGRAPHY V2 — EARNINGS
+========================================================== */
+.earnings-app-kicker,
+.earnings-app-section-heading > div > span{
+    font-size:12px;
+}
+
+.earnings-app-header p{
+    font-size:15px;
+}
+
+.earnings-create-btn{
+    font-size:14px;
+}
+
+.earnings-user-row span,
+.earnings-user-row small{
+    font-size:12px;
+}
+
+.earnings-user-row strong{
+    font-size:15px;
+}
+
+.earnings-main-balance > span{
+    font-size:13px;
+}
+
+.earnings-wallet-stats span{
+    font-size:12px;
+}
+
+.earnings-wallet-stats strong{
+    font-size:16px;
+}
+
+.earnings-withdraw-copy > span{
+    font-size:11px;
+}
+
+.earnings-withdraw-copy > strong{
+    font-size:15px;
+}
+
+.earnings-withdraw-copy p{
+    font-size:13px;
+}
+
+.earnings-fee-pill span{
+    font-size:11px;
+}
+
+.earnings-fee-pill strong{
+    font-size:15px;
+}
+
+.withdrawal-link{
+    font-size:13px;
+}
+
+.earning-banner strong{
+    font-size:14px;
+}
+
+.earning-banner p{
+    font-size:13px;
+}
+
+.activate-membership-btn,
+.membership-active-badge{
+    font-size:12px;
+}
+
+.earnings-app-section-heading h2{
+    font-size:23px;
+}
+
+.earnings-app-section-heading > small{
+    font-size:12px;
+}
+
+.task-badge{
+    font-size:11px;
+}
+
+.task-reward{
+    font-size:13px;
+}
+
+.earn-task-card h3{
+    font-size:16px;
+}
+
+.earn-task-card p{
+    font-size:13px;
+}
+
+.campaign-slots{
+    font-size:11px;
+}
+
+.select-task-btn{
+    font-size:13px;
+}
+
+.empty-task h3{
+    font-size:16px;
+}
+
+.empty-task p{
+    font-size:14px;
+}
+
+.submission-tab{
+    font-size:12px;
+}
+
+.submission-card h3{
+    font-size:15px;
+}
+
+.submission-card p{
+    font-size:12px;
+}
+
+.submission-status,
+.submission-type-badge{
+    font-size:11px;
+}
+
+.submission-money span,
+.submission-money small{
+    font-size:11px;
+}
+
+.submission-money strong{
+    font-size:16px;
+}
+
+.submission-links a{
+    font-size:12px;
+}
+
+.activity-item p{
+    font-size:13px;
+}
+
+.task-modal-eyebrow{
+    font-size:11px;
+}
+
+.task-meta p,
+.task-instructions{
+    font-size:13px;
+}
+
+.task-link{
+    font-size:13px;
+}
+
+.form-group label,
+.proof-upload-group label{
+    font-size:13px;
+}
+
+.proof-help{
+    font-size:12px;
+}
+
+.task-modal-footer span{
+    font-size:12px;
+}
+
+.submit-proof-btn{
+    font-size:13px;
+}
+
+@media(max-width:700px){
+    .earnings-app-header p{
+        font-size:14px;
+    }
+
+    .earnings-wallet-stats span{
+        font-size:11px;
+    }
+
+    .earnings-wallet-stats strong{
+        font-size:14px;
+    }
+
+    .earnings-app-section-heading h2{
+        font-size:21px;
+    }
+
+    .earn-task-card h3{
+        font-size:15px;
+    }
+
+    .earn-task-card p{
+        font-size:13px;
+    }
+
+    .select-task-btn{
+        font-size:12px;
+    }
+}

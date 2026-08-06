@@ -5267,3 +5267,105 @@ a{
         grid-template-columns: 1fr !important;
     }
 }
+
+
+/* ==========================================================
+   SQUEEB TYPOGRAPHY V2 — DASHBOARD
+   Readability overrides only. Layout remains unchanged.
+========================================================== */
+
+/* Navigation / search */
+.dashboard-nav a{
+    font-size:15px;
+}
+
+.dashboard-search input{
+    font-size:16px;
+}
+
+.search-item strong{
+    font-size:14px;
+}
+
+.search-type{
+    font-size:13px;
+}
+
+.notification-count,
+.icon-btn span{
+    font-size:12px;
+}
+
+/* Main dashboard compact UI */
+.dashboard-page p,
+.dashboard-page small{
+    font-size:14px;
+    line-height:1.45;
+}
+
+.dashboard-page button,
+.dashboard-page .btn,
+.dashboard-page [class*="btn"]{
+    font-size:14px;
+}
+
+.dashboard-page label{
+    font-size:13px;
+}
+
+.dashboard-page input,
+.dashboard-page select,
+.dashboard-page textarea{
+    font-size:16px;
+}
+
+/* Preserve badges as smaller, but readable */
+.dashboard-page [class*="badge"],
+.dashboard-page [class*="pill"],
+.dashboard-page [class*="tag"]{
+    font-size:12px;
+}
+
+/* Task/card titles */
+.dashboard-page .task-card h3,
+.dashboard-page .social-task-card h3,
+.dashboard-page .quick-action-card h3,
+.dashboard-page .card h3{
+    font-size:16px;
+}
+
+/* Dashboard section headings */
+.dashboard-page .section-heading h2,
+.dashboard-page .section-title,
+.dashboard-page section > h2{
+    font-size:23px;
+}
+
+@media(max-width:700px){
+    .dashboard-nav a{
+        font-size:14px;
+    }
+
+    .dashboard-page p,
+    .dashboard-page small{
+        font-size:13px;
+    }
+
+    .dashboard-page button,
+    .dashboard-page .btn,
+    .dashboard-page [class*="btn"]{
+        font-size:13px;
+    }
+
+    .dashboard-page [class*="badge"],
+    .dashboard-page [class*="pill"],
+    .dashboard-page [class*="tag"]{
+        font-size:11px;
+    }
+
+    .dashboard-page .section-heading h2,
+    .dashboard-page .section-title,
+    .dashboard-page section > h2{
+        font-size:21px;
+    }
+}

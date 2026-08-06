@@ -457,3 +457,93 @@ a{
         margin-top:8px;
     }
 }
+
+
+/* ==========================================================
+   SQUEEB TYPOGRAPHY V2 — TASK SUBMISSION REVIEWS
+========================================================== */
+.review-kicker,
+.review-task-strip span,
+.review-section-heading > div > span{
+    font-size:12px;
+}
+
+.review-app-header p{
+    font-size:15px;
+}
+
+.review-back-btn{
+    font-size:13px;
+}
+
+.review-task-strip strong{
+    font-size:15px;
+}
+
+.review-task-strip small{
+    font-size:13px;
+    line-height:1.4;
+}
+
+.review-section-heading h2{
+    font-size:23px;
+}
+
+.review-section-heading > small{
+    font-size:12px;
+}
+
+.review-worker strong{
+    font-size:15px;
+}
+
+.review-worker small{
+    font-size:12px;
+}
+
+.review-reward span{
+    font-size:12px;
+}
+
+.review-reward strong{
+    font-size:17px;
+}
+
+.review-meta{
+    font-size:13px;
+}
+
+.proof-footer,
+.no-proof{
+    font-size:12px;
+}
+
+.review-actions button{
+    font-size:14px;
+}
+
+.empty-review h3{
+    font-size:16px;
+}
+
+.empty-review p{
+    font-size:14px;
+}
+
+@media(max-width:700px){
+    .review-app-header h1{
+        font-size:28px;
+    }
+
+    .review-app-header p{
+        font-size:14px;
+    }
+
+    .review-section-heading h2{
+        font-size:21px;
+    }
+
+    .review-actions button{
+        font-size:14px;
+    }
+}

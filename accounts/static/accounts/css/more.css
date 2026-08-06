@@ -454,3 +454,98 @@ a{
         width:100%;
     }
 }
+
+
+/* ==========================================================
+   SQUEEB TYPOGRAPHY V2 — MORE / ACCOUNT
+========================================================== */
+.more-kicker,
+.more-section-heading > span,
+.more-logout-card > div > span{
+    font-size:12px;
+}
+
+.more-profile-copy h1{
+    font-size:30px;
+}
+
+.more-profile-copy p{
+    font-size:14px;
+}
+
+.more-edit-btn{
+    font-size:13px;
+}
+
+.more-account-note{
+    font-size:13px;
+}
+
+.more-section-heading h2{
+    font-size:23px;
+}
+
+.setting-copy strong{
+    font-size:15px;
+}
+
+.setting-copy small{
+    font-size:13px;
+    line-height:1.4;
+}
+
+.setting-arrow{
+    font-size:12px;
+}
+
+.setting-badge{
+    font-size:11px;
+}
+
+.more-logout-card > div > strong{
+    font-size:15px;
+}
+
+.more-logout-card > div > small{
+    font-size:13px;
+}
+
+.more-logout-btn{
+    font-size:13px;
+}
+
+@media(max-width:700px){
+    .more-profile-copy h1{
+        font-size:24px;
+    }
+
+    .more-profile-copy p{
+        font-size:13px;
+    }
+
+    .more-account-note{
+        font-size:12px;
+    }
+
+    .more-section-heading h2{
+        font-size:21px;
+    }
+
+    .setting-copy strong{
+        font-size:15px;
+    }
+
+    .setting-copy small{
+        font-size:13px;
+    }
+
+    .more-logout-btn{
+        font-size:13px;
+    }
+}
+
+@media(max-width:360px){
+    .more-profile-copy h1{
+        font-size:22px;
+    }
+}

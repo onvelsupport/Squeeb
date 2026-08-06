@@ -563,3 +563,140 @@ a{
         text-align:right;
     }
 }
+
+
+/* ==========================================================
+   SQUEEB TYPOGRAPHY V2 — MY TASKS
+========================================================== */
+.my-tasks-kicker,
+.section-heading > div > span{
+    font-size:12px;
+}
+
+.my-tasks-header p{
+    font-size:15px;
+}
+
+.create-task-btn{
+    font-size:14px;
+}
+
+.tasks-summary span{
+    font-size:13px;
+}
+
+.tasks-summary strong{
+    font-size:26px;
+}
+
+.section-heading h2{
+    font-size:23px;
+}
+
+.section-heading > small{
+    font-size:12px;
+}
+
+.task-badge,
+.task-status-pill{
+    font-size:12px;
+}
+
+.posted-task-card h3{
+    font-size:17px;
+}
+
+.posted-task-card p{
+    font-size:14px;
+    line-height:1.5;
+}
+
+.task-meta{
+    font-size:13px;
+}
+
+.stat-icon{
+    font-size:13px;
+}
+
+.stat-box strong{
+    font-size:17px;
+}
+
+.stat-box span{
+    font-size:12px;
+}
+
+.review-submissions-btn{
+    font-size:13px;
+}
+
+.task-status > span{
+    font-size:12px;
+}
+
+.task-status strong{
+    font-size:19px;
+}
+
+.task-status small{
+    font-size:12px;
+}
+
+.empty-task h3{
+    font-size:16px;
+}
+
+.empty-task p{
+    font-size:14px;
+}
+
+@media(max-width:700px){
+    .my-tasks-header h1{
+        font-size:29px;
+    }
+
+    .my-tasks-header p{
+        font-size:14px;
+    }
+
+    .tasks-summary span{
+        font-size:12px;
+    }
+
+    .tasks-summary strong{
+        font-size:22px;
+    }
+
+    .section-heading h2{
+        font-size:21px;
+    }
+
+    .posted-task-card h3{
+        font-size:16px;
+    }
+
+    .posted-task-card p{
+        font-size:13px;
+    }
+
+    .task-meta{
+        font-size:12px;
+    }
+
+    .stat-box strong{
+        font-size:15px;
+    }
+
+    .stat-box span{
+        font-size:11px;
+    }
+
+    .review-submissions-btn{
+        font-size:12px;
+    }
+
+    .task-status strong{
+        font-size:17px;
+    }
+}
