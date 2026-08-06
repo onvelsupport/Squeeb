@@ -16,6 +16,31 @@
     --pp-success:#15803d;
     --pp-success-soft:#dcfce7;
     --pp-navy:#151824;
+
+    /* SQUEEB dark brand gradient */
+    --pp-gradient:
+        radial-gradient(
+            circle at 88% 14%,
+            rgba(93,116,255,.35),
+            transparent 19rem
+        ),
+        linear-gradient(
+            135deg,
+            #12182d,
+            #24356f
+        );
+
+    --pp-gradient-hover:
+        radial-gradient(
+            circle at 88% 14%,
+            rgba(93,116,255,.42),
+            transparent 19rem
+        ),
+        linear-gradient(
+            135deg,
+            #18203a,
+            #2d438c
+        );
 }
 
 body{
@@ -185,13 +210,19 @@ button{
 .follow-btn{
     border:0;
     color:#fff;
-    background:var(--pp-primary);
+    background:var(--pp-gradient);
     cursor:pointer;
-    transition:.18s ease;
+    box-shadow:0 10px 24px rgba(20,29,63,.14);
+    transition:
+        transform .18s ease,
+        box-shadow .18s ease,
+        background .18s ease;
 }
 
 .follow-btn:hover{
-    background:var(--pp-primary-dark);
+    background:var(--pp-gradient-hover);
+    transform:translateY(-1px);
+    box-shadow:0 14px 30px rgba(20,29,63,.18);
 }
 
 .follow-btn.connected{
@@ -199,7 +230,7 @@ button{
     background:var(--pp-success-soft);
 }
 
-.follow-btn.connected:hover{
+.follow-btn.ed:hover{
     background:#bbf7d0;
 }
 
@@ -363,10 +394,19 @@ button{
     justify-content:center;
     gap:8px;
     color:#fff;
-    background:var(--pp-navy);
+    background:var(--pp-gradient);
     border-radius:11px;
+    box-shadow:0 8px 20px rgba(20,29,63,.12);
     font-size:13px;
     font-weight:900;
+    transition:
+        transform .18s ease,
+        box-shadow .18s ease;
+}
+
+.product-action:hover{
+    transform:translateY(-1px);
+    box-shadow:0 11px 24px rgba(20,29,63,.16);
 }
 
 .product-action.secondary{
@@ -419,10 +459,19 @@ button{
     align-items:center;
     justify-content:center;
     color:#fff;
-    background:var(--pp-primary);
+    background:var(--pp-gradient);
     border-radius:11px;
+    box-shadow:0 8px 20px rgba(20,29,63,.12);
     font-size:13px;
     font-weight:900;
+    transition:
+        transform .18s ease,
+        box-shadow .18s ease;
+}
+
+.empty-market-link:hover{
+    transform:translateY(-1px);
+    box-shadow:0 11px 24px rgba(20,29,63,.16);
 }
 
 
