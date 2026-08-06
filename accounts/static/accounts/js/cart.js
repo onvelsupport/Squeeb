@@ -31,16 +31,17 @@ document.addEventListener("DOMContentLoaded", () => {
 
     checkoutBtn?.addEventListener("click", async () => {
 
-        const originalHTML =
+        const originalContent =
             checkoutBtn.innerHTML;
+
 
         try {
 
             checkoutBtn.disabled = true;
 
             checkoutBtn.innerHTML = `
+                <span>Opening checkout...</span>
                 <i class="fa-solid fa-spinner fa-spin"></i>
-                <span>Redirecting...</span>
             `;
 
 
@@ -49,8 +50,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 {
                     method: "POST",
 
-                    credentials:
-                        "same-origin",
+                    credentials: "same-origin",
 
                     headers: {
                         "Content-Type":
@@ -77,7 +77,7 @@ document.addEventListener("DOMContentLoaded", () => {
             if (!data.checkout_url) {
 
                 throw new Error(
-                    "Checkout URL was not returned."
+                    "Checkout URL unavailable."
                 );
 
             }
@@ -97,12 +97,14 @@ document.addEventListener("DOMContentLoaded", () => {
 
             alert(
                 error.message ||
-                "Unable to start checkout. Please try again."
+                "Unable to start checkout."
             );
 
 
             checkoutBtn.disabled = false;
-            checkoutBtn.innerHTML = originalHTML;
+
+            checkoutBtn.innerHTML =
+                originalContent;
 
         }
 
