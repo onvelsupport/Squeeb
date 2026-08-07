@@ -1,63 +1,85 @@
-document.addEventListener("DOMContentLoaded", () => {
+document.addEventListener(
+    "DOMContentLoaded",
+    () => {
 
-    /* ==========================================================
-       PRODUCT CARD CLICK
-    ========================================================== */
+        /* ======================================================
+           PRODUCT CARD CLICK
+        ====================================================== */
 
-    document
-        .querySelectorAll(".clickable-product")
-        .forEach(card => {
+        document
+            .querySelectorAll(
+                ".clickable-product"
+            )
+            .forEach(card => {
 
-            card.addEventListener("click", () => {
+                card.addEventListener(
+                    "click",
+                    event => {
 
-                const url = card.dataset.url;
+                        /*
+                         * Don't open the product if somebody
+                         * clicked a button/link inside the card.
+                         */
 
-                if (url) {
-                    window.location.href = url;
-                }
-
-            });
-
-        });
-
-
-    /* ==========================================================
-       PREVENT CARD OPEN WHEN CLICKING BUTTONS/LINKS
-    ========================================================== */
-
-    document
-        .querySelectorAll(".stop-card-click")
-        .forEach(element => {
-
-            element.addEventListener("click", event => {
-                event.stopPropagation();
-            });
-
-        });
+                        if (
+                            event.target.closest(
+                                ".stop-card-click"
+                            )
+                        ) {
+                            return;
+                        }
 
 
-    /* ==========================================================
-       DELETE PRODUCT CONFIRMATION
-    ========================================================== */
+                        const url =
+                            card.dataset.url;
 
-    document
-        .querySelectorAll(".delete-product")
-        .forEach(button => {
 
-            button.addEventListener("click", event => {
+                        if (url) {
 
-                event.stopPropagation();
+                            window.location.href =
+                                url;
 
-                const confirmed = window.confirm(
-                    "Are you sure you want to delete this product?"
+                        }
+
+                    }
                 );
 
-                if (!confirmed) {
-                    event.preventDefault();
-                }
+            });
+
+
+        /* ======================================================
+           DELETE PRODUCT
+        ====================================================== */
+
+        document
+            .querySelectorAll(
+                ".delete-product"
+            )
+            .forEach(button => {
+
+                button.addEventListener(
+                    "click",
+                    event => {
+
+                        event.stopPropagation();
+
+
+                        const confirmed =
+                            window.confirm(
+                                "Are you sure you want to delete this product?"
+                            );
+
+
+                        if (!confirmed) {
+
+                            event.preventDefault();
+
+                        }
+
+                    }
+                );
 
             });
 
-        });
-
-});
+    }
+);
