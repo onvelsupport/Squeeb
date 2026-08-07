@@ -1,157 +1,749 @@
+{% extends 'accounts/base.html' %}
 {% load static %}
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Edit Product | SQUEEB</title>
 
-    <link rel="stylesheet" href="{% static 'accounts/css/edit_product.css' %}">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.2/cropper.min.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-</head>
+{% block title %}
+Edit {{ product.title }} | SQUEEB
+{% endblock %}
 
-<body>
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'accounts/css/edit_product.css' %}">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.2/cropper.min.css">
+{% endblock %}
 
-<header class="dashboard-topbar">
-    <a href="{% url 'dashboard' %}" class="brand">
-        <img src="{% static 'accounts/img/logo.png' %}" alt="SQUEEB Logo">
-    </a>
+{% block content %}
 
-    <nav class="dashboard-nav">
-        <a href="{% url 'dashboard' %}">Dashboard</a>
-        <a href="{% url 'sell' %}">Sell</a>
-        <a href="{% url 'marketplace' %}" class="active">Marketplace</a>
-        <a href="{% url 'seller_history' %}">Sold Items</a>
-    </nav>
+<div class="edit-product-page">
 
-    <a href="{% url 'logout' %}" class="logout-btn logout">
-        <i class="fa fa-power-off"></i>
-    </a>
-</header>
+    <!-- ==========================================================
+         TOP AREA
+    ========================================================== -->
 
-<main class="edit-page">
+    <section class="edit-page-header">
 
-    <section class="edit-hero">
         <div>
-            <p class="eyebrow">SQUEEB Market</p>
-            <h1>Edit Product</h1>
-            <p>Update your product details, add more images, or mark the item as sold.</p>
+
+            <a href="{% url 'product_detail' product.id %}" class="back-link">
+                <i class="fa-solid fa-arrow-left"></i>
+                Back to product
+            </a>
+
+            <span class="page-kicker">
+                SQUEEB MARKET
+            </span>
+
+            <h1>Edit your listing</h1>
+
+            <p>
+                Update your product information, add photos,
+                change the price or mark the item as sold.
+            </p>
+
         </div>
 
-        <a href="{% url 'marketplace' %}" class="back-btn">
-            <i class="fa fa-arrow-left"></i>
-            Back to Marketplace
-        </a>
+
+        <div class="listing-status-card">
+
+            {% if product.is_sold %}
+
+                <span class="status-icon sold">
+                    <i class="fa-solid fa-check"></i>
+                </span>
+
+                <div>
+                    <small>Listing status</small>
+                    <strong>Sold</strong>
+                </div>
+
+            {% else %}
+
+                <span class="status-icon active">
+                    <i class="fa-solid fa-circle"></i>
+                </span>
+
+                <div>
+                    <small>Listing status</small>
+                    <strong>Active</strong>
+                </div>
+
+            {% endif %}
+
+        </div>
+
     </section>
 
-    <section class="edit-layout">
 
-        <div class="edit-card">
-            <h2>Product Details</h2>
+    <!-- ==========================================================
+         LAYOUT
+    ========================================================== -->
 
-            <form method="POST" enctype="multipart/form-data" class="edit-form">
+    <div class="edit-layout">
+
+        <!-- ======================================================
+             MAIN FORM
+        ======================================================= -->
+
+        <section class="edit-panel">
+
+            <form
+                method="POST"
+                enctype="multipart/form-data"
+                class="edit-form"
+                id="editProductForm"
+            >
+
                 {% csrf_token %}
 
-                <div class="form-group">
-                    <label for="title">Product Title</label>
-                    <input id="title" name="title" type="text" value="{{ product.title }}" required>
-                </div>
 
-                <div class="form-row">
-                    <div class="form-group">
-                        <label for="price">Price (£)</label>
-                        <input id="price" name="price" type="number" step="0.01" value="{{ product.price }}" required>
+                <!-- ==================================================
+                     BASIC DETAILS
+                =================================================== -->
+
+                <section class="edit-section">
+
+                    <div class="section-marker">
+                        01
                     </div>
 
-                    <div class="form-group">
-                        <label for="category">Category</label>
-                        <select id="category" name="category" required>
-                            <option value="beauty" {% if product.category == "beauty" %}selected{% endif %}>Health & Beauty</option>
-                            <option value="grocery" {% if product.category == "grocery" %}selected{% endif %}>Grocery</option>
-                            <option value="phones" {% if product.category == "phones" %}selected{% endif %}>Phones & Tablets</option>
-                            <option value="fashion" {% if product.category == "fashion" %}selected{% endif %}>Fashion</option>
-                            <option value="electronics" {% if product.category == "electronics" %}selected{% endif %}>Electronics</option>
-                            <option value="books" {% if product.category == "books" %}selected{% endif %}>Books</option>
-                            <option value="car_rent" {% if product.category == "car_rent" %}selected{% endif %}>Cars</option>
-                        </select>
-                    </div>
-                </div>
 
-                <div class="form-group">
-                    <label for="description">Description</label>
-                    <textarea id="description" name="description" rows="6">{{ product.description }}</textarea>
-                </div>
+                    <div class="section-main">
 
-                <div class="checkbox-row">
-                    <input type="checkbox" name="is_sold" id="is_sold" {% if product.is_sold %}checked{% endif %}>
-                    <label for="is_sold">Mark this product as sold</label>
-                </div>
+                        <div class="section-heading">
 
-                <div class="form-group">
-                    <label>Current Photos</label>
+                            <div>
+                                <h2>Product information</h2>
 
-                    <div class="current-images">
-                        {% for image in product.images.all %}
-                            <div class="current-image-card">
-                                <img src="{{ image.image.url }}" alt="{{ product.title }}">
+                                <p>
+                                    Update the main details buyers see.
+                                </p>
                             </div>
-                        {% empty %}
-                            {% if product.image %}
-                                <div class="current-image-card">
-                                    <img src="{{ product.image.url }}" alt="{{ product.title }}">
+
+                        </div>
+
+
+                        <div class="form-group">
+
+                            <label for="title">
+                                Product title
+                            </label>
+
+                            <input
+                                id="title"
+                                name="title"
+                                type="text"
+                                value="{{ product.title }}"
+                                maxlength="120"
+                                required
+                            >
+
+                        </div>
+
+
+                        <div class="form-grid">
+
+                            <div class="form-group">
+
+                                <label for="price">
+                                    Price
+                                </label>
+
+                                <div class="money-field">
+
+                                    <span>£</span>
+
+                                    <input
+                                        id="price"
+                                        name="price"
+                                        type="number"
+                                        step="0.01"
+                                        min="0.01"
+                                        value="{{ product.price }}"
+                                        required
+                                    >
+
                                 </div>
-                            {% else %}
-                                <p class="muted-text">No current photos.</p>
-                            {% endif %}
-                        {% endfor %}
+
+                            </div>
+
+
+                            <div class="form-group">
+
+                                <label for="category">
+                                    Category
+                                </label>
+
+                                <select
+                                    id="category"
+                                    name="category"
+                                    required
+                                >
+
+                                    <option
+                                        value="beauty"
+                                        {% if product.category == "beauty" %}selected{% endif %}
+                                    >
+                                        Health &amp; Beauty
+                                    </option>
+
+                                    <option
+                                        value="grocery"
+                                        {% if product.category == "grocery" %}selected{% endif %}
+                                    >
+                                        Grocery
+                                    </option>
+
+                                    <option
+                                        value="phones"
+                                        {% if product.category == "phones" %}selected{% endif %}
+                                    >
+                                        Phones &amp; Tablets
+                                    </option>
+
+                                    <option
+                                        value="fashion"
+                                        {% if product.category == "fashion" %}selected{% endif %}
+                                    >
+                                        Fashion
+                                    </option>
+
+                                    <option
+                                        value="electronics"
+                                        {% if product.category == "electronics" %}selected{% endif %}
+                                    >
+                                        Electronics
+                                    </option>
+
+                                    <option
+                                        value="books"
+                                        {% if product.category == "books" %}selected{% endif %}
+                                    >
+                                        Books
+                                    </option>
+
+                                    <option
+                                        value="car_rent"
+                                        {% if product.category == "car_rent" %}selected{% endif %}
+                                    >
+                                        Cars
+                                    </option>
+
+                                </select>
+
+                            </div>
+
+                        </div>
+
+
+                        <div class="form-group">
+
+                            <div class="label-row">
+
+                                <label for="description">
+                                    Description
+                                </label>
+
+                                <span id="descriptionCounter">
+                                    0 / 1000
+                                </span>
+
+                            </div>
+
+                            <textarea
+                                id="description"
+                                name="description"
+                                rows="7"
+                                maxlength="1000"
+                            >{{ product.description }}</textarea>
+
+                        </div>
+
                     </div>
+
+                </section>
+
+
+                <!-- ==================================================
+                     LISTING STATUS
+                =================================================== -->
+
+                <section class="edit-section">
+
+                    <div class="section-marker">
+                        02
+                    </div>
+
+
+                    <div class="section-main">
+
+                        <div class="section-heading">
+
+                            <div>
+                                <h2>Listing status</h2>
+
+                                <p>
+                                    Tell buyers whether the item is still available.
+                                </p>
+                            </div>
+
+                        </div>
+
+
+                        <label class="sold-toggle-card" for="is_sold">
+
+                            <div class="sold-toggle-copy">
+
+                                <span class="toggle-icon">
+                                    <i class="fa-solid fa-bag-shopping"></i>
+                                </span>
+
+                                <div>
+                                    <strong>
+                                        Mark this item as sold
+                                    </strong>
+
+                                    <p>
+                                        The listing will remain visible,
+                                        but buyers will no longer be able to add it to cart.
+                                    </p>
+                                </div>
+
+                            </div>
+
+
+                            <div class="switch">
+
+                                <input
+                                    type="checkbox"
+                                    id="is_sold"
+                                    name="is_sold"
+                                    {% if product.is_sold %}checked{% endif %}
+                                >
+
+                                <span class="slider"></span>
+
+                            </div>
+
+                        </label>
+
+                    </div>
+
+                </section>
+
+
+                <!-- ==================================================
+                     CURRENT PHOTOS
+                =================================================== -->
+
+                <section class="edit-section">
+
+                    <div class="section-marker">
+                        03
+                    </div>
+
+
+                    <div class="section-main">
+
+                        <div class="section-heading">
+
+                            <div>
+                                <h2>Current photos</h2>
+
+                                <p>
+                                    These images are already attached to the listing.
+                                </p>
+                            </div>
+
+                        </div>
+
+
+                        <div class="current-images">
+
+                            {% for image in product.images.all %}
+
+                                <div class="current-image-card">
+
+                                    <img
+                                        src="{{ image.image.url }}"
+                                        alt="{{ product.title }}"
+                                    >
+
+                                    <span>
+                                        Current photo
+                                    </span>
+
+                                </div>
+
+                            {% empty %}
+
+                                {% if product.image %}
+
+                                    <div class="current-image-card">
+
+                                        <img
+                                            src="{{ product.image.url }}"
+                                            alt="{{ product.title }}"
+                                        >
+
+                                        <span>
+                                            Current photo
+                                        </span>
+
+                                    </div>
+
+                                {% else %}
+
+                                    <div class="empty-current-images">
+
+                                        <i class="fa-regular fa-image"></i>
+
+                                        <strong>
+                                            No photos yet
+                                        </strong>
+
+                                        <p>
+                                            Add your first product photos below.
+                                        </p>
+
+                                    </div>
+
+                                {% endif %}
+
+                            {% endfor %}
+
+                        </div>
+
+                    </div>
+
+                </section>
+
+
+                <!-- ==================================================
+                     ADD NEW PHOTOS
+                =================================================== -->
+
+                <section class="edit-section">
+
+                    <div class="section-marker">
+                        04
+                    </div>
+
+
+                    <div class="section-main">
+
+                        <div class="section-heading">
+
+                            <div>
+                                <h2>Add more photos</h2>
+
+                                <p>
+                                    New images will be added to the existing listing.
+                                </p>
+                            </div>
+
+                        </div>
+
+
+                        <label
+                            for="images"
+                            class="upload-zone"
+                        >
+
+                            <div class="upload-icon">
+
+                                <i class="fa-solid fa-cloud-arrow-up"></i>
+
+                            </div>
+
+
+                            <div class="upload-copy">
+
+                                <strong>
+                                    Upload additional photos
+                                </strong>
+
+                                <span>
+                                    Click to browse or drag and drop images here
+                                </span>
+
+                                <small>
+                                    JPG, PNG or WEBP
+                                </small>
+
+                            </div>
+
+
+                            <span class="choose-photo-btn">
+                                Choose photos
+                            </span>
+
+                        </label>
+
+
+                        <input
+                            id="images"
+                            name="images"
+                            type="file"
+                            accept="image/*"
+                            multiple
+                            hidden
+                        >
+
+
+                        <div class="upload-file-row">
+
+                            <span id="fileName">
+                                No new photos selected
+                            </span>
+
+                        </div>
+
+
+                        <div
+                            id="imagePreviewGrid"
+                            class="image-preview-grid"
+                        ></div>
+
+                    </div>
+
+                </section>
+
+
+                <!-- ==================================================
+                     SAVE
+                =================================================== -->
+
+                <div class="save-area">
+
+                    <div class="save-message">
+
+                        <i class="fa-solid fa-circle-info"></i>
+
+                        <div>
+
+                            <strong>
+                                Review your changes
+                            </strong>
+
+                            <span>
+                                Your updated listing will be visible immediately.
+                            </span>
+
+                        </div>
+
+                    </div>
+
+
+                    <button
+                        type="submit"
+                        class="save-btn"
+                    >
+
+                        <span>
+                            Save Changes
+                        </span>
+
+                        <i class="fa-solid fa-arrow-right"></i>
+
+                    </button>
+
                 </div>
 
-                <div class="form-group">
-                    <label for="images">Add More Photos</label>
-
-                    <label for="images" class="upload-box">
-                        <i class="fa fa-cloud-upload-alt"></i>
-                        <strong>Click to add photos</strong>
-                        <span>PNG, JPG, JPEG accepted</span>
-                    </label>
-
-                    <input id="images" name="images" type="file" accept="image/*" multiple hidden>
-
-                    <p id="fileName" class="file-name">No new photos selected</p>
-
-                    <div id="imagePreviewGrid" class="image-preview-grid"></div>
-                </div>
-
-                <button type="submit" class="save-btn">
-                    <i class="fa fa-save"></i>
-                    Save Changes
-                </button>
             </form>
-        </div>
 
-    </section>
+        </section>
 
-</main>
 
-<div class="crop-modal" id="cropModal">
-    <div class="crop-box">
-        <h3>Edit Image</h3>
+        <!-- ======================================================
+             SIDEBAR
+        ======================================================= -->
 
-        <div class="crop-area">
-            <img id="cropImage" alt="Crop preview">
-        </div>
+        <aside class="edit-sidebar">
 
-        <div class="crop-actions">
-            <button type="button" id="cancelCropBtn">Cancel</button>
-            <button type="button" id="saveCropBtn">Save Edit</button>
-        </div>
+            <div class="sidebar-preview">
+
+                <span class="sidebar-kicker">
+                    LISTING PREVIEW
+                </span>
+
+                <h3>
+                    Current product
+                </h3>
+
+
+                <div class="sidebar-product-image">
+
+                    {% if product.images.first %}
+
+                        <img
+                            src="{{ product.images.first.image.url }}"
+                            alt="{{ product.title }}"
+                        >
+
+                    {% elif product.image %}
+
+                        <img
+                            src="{{ product.image.url }}"
+                            alt="{{ product.title }}"
+                        >
+
+                    {% else %}
+
+                        <div class="sidebar-placeholder">
+
+                            <i class="fa-regular fa-image"></i>
+
+                        </div>
+
+                    {% endif %}
+
+                </div>
+
+
+                <div class="sidebar-product-body">
+
+                    <span
+                        id="sidebarCategory"
+                        class="sidebar-category"
+                    >
+                        {{ product.get_category_display|default:product.category }}
+                    </span>
+
+
+                    <h2 id="sidebarTitle">
+                        {{ product.title }}
+                    </h2>
+
+
+                    <strong id="sidebarPrice">
+                        £{{ product.price }}
+                    </strong>
+
+                </div>
+
+            </div>
+
+
+            <div class="sidebar-tip">
+
+                <i class="fa-solid fa-lightbulb"></i>
+
+                <div>
+
+                    <strong>
+                        Listing tip
+                    </strong>
+
+                    <p>
+                        Accurate titles, clear photos and honest descriptions
+                        help buyers make decisions faster.
+                    </p>
+
+                </div>
+
+            </div>
+
+
+            <a
+                href="{% url 'product_detail' product.id %}"
+                class="view-listing-btn"
+            >
+
+                <span>
+                    View live listing
+                </span>
+
+                <i class="fa-solid fa-arrow-up-right-from-square"></i>
+
+            </a>
+
+        </aside>
+
     </div>
+
 </div>
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.2/cropper.min.js"></script>
-<script src="{% static 'accounts/js/edit_product.js' %}"></script>
 
-</body>
-</html>
+<!-- ==========================================================
+     CROP MODAL
+========================================================== -->
+
+<div
+    class="crop-modal"
+    id="cropModal"
+>
+
+    <div class="crop-dialog">
+
+        <div class="crop-header">
+
+            <div>
+
+                <span>
+                    PHOTO EDITOR
+                </span>
+
+                <h3>
+                    Crop image
+                </h3>
+
+            </div>
+
+
+            <button
+                type="button"
+                class="crop-close"
+                id="cancelCropIcon"
+            >
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+
+        </div>
+
+
+        <div class="crop-area">
+
+            <img
+                id="cropImage"
+                alt="Crop preview"
+            >
+
+        </div>
+
+
+        <div class="crop-actions">
+
+            <button
+                type="button"
+                class="cancel-crop-btn"
+                id="cancelCropBtn"
+            >
+                Cancel
+            </button>
+
+
+            <button
+                type="button"
+                class="save-crop-btn"
+                id="saveCropBtn"
+            >
+                Save Crop
+            </button>
+
+        </div>
+
+    </div>
+
+</div>
+
+{% endblock %}
+
+
+{% block extra_js %}
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.2/cropper.min.js"></script>
+
+<script
+    src="{% static 'accounts/js/edit_product.js' %}"
+    defer
+></script>
+
+{% endblock %}
