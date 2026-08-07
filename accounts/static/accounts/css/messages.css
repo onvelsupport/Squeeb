@@ -26,7 +26,6 @@
     transition: .2s ease;
 }
 
-
 .messages-back:hover {
     color: #2563eb;
 }
@@ -55,11 +54,9 @@
     gap: 25px;
 }
 
-
 .messages-header .messages-back {
     margin-bottom: 20px;
 }
-
 
 .messages-kicker {
     display: block;
@@ -74,7 +71,6 @@
     letter-spacing: .1em;
 }
 
-
 .messages-header h1 {
     margin: 0;
 
@@ -86,7 +82,6 @@
 
     letter-spacing: -.045em;
 }
-
 
 .messages-header p {
     margin-top: 10px;
@@ -120,7 +115,6 @@
     background: #ffffff;
 }
 
-
 .message-stat-icon {
     width: 38px;
     height: 38px;
@@ -140,19 +134,15 @@
     font-size: 13px;
 }
 
-
 .message-stat small,
 .message-stat strong {
     display: block;
 }
 
-
 .message-stat small {
     color: #94a3b8;
-
     font-size: 8px;
 }
-
 
 .message-stat strong {
     margin-top: 2px;
@@ -180,7 +170,6 @@
         0 12px 38px rgba(15, 23, 42, .055);
 }
 
-
 .inbox-top {
     min-height: 82px;
 
@@ -195,7 +184,6 @@
     border-bottom: 1px solid #edf1f5;
 }
 
-
 .inbox-top > div > span {
     display: block;
 
@@ -209,7 +197,6 @@
     letter-spacing: .1em;
 }
 
-
 .inbox-top h2 {
     margin: 0;
 
@@ -217,7 +204,6 @@
 
     font-size: 19px;
 }
-
 
 .conversation-total {
     color: #94a3b8;
@@ -233,7 +219,6 @@
 .conversation-list {
     display: block;
 }
-
 
 .conversation-row {
     position: relative;
@@ -258,21 +243,17 @@
     transition: .18s ease;
 }
 
-
 .conversation-row:last-child {
     border-bottom: none;
 }
-
 
 .conversation-row:hover {
     background: #f8fafc;
 }
 
-
 .conversation-row.unread {
     background: #f8fbff;
 }
-
 
 .conversation-row.unread::before {
     content: "";
@@ -306,7 +287,6 @@
     background: #f1f5f9;
 }
 
-
 .conversation-product-image img {
     width: 100%;
     height: 100%;
@@ -315,7 +295,6 @@
 
     object-fit: cover;
 }
-
 
 .conversation-placeholder {
     width: 100%;
@@ -339,7 +318,6 @@
     min-width: 0;
 }
 
-
 .conversation-heading {
     display: flex;
     align-items: center;
@@ -348,13 +326,11 @@
     gap: 12px;
 }
 
-
 .conversation-heading strong {
     color: #111827;
 
     font-size: 12px;
 }
-
 
 .conversation-heading time {
     color: #94a3b8;
@@ -363,7 +339,6 @@
 
     white-space: nowrap;
 }
-
 
 .conversation-product {
     display: block;
@@ -382,7 +357,6 @@
     white-space: nowrap;
 }
 
-
 .conversation-preview {
     margin-top: 7px;
 
@@ -392,7 +366,6 @@
 
     min-width: 0;
 }
-
 
 .conversation-preview p {
     overflow: hidden;
@@ -407,7 +380,6 @@
 
     white-space: nowrap;
 }
-
 
 .you-label {
     color: #94a3b8;
@@ -435,7 +407,6 @@
 
     font-size: 9px;
 }
-
 
 .unread-count {
     min-width: 21px;
@@ -476,7 +447,6 @@
     text-align: center;
 }
 
-
 .empty-message-icon {
     width: 68px;
     height: 68px;
@@ -501,7 +471,6 @@
     font-size: 24px;
 }
 
-
 .empty-messages > span {
     color: #2563eb;
 
@@ -511,7 +480,6 @@
     letter-spacing: .1em;
 }
 
-
 .empty-messages h2 {
     margin: 7px 0 0;
 
@@ -519,7 +487,6 @@
 
     font-size: 24px;
 }
-
 
 .empty-messages p {
     max-width: 430px;
@@ -532,7 +499,6 @@
 
     line-height: 1.7;
 }
-
 
 .browse-market-btn {
     min-width: 190px;
@@ -567,23 +533,20 @@
 
 /* ==========================================================
    CONVERSATION PAGE
-   ONLY MESSAGE AREA SCROLLS
 ========================================================== */
 
 body.authenticated-layout:has(.conversation-page) {
     overflow: hidden;
 }
 
-
 .site-main:has(.conversation-page) {
     overflow: hidden;
 }
 
-
 .conversation-page {
     width: min(94%, 950px);
 
-    height: calc(100vh - 92px);
+    height: calc(100dvh - 92px);
 
     margin: 0 auto;
 
@@ -594,7 +557,6 @@ body.authenticated-layout:has(.conversation-page) {
 
     overflow: hidden;
 }
-
 
 .conversation-back {
     flex: 0 0 auto;
@@ -650,7 +612,6 @@ body.authenticated-layout:has(.conversation-page) {
     background: #ffffff;
 }
 
-
 .chat-user {
     display: flex;
     align-items: center;
@@ -659,7 +620,6 @@ body.authenticated-layout:has(.conversation-page) {
 
     min-width: 0;
 }
-
 
 .chat-avatar {
     width: 39px;
@@ -678,7 +638,6 @@ body.authenticated-layout:has(.conversation-page) {
     color: #2563eb;
 }
 
-
 .chat-user span {
     display: block;
 
@@ -686,7 +645,6 @@ body.authenticated-layout:has(.conversation-page) {
 
     font-size: 8px;
 }
-
 
 .chat-user h2 {
     margin: 2px 0 0;
@@ -701,7 +659,6 @@ body.authenticated-layout:has(.conversation-page) {
 
     white-space: nowrap;
 }
-
 
 .view-product-link {
     min-height: 37px;
@@ -749,7 +706,6 @@ body.authenticated-layout:has(.conversation-page) {
     background: #f8fafc;
 }
 
-
 .chat-product-image {
     width: 52px;
     height: 52px;
@@ -763,7 +719,6 @@ body.authenticated-layout:has(.conversation-page) {
     background: #e2e8f0;
 }
 
-
 .chat-product-image img {
     width: 100%;
     height: 100%;
@@ -772,7 +727,6 @@ body.authenticated-layout:has(.conversation-page) {
 
     object-fit: cover;
 }
-
 
 .chat-product-placeholder {
     width: 100%;
@@ -785,13 +739,11 @@ body.authenticated-layout:has(.conversation-page) {
     color: #94a3b8;
 }
 
-
 .chat-product-info {
     min-width: 0;
 
     flex: 1;
 }
-
 
 .chat-product-info span,
 .chat-product-info strong,
@@ -799,14 +751,12 @@ body.authenticated-layout:has(.conversation-page) {
     display: block;
 }
 
-
 .chat-product-info span {
     color: #2563eb;
 
     font-size: 7px;
     font-weight: 900;
 }
-
 
 .chat-product-info strong {
     margin-top: 3px;
@@ -822,7 +772,6 @@ body.authenticated-layout:has(.conversation-page) {
     white-space: nowrap;
 }
 
-
 .chat-product-info small {
     margin-top: 3px;
 
@@ -830,7 +779,6 @@ body.authenticated-layout:has(.conversation-page) {
 
     font-size: 9px;
 }
-
 
 .chat-sold-badge {
     padding: 5px 8px;
@@ -849,7 +797,7 @@ body.authenticated-layout:has(.conversation-page) {
 
 
 /* ==========================================================
-   ONLY THIS SECTION SCROLLS
+   ONLY MESSAGE LIST SCROLLS
 ========================================================== */
 
 .chat-messages {
@@ -873,6 +821,8 @@ body.authenticated-layout:has(.conversation-page) {
 
     overscroll-behavior: contain;
 
+    -webkit-overflow-scrolling: touch;
+
     scrollbar-width: thin;
 
     scrollbar-color:
@@ -880,16 +830,13 @@ body.authenticated-layout:has(.conversation-page) {
         transparent;
 }
 
-
 .chat-messages::-webkit-scrollbar {
     width: 5px;
 }
 
-
 .chat-messages::-webkit-scrollbar-track {
     background: transparent;
 }
-
 
 .chat-messages::-webkit-scrollbar-thumb {
     border-radius: 999px;
@@ -908,11 +855,9 @@ body.authenticated-layout:has(.conversation-page) {
     flex: 0 0 auto;
 }
 
-
 .message-row.sent {
     justify-content: flex-end;
 }
-
 
 .message-row.received {
     justify-content: flex-start;
@@ -920,7 +865,7 @@ body.authenticated-layout:has(.conversation-page) {
 
 
 /* ==========================================================
-   MESSAGE BUBBLE
+   MESSAGE BUBBLES
 ========================================================== */
 
 .message-bubble {
@@ -930,7 +875,6 @@ body.authenticated-layout:has(.conversation-page) {
 
     border-radius: 15px;
 }
-
 
 .message-row.sent .message-bubble {
     border-bottom-right-radius: 5px;
@@ -945,7 +889,6 @@ body.authenticated-layout:has(.conversation-page) {
     color: #ffffff;
 }
 
-
 .message-row.received .message-bubble {
     border-bottom-left-radius: 5px;
 
@@ -953,7 +896,6 @@ body.authenticated-layout:has(.conversation-page) {
 
     color: #111827;
 }
-
 
 .message-bubble p {
     margin: 0;
@@ -984,11 +926,9 @@ body.authenticated-layout:has(.conversation-page) {
     font-size: 7px;
 }
 
-
 .message-row.sent .message-time {
     color: #bfdbfe;
 }
-
 
 .message-row.received .message-time {
     color: #94a3b8;
@@ -1007,11 +947,9 @@ body.authenticated-layout:has(.conversation-page) {
     text-align: center;
 }
 
-
 .chat-empty i {
     font-size: 25px;
 }
-
 
 .chat-empty p {
     margin-top: 7px;
@@ -1039,14 +977,13 @@ body.authenticated-layout:has(.conversation-page) {
     background: #ffffff;
 }
 
-
 .message-composer textarea {
     min-height: 44px;
     max-height: 110px;
 
     flex: 1;
 
-    padding: 12px 14px;
+    padding: 11px 14px;
 
     border: 1px solid #dce4ed;
 
@@ -1060,13 +997,31 @@ body.authenticated-layout:has(.conversation-page) {
 
     resize: none;
 
-    font: inherit;
+    font-family:
+        Inter,
+        -apple-system,
+        BlinkMacSystemFont,
+        "Segoe UI",
+        Arial,
+        sans-serif;
 
-    font-size: 11px;
+    /*
+     * IMPORTANT:
+     * Keep this at 16px.
+     *
+     * iPhone Safari zooms into form controls
+     * when their font size is below 16px.
+     */
+    font-size: 16px;
 
-    line-height: 1.5;
+    line-height: 1.45;
+
+    -webkit-text-size-adjust: 100%;
 }
 
+.message-composer textarea::placeholder {
+    color: #94a3b8;
+}
 
 .message-composer textarea:focus {
     border-color: #93c5fd;
@@ -1076,7 +1031,6 @@ body.authenticated-layout:has(.conversation-page) {
     box-shadow:
         0 0 0 4px rgba(37, 99, 235, .06);
 }
-
 
 .message-composer button {
     width: 44px;
@@ -1102,6 +1056,8 @@ body.authenticated-layout:has(.conversation-page) {
 
     color: #ffffff;
 
+    font-size: 13px;
+
     cursor: pointer;
 
     box-shadow:
@@ -1117,11 +1073,9 @@ body.authenticated-layout:has(.conversation-page) {
     opacity: .78;
 }
 
-
 .message-row.pending .message-time {
     opacity: .85;
 }
-
 
 .message-row.failed .message-bubble {
     border: 1px solid #fecdd3;
@@ -1131,12 +1085,10 @@ body.authenticated-layout:has(.conversation-page) {
     color: #991b1b;
 }
 
-
 .message-row.failed .message-time,
 .message-row.failed .message-time i {
     color: #dc2626;
 }
-
 
 .message-composer button:disabled {
     opacity: .65;
@@ -1157,7 +1109,6 @@ body.authenticated-layout:has(.conversation-page) {
         flex-direction: column;
     }
 
-
     .message-stat {
         width: 100%;
     }
@@ -1171,9 +1122,9 @@ body.authenticated-layout:has(.conversation-page) {
 
 @media (max-width: 650px) {
 
-    /* ------------------------------------------
+    /* ======================================================
        INBOX
-    ------------------------------------------ */
+    ====================================================== */
 
     .messages-page {
         width: 92%;
@@ -1183,7 +1134,6 @@ body.authenticated-layout:has(.conversation-page) {
             0
             50px;
     }
-
 
     .conversation-row {
         min-height: 91px;
@@ -1198,26 +1148,24 @@ body.authenticated-layout:has(.conversation-page) {
         gap: 9px;
     }
 
-
     .conversation-product-image {
         width: 56px;
         height: 56px;
     }
-
 
     .conversation-heading time {
         display: none;
     }
 
 
-    /* ------------------------------------------
-       CONVERSATION PAGE
-    ------------------------------------------ */
+    /* ======================================================
+       CONVERSATION
+    ====================================================== */
 
     .conversation-page {
         width: 100%;
 
-        height: calc(100vh - 74px);
+        height: calc(100dvh - 74px);
 
         padding:
             8px
@@ -1225,13 +1173,11 @@ body.authenticated-layout:has(.conversation-page) {
             0;
     }
 
-
     .conversation-back {
         margin-bottom: 7px;
 
         padding-left: 2px;
     }
-
 
     .chat-shell {
         border-radius:
@@ -1241,26 +1187,22 @@ body.authenticated-layout:has(.conversation-page) {
             0;
     }
 
-
     .chat-header {
-        min-height: 64px;
+        min-height: 62px;
 
         padding:
-            10px
-            12px;
+            9px
+            11px;
     }
-
 
     .chat-avatar {
         width: 36px;
         height: 36px;
     }
 
-
     .chat-user h2 {
         font-size: 12px;
     }
-
 
     .view-product-link {
         width: 36px;
@@ -1275,11 +1217,14 @@ body.authenticated-layout:has(.conversation-page) {
         font-size: 0;
     }
 
-
     .view-product-link i {
         font-size: 10px;
     }
 
+
+    /* ======================================================
+       PRODUCT SUMMARY
+    ====================================================== */
 
     .chat-product-card {
         margin:
@@ -1290,21 +1235,23 @@ body.authenticated-layout:has(.conversation-page) {
         padding: 7px;
     }
 
-
     .chat-product-image {
-        width: 46px;
-        height: 46px;
+        width: 45px;
+        height: 45px;
     }
 
+
+    /* ======================================================
+       MESSAGE SCROLLER
+    ====================================================== */
 
     .chat-messages {
         height: auto;
 
         padding:
-            15px
-            11px;
+            14px
+            10px;
     }
-
 
     .message-bubble {
         max-width: 84%;
@@ -1314,53 +1261,63 @@ body.authenticated-layout:has(.conversation-page) {
             11px;
     }
 
-
     .message-bubble p {
-        font-size: 10px;
+        font-size: 11px;
     }
 
+
+    /* ======================================================
+       MOBILE COMPOSER
+       16PX PREVENTS SAFARI AUTO ZOOM
+    ====================================================== */
 
     .message-composer {
         padding:
+            8px
             9px
-            10px;
+            calc(8px + env(safe-area-inset-bottom));
     }
-
 
     .message-composer textarea {
-        min-height: 42px;
+        min-height: 44px;
+        max-height: 105px;
 
         padding:
-            11px
+            10px
             12px;
+
+        font-size: 16px;
+
+        line-height: 1.4;
+
+        border-radius: 13px;
     }
 
-
     .message-composer button {
-        width: 42px;
-        height: 42px;
+        width: 44px;
+        height: 44px;
+
+        border-radius: 13px;
     }
 
 }
 
 
 /* ==========================================================
-   VERY SMALL
+   VERY SMALL PHONES
 ========================================================== */
 
 @media (max-width: 380px) {
 
     .conversation-page {
-        padding-left: 7px;
-        padding-right: 7px;
+        padding-left: 6px;
+        padding-right: 6px;
     }
-
 
     .chat-messages {
-        padding-left: 9px;
-        padding-right: 9px;
+        padding-left: 8px;
+        padding-right: 8px;
     }
-
 
     .message-bubble {
         max-width: 88%;
