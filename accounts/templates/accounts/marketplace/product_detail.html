@@ -1,206 +1,352 @@
+{% extends 'accounts/base.html' %}
 {% load static %}
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{{ product.title }} | SQUEEB Market</title>
 
-    <link rel="stylesheet" href="{% static 'accounts/css/product_detail.css' %}">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-</head>
+{% block title %}
+{{ product.title }} | SQUEEB
+{% endblock %}
 
-<body>
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'accounts/css/product_detail.css' %}">
+{% endblock %}
 
-<header class="dashboard-topbar">
+{% block content %}
 
-    <!-- Logo -->
-    <a href="{% url 'dashboard' %}" class="brand">
-        <img src="{% static 'accounts/img/logo.png' %}" alt="SQUEEB Logo">
-    </a>
+<div class="product-page">
 
-    <!-- Search Bar -->
-    <div class="dashboard-search">
-        <i class="fa fa-search"></i>
+    <!-- ==========================================================
+         BREADCRUMB / BACK
+    ========================================================== -->
 
-        <input
-            type="text"
-            id="globalSearchInput"
-            placeholder="Search tasks, products, services and users">
+    <div class="product-page-top">
 
-        <div class="search-results" id="searchResults"></div>
-    </div>
-
-    <!-- Desktop Navigation -->
-    <nav class="dashboard-nav">
-        <a href="{% url 'dashboard' %}">Dashboard</a>
-        <a href="{% url 'sell' %}">Sell</a>
-        <a href="{% url 'marketplace' %}" class="active">Marketplace</a>
-        <a href="{% url 'seller_history' %}">Sold Items</a>
-    </nav>
-
-    <!-- Header Actions -->
-    <div class="top-actions">
-        <button class="icon-btn" onclick="window.location.href='{% url 'cart' %}'">
-            <i class="fa-solid fa-cart-shopping"></i>
-            <span>{{ request.session.cart|length|default:0 }}</span>
-        </button>
-
-        <a href="{% url 'logout' %}" class="logout-btn logout">
-            <i class="fa fa-power-off"></i>
+        <a href="{% url 'marketplace' %}" class="back-link">
+            <i class="fa-solid fa-arrow-left"></i>
+            Marketplace
         </a>
+
+        <div class="product-page-path">
+            <span>Market</span>
+            <i class="fa-solid fa-chevron-right"></i>
+            <strong>{{ product.title|truncatechars:35 }}</strong>
+        </div>
+
     </div>
 
-    <!-- Mobile Menu Button -->
-    <button class="mobile-menu-btn" id="mobileMenuBtn">
-        <i class="fa fa-bars"></i>
-    </button>
 
-    <!-- Mobile Dropdown -->
-    <div class="mobile-dropdown" id="mobileDropdown">
-        <a href="{% url 'dashboard' %}"><i class="fa fa-home"></i> Dashboard</a>
-        <a href="{% url 'sell' %}"><i class="fa fa-plus"></i> Sell</a>
-        <a href="{% url 'marketplace' %}"><i class="fa fa-store"></i> Marketplace</a>
-        <a href="{% url 'seller_history' %}"><i class="fa fa-box"></i> Sold Items</a>
-        <a href="{% url 'more_page' %}"><i class="fa fa-ellipsis-h"></i> More</a>
-        <a href="{% url 'logout' %}" class="logout"><i class="fa fa-power-off"></i> Logout</a>
-    </div>
+    <!-- ==========================================================
+         MAIN PRODUCT AREA
+    ========================================================== -->
 
-</header>
+    <section class="product-showcase">
 
-<main class="detail-page">
+        <!-- ======================================================
+             GALLERY
+        ======================================================= -->
 
-    <!-- Back Button -->
-    <a href="{% url 'marketplace' %}" class="back-link">
-        <i class="fa fa-arrow-left"></i>
-        Back to Marketplace
-    </a>
-
-    <section class="product-detail-layout">
-
-        <!-- Product Images -->
-        <div class="gallery-card">
+        <div class="gallery-section">
 
             <div class="main-image-wrap">
+
                 {% if product.images.first %}
+
                     <img
                         id="mainProductImage"
                         src="{{ product.images.first.image.url }}"
-                        alt="{{ product.title }}">
+                        alt="{{ product.title }}"
+                    >
+
+                    <div
+                        class="image-placeholder"
+                        id="mainImagePlaceholder"
+                        hidden
+                    >
+                        <i class="fa-regular fa-image"></i>
+                        <span>No product image</span>
+                    </div>
+
                 {% elif product.image %}
+
                     <img
                         id="mainProductImage"
                         src="{{ product.image.url }}"
-                        alt="{{ product.title }}">
+                        alt="{{ product.title }}"
+                    >
+
+                    <div
+                        class="image-placeholder"
+                        id="mainImagePlaceholder"
+                        hidden
+                    >
+                        <i class="fa-regular fa-image"></i>
+                        <span>No product image</span>
+                    </div>
+
                 {% else %}
+
+                    <div
+                        class="image-placeholder"
+                        id="mainImagePlaceholder"
+                    >
+                        <i class="fa-regular fa-image"></i>
+                        <span>No product image</span>
+                    </div>
+
                     <img
                         id="mainProductImage"
-                        src="{% static 'accounts/img/no-image.png' %}"
-                        alt="No image">
+                        src=""
+                        alt="{{ product.title }}"
+                        hidden
+                    >
+
                 {% endif %}
 
+
                 {% if product.is_sold %}
-                    <span class="sold-badge">Sold</span>
+
+                    <span class="sold-badge">
+                        <i class="fa-solid fa-check"></i>
+                        Sold
+                    </span>
+
                 {% endif %}
+
+
+                <div class="image-count">
+
+                    <i class="fa-regular fa-images"></i>
+
+                    {% if product.images.count %}
+                        {{ product.images.count }}
+                    {% elif product.image %}
+                        1
+                    {% else %}
+                        0
+                    {% endif %}
+
+                </div>
+
             </div>
+
+
+            {% if product.images.all or product.image %}
 
             <div class="thumbnail-row">
 
                 {% for image in product.images.all %}
-                    <button type="button" class="thumbnail-btn active">
-                        <img src="{{ image.image.url }}" alt="{{ product.title }}">
+
+                    <button
+                        type="button"
+                        class="thumbnail-btn {% if forloop.first %}active{% endif %}"
+                    >
+                        <img
+                            src="{{ image.image.url }}"
+                            alt="{{ product.title }}"
+                        >
                     </button>
+
                 {% empty %}
 
                     {% if product.image %}
-                        <button type="button" class="thumbnail-btn active">
-                            <img src="{{ product.image.url }}" alt="{{ product.title }}">
+
+                        <button
+                            type="button"
+                            class="thumbnail-btn active"
+                        >
+                            <img
+                                src="{{ product.image.url }}"
+                                alt="{{ product.title }}"
+                            >
                         </button>
+
                     {% endif %}
 
                 {% endfor %}
 
             </div>
 
+            {% endif %}
+
         </div>
 
-        <!-- Product Information -->
-        <div class="info-card">
 
-            <div class="category-pill">
-                {{ product.get_category_display|default:product.category }}
+        <!-- ======================================================
+             PRODUCT DETAILS
+        ======================================================= -->
+
+        <div class="product-info">
+
+            <div class="product-info-top">
+
+                <span class="category-tag">
+                    {{ product.get_category_display|default:product.category }}
+                </span>
+
+                {% if product.is_sold %}
+                    <span class="status-pill sold">
+                        Sold
+                    </span>
+                {% else %}
+                    <span class="status-pill available">
+                        Available
+                    </span>
+                {% endif %}
+
             </div>
 
-            <h1>{{ product.title }}</h1>
 
-            <div class="price-box">
+            <h1>
+                {{ product.title }}
+            </h1>
+
+
+            <div class="product-price">
+
                 <span>Price</span>
-                <strong>£{{ product.price }}</strong>
+
+                <strong>
+                    £{{ product.price }}
+                </strong>
+
             </div>
 
-            <div class="seller-box">
+
+            <!-- SELLER -->
+
+            <div class="seller-summary">
+
                 <div class="seller-avatar">
-                    <i class="fa fa-user"></i>
+                    <i class="fa-solid fa-user"></i>
                 </div>
 
-                <div>
-                    <p>Sold by</p>
-                    <strong>{{ product.seller.username }}</strong>
+                <div class="seller-copy">
+
+                    <span>
+                        Sold by
+                    </span>
+
+                    <strong>
+                        {{ product.seller.username }}
+                    </strong>
+
                 </div>
+
+                <div class="seller-badge">
+                    SQUEEB Seller
+                </div>
+
             </div>
 
-            <div class="description-box">
+
+            <!-- DESCRIPTION -->
+
+            <div class="product-description">
+
+                <span class="section-label">
+                    PRODUCT DETAILS
+                </span>
+
                 <h3>Description</h3>
 
                 {% if product.description %}
-                    <p>{{ product.description }}</p>
+
+                    <p>
+                        {{ product.description }}
+                    </p>
+
                 {% else %}
-                    <p class="muted-text">No description added for this product.</p>
+
+                    <p class="muted-text">
+                        The seller has not added a description for this item.
+                    </p>
+
                 {% endif %}
+
             </div>
 
-            <div class="detail-actions">
+
+            <!-- ==================================================
+                 ACTIONS
+            =================================================== -->
+
+            <div class="product-actions">
 
                 {% if product.is_sold %}
 
-                    <button class="action-btn disabled" disabled>
-                        Sold
+                    <button
+                        type="button"
+                        class="primary-action disabled"
+                        disabled
+                    >
+                        <i class="fa-solid fa-check"></i>
+                        Item Sold
                     </button>
+
 
                 {% else %}
 
+
                     {% if request.user == product.seller %}
 
-                        <a href="{% url 'edit_product' product.id %}" class="action-btn dark-btn">
-                            <i class="fa fa-pen"></i>
-                            Edit Product
+                        <a
+                            href="{% url 'edit_product' product.id %}"
+                            class="primary-action"
+                        >
+                            <span>Edit Listing</span>
+                            <i class="fa-solid fa-arrow-right"></i>
                         </a>
 
-                        <a href="{% url 'delete_product' product.id %}" class="delete-action delete-product">
-                            <i class="fa fa-trash"></i>
-                            Delete Product
+
+                        <a
+                            href="{% url 'delete_product' product.id %}"
+                            class="delete-action delete-product"
+                        >
+                            <i class="fa-regular fa-trash-can"></i>
+                            Delete Listing
                         </a>
+
 
                     {% else %}
 
-                        <a href="{% url 'add_to_cart' product.id %}" class="action-btn">
-                            <i class="fa fa-cart-plus"></i>
-                            Add to Cart
+                        <a
+                            href="{% url 'add_to_cart' product.id %}"
+                            class="primary-action"
+                        >
+                            <span>
+                                <i class="fa-solid fa-bag-shopping"></i>
+                                Add to Cart
+                            </span>
+
+                            <i class="fa-solid fa-arrow-right"></i>
                         </a>
+
+
+                        <button
+                            type="button"
+                            class="message-seller-btn"
+                            id="openMessageModal"
+                        >
+                            <i class="fa-regular fa-message"></i>
+                            Message Seller
+                        </button>
 
                     {% endif %}
 
                 {% endif %}
 
-                {% if request.user != product.seller %}
-    <button
-        type="button"
-        class="message-seller-btn"
-        id="openMessageModal">
-        <i class="fa fa-message"></i>
-        Message Seller
-    </button>
-{% endif %}
+            </div>
+
+
+            <div class="buyer-note">
+
+                <i class="fa-solid fa-shield-halved"></i>
+
+                <div>
+                    <strong>Shop through SQUEEB</strong>
+
+                    <span>
+                        Keep communication and payment on the platform where possible.
+                    </span>
+                </div>
 
             </div>
 
@@ -208,88 +354,286 @@
 
     </section>
 
-    <!-- Seller Details -->
-    <section class="seller-detail-card">
-        <h2>Seller Information</h2>
 
-        <div class="seller-detail-row">
-            <div class="seller-avatar large">
-                <i class="fa fa-user"></i>
-            </div>
+    <!-- ==========================================================
+         SELLER
+    ========================================================== -->
+
+    <section class="seller-section">
+
+        <div class="seller-section-heading">
 
             <div>
-                <h3>{{ product.seller.username }}</h3>
-                <p>SQUEEB marketplace seller</p>
+                <span class="section-label">
+                    SELLER
+                </span>
+
+                <h2>Meet the seller</h2>
             </div>
+
         </div>
+
+
+        <div class="seller-profile-card">
+
+            <div class="seller-profile-avatar">
+                <i class="fa-solid fa-user"></i>
+            </div>
+
+
+            <div class="seller-profile-info">
+
+                <h3>
+                    {{ product.seller.username }}
+                </h3>
+
+                <p>
+                    SQUEEB Marketplace seller
+                </p>
+
+            </div>
+
+
+            {% if request.user != product.seller %}
+
+                <button
+                    type="button"
+                    class="seller-message-link"
+                    data-open-message
+                >
+                    <i class="fa-regular fa-message"></i>
+                    Message
+                </button>
+
+            {% endif %}
+
+        </div>
+
     </section>
 
-    <!-- Related Products -->
+
+    <!-- ==========================================================
+         RELATED PRODUCTS
+    ========================================================== -->
+
     {% if related_products %}
+
     <section class="related-section">
-        <div class="section-heading">
-            <h2>Related Products</h2>
-            <p>More products from the same category.</p>
+
+        <div class="related-heading">
+
+            <div>
+                <span class="section-label">
+                    YOU MAY ALSO LIKE
+                </span>
+
+                <h2>Related products</h2>
+
+                <p>
+                    More listings from the same category.
+                </p>
+            </div>
+
+
+            <a href="{% url 'marketplace' %}">
+                View Marketplace
+                <i class="fa-solid fa-arrow-right"></i>
+            </a>
+
         </div>
+
 
         <div class="related-grid">
 
             {% for item in related_products %}
+
             <article
                 class="related-card clickable-product"
-                data-url="{% url 'product_detail' item.id %}">
+                data-url="{% url 'product_detail' item.id %}"
+            >
 
-                <div class="related-img-wrap">
+                <div class="related-image">
+
                     {% if item.images.first %}
-                        <img src="{{ item.images.first.image.url }}" alt="{{ item.title }}">
+
+                        <img
+                            src="{{ item.images.first.image.url }}"
+                            alt="{{ item.title }}"
+                            loading="lazy"
+                        >
+
                     {% elif item.image %}
-                        <img src="{{ item.image.url }}" alt="{{ item.title }}">
+
+                        <img
+                            src="{{ item.image.url }}"
+                            alt="{{ item.title }}"
+                            loading="lazy"
+                        >
+
                     {% else %}
-                        <img src="{% static 'accounts/img/no-image.png' %}" alt="No image">
+
+                        <div class="related-placeholder">
+                            <i class="fa-regular fa-image"></i>
+                        </div>
+
                     {% endif %}
+
+
+                    {% if item.is_sold %}
+
+                        <span class="related-sold">
+                            Sold
+                        </span>
+
+                    {% endif %}
+
                 </div>
 
+
                 <div class="related-body">
-                    <span>{{ item.get_category_display|default:item.category }}</span>
-                    <h3>{{ item.title }}</h3>
-                    <strong>£{{ item.price }}</strong>
+
+                    <span class="related-category">
+                        {{ item.get_category_display|default:item.category }}
+                    </span>
+
+                    <h3>
+                        {{ item.title }}
+                    </h3>
+
+
+                    <div class="related-footer">
+
+                        <strong>
+                            £{{ item.price }}
+                        </strong>
+
+                        <span>
+                            View
+                            <i class="fa-solid fa-arrow-right"></i>
+                        </span>
+
+                    </div>
+
                 </div>
 
             </article>
+
             {% endfor %}
 
         </div>
+
     </section>
+
     {% endif %}
 
-</main>
-
-<div class="message-modal-bg" id="messageModal">
-    <div class="message-modal-box">
-        <button type="button" class="message-modal-close" id="closeMessageModal">
-            ✖
-        </button>
-
-        <h2>Message {{ product.seller.username }}</h2>
-        <p>Ask a question about {{ product.title }}.</p>
-
-        <form method="POST" action="{% url 'send_product_message' product.id %}">
-            {% csrf_token %}
-
-            <textarea
-                name="message"
-                placeholder="Write your message..."
-                required></textarea>
-
-            <button type="submit" class="action-btn">
-                <i class="fa fa-paper-plane"></i>
-                Send Message
-            </button>
-        </form>
-    </div>
 </div>
 
-<script src="{% static 'accounts/js/product_detail.js' %}"></script>
 
-</body>
-</html>
+<!-- ==========================================================
+     MESSAGE SELLER MODAL
+========================================================== -->
+
+{% if request.user != product.seller %}
+
+<div
+    class="message-modal-bg"
+    id="messageModal"
+>
+
+    <div class="message-modal-box">
+
+        <div class="message-modal-header">
+
+            <div>
+
+                <span>
+                    CONTACT SELLER
+                </span>
+
+                <h2>
+                    Message {{ product.seller.username }}
+                </h2>
+
+            </div>
+
+
+            <button
+                type="button"
+                class="message-modal-close"
+                id="closeMessageModal"
+                aria-label="Close"
+            >
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+
+        </div>
+
+
+        <p class="message-intro">
+            Ask a question about
+            <strong>{{ product.title }}</strong>.
+        </p>
+
+
+        <form
+            method="POST"
+            action="{% url 'send_product_message' product.id %}"
+        >
+
+            {% csrf_token %}
+
+
+            <label for="sellerMessage">
+                Your message
+            </label>
+
+            <textarea
+                id="sellerMessage"
+                name="message"
+                placeholder="Hi, is this item still available?"
+                maxlength="1000"
+                required
+            ></textarea>
+
+
+            <div class="message-modal-actions">
+
+                <button
+                    type="button"
+                    class="cancel-message-btn"
+                    id="cancelMessageModal"
+                >
+                    Cancel
+                </button>
+
+
+                <button
+                    type="submit"
+                    class="send-message-btn"
+                >
+                    <span>Send Message</span>
+
+                    <i class="fa-solid fa-paper-plane"></i>
+                </button>
+
+            </div>
+
+        </form>
+
+    </div>
+
+</div>
+
+{% endif %}
+
+{% endblock %}
+
+
+{% block extra_js %}
+
+<script
+    src="{% static 'accounts/js/product_detail.js' %}"
+    defer
+></script>
+
+{% endblock %}
