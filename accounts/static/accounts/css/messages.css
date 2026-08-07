@@ -977,6 +977,44 @@
 
 
 /* ==========================================================
+   INSTANT MESSAGE STATES
+========================================================== */
+
+.message-row.pending .message-bubble {
+    opacity: .78;
+}
+
+
+.message-row.pending .message-time {
+    opacity: .85;
+}
+
+
+.message-row.failed .message-bubble {
+    background: #fff1f2;
+    color: #991b1b;
+
+    border: 1px solid #fecdd3;
+}
+
+
+.message-row.failed .message-time {
+    color: #dc2626;
+}
+
+
+.message-row.failed .message-time i {
+    color: #dc2626;
+}
+
+
+.message-composer button:disabled {
+    opacity: .65;
+
+    cursor: wait;
+}
+
+/* ==========================================================
    MOBILE
 ========================================================== */
 

@@ -7,10 +7,12 @@
 
 
 {% block extra_css %}
+
 <link
     rel="stylesheet"
     href="{% static 'accounts/css/messages.css' %}"
 >
+
 {% endblock %}
 
 
@@ -35,13 +37,13 @@
 
 
     <!-- ==========================================================
-         CHAT LAYOUT
+         CHAT
     ========================================================== -->
 
     <section class="chat-shell">
 
         <!-- ======================================================
-             CHAT HEADER
+             HEADER
         ======================================================= -->
 
         <header class="chat-header">
@@ -85,7 +87,7 @@
 
 
         <!-- ======================================================
-             PRODUCT SUMMARY
+             PRODUCT
         ======================================================= -->
 
         <a
@@ -170,6 +172,7 @@
                             received
                         {% endif %}
                     "
+                    data-message-id="{{ message.id }}"
                 >
 
                     <div class="message-bubble">
@@ -215,7 +218,10 @@
 
             {% empty %}
 
-                <div class="chat-empty">
+                <div
+                    class="chat-empty"
+                    id="chatEmpty"
+                >
 
                     <i class="fa-regular fa-message"></i>
 
@@ -236,6 +242,7 @@
 
         <form
             method="POST"
+            action="{% url 'messages_conversation' product.id other_user.id %}"
             class="message-composer"
             id="messageComposer"
         >
@@ -249,6 +256,7 @@
                 maxlength="2000"
                 rows="1"
                 placeholder="Write a message..."
+                autocomplete="off"
                 required
             ></textarea>
 
@@ -273,8 +281,10 @@
 
 
 {% block extra_js %}
+
 <script
     src="{% static 'accounts/js/messages.js' %}"
     defer
 ></script>
+
 {% endblock %}

@@ -3178,15 +3178,10 @@ def messages_conversation(
     product_id,
     user_id,
 ):
-    """
-    Opens a buyer/seller conversation for one product.
-    """
-
     product = get_object_or_404(
         Product,
         id=product_id,
     )
-
 
     other_user = get_object_or_404(
         User,
@@ -3194,15 +3189,16 @@ def messages_conversation(
     )
 
 
-    # Prevent trying to message yourself.
-    if other_user.id == request.user.id:
+    # ==========================================================
+    # SECURITY
+    # ==========================================================
 
+    if other_user.id == request.user.id:
         return redirect(
             "messages_inbox"
         )
 
 
-    # One participant must be the product seller.
     participant_ids = {
         request.user.id,
         other_user.id,
@@ -3210,11 +3206,162 @@ def messages_conversation(
 
 
     if product.seller_id not in participant_ids:
-
         return redirect(
             "messages_inbox"
         )
 
+
+    # ==========================================================
+    # SEND MESSAGE
+    # ==========================================================
+
+    if request.method == "POST":
+
+        message_text = (
+            request.POST
+            .get(
+                "message",
+                "",
+            )
+            .strip()
+        )
+
+
+        is_ajax = (
+            request.headers.get(
+                "x-requested-with"
+            )
+            == "XMLHttpRequest"
+        )
+
+
+        if not message_text:
+
+            if is_ajax:
+
+                return JsonResponse(
+                    {
+                        "success": False,
+                        "message": "Message cannot be empty.",
+                    },
+                    status=400,
+                )
+
+
+            return redirect(
+                "messages_conversation",
+                product_id=product.id,
+                user_id=other_user.id,
+            )
+
+
+        if len(message_text) > 2000:
+
+            if is_ajax:
+
+                return JsonResponse(
+                    {
+                        "success": False,
+                        "message": (
+                            "Message must be 2000 characters or fewer."
+                        ),
+                    },
+                    status=400,
+                )
+
+
+            return redirect(
+                "messages_conversation",
+                product_id=product.id,
+                user_id=other_user.id,
+            )
+
+
+        new_message = ProductMessage.objects.create(
+            product=product,
+            sender=request.user,
+            receiver=other_user,
+            message=message_text,
+        )
+
+
+        # ======================================================
+        # NOTIFICATION
+        # ======================================================
+
+        try:
+
+            Notification.objects.create(
+                user=other_user,
+                title="New marketplace message",
+                message=(
+                    f"{request.user.username} sent you "
+                    f"a message about {product.title}."
+                ),
+            )
+
+        except Exception as error:
+
+            # Messaging should still succeed even if
+            # notification creation has a problem.
+
+            print(
+                "MESSAGE NOTIFICATION ERROR:",
+                repr(error),
+            )
+
+
+        # ======================================================
+        # AJAX RESPONSE
+        # ======================================================
+
+        if is_ajax:
+
+            return JsonResponse(
+                {
+                    "success": True,
+                    "message": {
+                        "id": new_message.id,
+                        "text": new_message.message,
+                        "created_at": (
+                            new_message.created_at.strftime(
+                                "%d %b, %H:%M"
+                            )
+                        ),
+                        "is_read": False,
+                    },
+                }
+            )
+
+
+        # ======================================================
+        # NORMAL FORM FALLBACK
+        # ======================================================
+
+        return redirect(
+            "messages_conversation",
+            product_id=product.id,
+            user_id=other_user.id,
+        )
+
+
+    # ==========================================================
+    # MARK RECEIVED MESSAGES READ
+    # ==========================================================
+
+    ProductMessage.objects.filter(
+        product=product,
+        sender=other_user,
+        receiver=request.user,
+        is_read=False,
+    ).update(
+        is_read=True
+    )
+
+
+    # ==========================================================
+    # LOAD CONVERSATION
+    # ==========================================================
 
     conversation_messages = (
         ProductMessage.objects
@@ -3236,73 +3383,9 @@ def messages_conversation(
             "sender",
             "receiver",
         )
-        .order_by("created_at")
-    )
-
-
-    # ==========================================================
-    # SEND REPLY
-    # ==========================================================
-
-    if request.method == "POST":
-
-        message_text = (
-            request.POST
-            .get(
-                "message",
-                "",
-            )
-            .strip()
+        .order_by(
+            "created_at"
         )
-
-
-        if message_text:
-
-            new_message = (
-                ProductMessage.objects.create(
-                    product=product,
-                    sender=request.user,
-                    receiver=other_user,
-                    message=message_text,
-                )
-            )
-
-
-            Notification.objects.create(
-                user=other_user,
-                title="New marketplace message",
-                message=(
-                    f"{request.user.username} sent you "
-                    f"a message about {product.title}."
-                ),
-                link=reverse(
-                    "messages_conversation",
-                    args=[
-                        product.id,
-                        request.user.id,
-                    ],
-                ),
-            )
-
-
-        return redirect(
-            "messages_conversation",
-            product_id=product.id,
-            user_id=other_user.id,
-        )
-
-
-    # ==========================================================
-    # MARK RECEIVED MESSAGES AS READ
-    # ==========================================================
-
-    ProductMessage.objects.filter(
-        product=product,
-        sender=other_user,
-        receiver=request.user,
-        is_read=False,
-    ).update(
-        is_read=True
     )
 
 
