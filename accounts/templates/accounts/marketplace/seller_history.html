@@ -1,135 +1,151 @@
+{% extends 'accounts/base.html' %}
 {% load static %}
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sold Items | SQUEEB</title>
 
-    <link rel="stylesheet" href="{% static 'accounts/css/seller_history.css' %}">
-    <link rel="stylesheet"
-          href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-</head>
-<body>
+{% block title %}
+Sold Items | SQUEEB
+{% endblock %}
 
-<!-- ====================== DASHBOARD HEADER ====================== -->
-    <header class="dashboard-topbar">
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'accounts/css/seller_history.css' %}">
+{% endblock %}
 
-        <!-- Logo -->
-        <a href="{% url 'dashboard' %}" class="brand">
-            <img src="{% static 'accounts/img/logo.png' %}" alt="SQUEEB Logo">
-        </a>
-
-        <!-- Search Bar -->
-        <div class="dashboard-search">
-    <i class="fa fa-search"></i>
-
-    <input
-        type="text"
-        id="globalSearchInput"
-        placeholder="Search tasks, products, services and users">
-
-    <div class="search-results" id="searchResults"></div>
-</div>
-
-        <!-- Desktop Navigation -->
-        <nav class="dashboard-nav">
-            <a href="{% url 'dashboard' %}">Dashboard</a>
-            <a href="{% url 'sell' %}">Sell</a>
-            <a href="{% url 'marketplace' %}">Marketplace</a>
-            <a href="{% url 'seller_history' %}" class="active">Sold Items</a>
-        </nav>
-
-        <!-- Header Actions -->
-        <div class="top-actions">
-    <button class="icon-btn" onclick="window.location.href='{% url 'cart' %}'">
-        <i class="fa-solid fa-cart-shopping"></i>
-        <span>{{ request.session.cart|length|default:0 }}</span>
-    </button>
-
-            <a href="{% url 'logout' %}" class="logout-btn logout">
-                <i class="fa fa-power-off"></i>
-            </a>
-        </div>
-
-        <!-- Mobile Menu Button -->
-        <button class="mobile-menu-btn" id="mobileMenuBtn">
-            <i class="fa fa-bars"></i>
-        </button>
-
-        <!-- Mobile Dropdown -->
-        <div class="mobile-dropdown" id="mobileDropdown">
-            <a href="{% url 'dashboard' %}"><i class="fa fa-home"></i> Dashboard</a>
-            <a href="#" id="mobileEarnLink"><i class="fa fa-coins"></i> Earn</a>
-            <a href="#" id="mobileAdvertiseLink"><i class="fa fa-bullhorn"></i> Advertise</a>
-            <a href="{% url 'marketplace' %}"><i class="fa fa-store"></i> Market</a>
-            <a href="{% url 'more_page' %}"><i class="fa fa-ellipsis-h"></i> More</a>
-            <a href="{% url 'logout' %}" class="logout"><i class="fa fa-power-off"></i> Logout</a>
-        </div>
-
-    </header>
-
+{% block content %}
 
 <div class="history-page">
 
-    <div class="page-header">
+    <section class="history-header">
 
         <div>
-            <h1>Sold Items</h1>
+
+            <a href="{% url 'marketplace' %}" class="back-link">
+                <i class="fa-solid fa-arrow-left"></i>
+                Marketplace
+            </a>
+
+            <span class="history-kicker">
+                SQUEEB MARKET
+            </span>
+
+            <h1>Sold items</h1>
 
             <p>
-                View products you have successfully sold.
+                Review products you have sold and quickly relist them when needed.
             </p>
+
         </div>
 
-        <a href="{% url 'marketplace' %}" class="back-btn">
-            <i class="fa fa-arrow-left"></i>
-            Marketplace
-        </a>
 
-    </div>
+        <div class="history-summary">
+
+            <span class="summary-icon">
+                <i class="fa-solid fa-box"></i>
+            </span>
+
+            <div>
+                <small>Total sold</small>
+                <strong>{{ products|length }}</strong>
+            </div>
+
+        </div>
+
+    </section>
 
 
-    <div class="product-grid">
+    {% if products %}
+
+    <section class="history-grid">
 
         {% for p in products %}
 
-        <div class="card">
+        <article class="history-card">
 
-            <div class="image-wrapper">
+            <div
+                class="history-image"
+                onclick="window.location.href='{% url 'product_detail' p.id %}'"
+            >
 
                 {% if p.images.first %}
-                    <img src="{{ p.images.first.image.url }}">
+
+                    <img
+                        src="{{ p.images.first.image.url }}"
+                        alt="{{ p.title }}"
+                        loading="lazy"
+                    >
+
                 {% elif p.image %}
-                    <img src="{{ p.image.url }}">
+
+                    <img
+                        src="{{ p.image.url }}"
+                        alt="{{ p.title }}"
+                        loading="lazy"
+                    >
+
                 {% else %}
-                    <img src="{% static 'accounts/img/no-image.png' %}">
+
+                    <div class="image-placeholder">
+                        <i class="fa-regular fa-image"></i>
+                    </div>
+
                 {% endif %}
 
-                <div class="sold-badge">
-                    SOLD
-                </div>
+
+                <span class="sold-badge">
+                    <i class="fa-solid fa-check"></i>
+                    Sold
+                </span>
 
             </div>
 
 
-            <div class="card-body">
+            <div class="history-card-body">
 
-                <h3>{{ p.title }}</h3>
+                <span class="category-tag">
+                    {{ p.get_category_display|default:p.category }}
+                </span>
 
-                <div class="price">
+
+                <h3>
+                    {{ p.title }}
+                </h3>
+
+
+                <strong class="price">
                     £{{ p.price }}
-                </div>
+                </strong>
+
 
                 {% if p.description %}
-                <p class="desc">
-                    {{ p.description|truncatechars:90 }}
+
+                <p class="description">
+                    {{ p.description|truncatechars:95 }}
                 </p>
+
+                {% else %}
+
+                <p class="description muted">
+                    No description added.
+                </p>
+
                 {% endif %}
 
-                <div class="card-actions">
 
-                    <button class="btn relist-btn">
+                <div class="history-card-footer">
+
+                    <a
+                        href="{% url 'product_detail' p.id %}"
+                        class="view-btn"
+                    >
+                        View
+                    </a>
+
+
+                    <button
+                        type="button"
+                        class="relist-btn"
+                        data-product-id="{{ p.id }}"
+                        data-product-title="{{ p.title }}"
+                    >
+                        <i class="fa-solid fa-rotate-left"></i>
                         Sell Again
                     </button>
 
@@ -137,33 +153,46 @@
 
             </div>
 
-        </div>
-
-        {% empty %}
-
-        <div class="empty-state">
-
-            <i class="fa fa-box-open"></i>
-
-            <h2>No Sold Products Yet</h2>
-
-            <p>
-                Products that you successfully sell will appear here.
-            </p>
-
-            <a href="{% url 'marketplace' %}" class="shop-btn">
-                Go to Marketplace
-            </a>
-
-        </div>
+        </article>
 
         {% endfor %}
 
-    </div>
+    </section>
+
+
+    {% else %}
+
+    <section class="empty-state">
+
+        <div class="empty-icon">
+            <i class="fa-solid fa-box-open"></i>
+        </div>
+
+        <span>SELLER HISTORY</span>
+
+        <h2>No sold items yet</h2>
+
+        <p>
+            Products you mark as sold will appear here.
+        </p>
+
+        <a
+            href="{% url 'marketplace' %}"
+            class="marketplace-btn"
+        >
+            <span>Browse Marketplace</span>
+            <i class="fa-solid fa-arrow-right"></i>
+        </a>
+
+    </section>
+
+    {% endif %}
 
 </div>
 
-<script src="{% static 'accounts/js/seller_history.js' %}"></script>
+{% endblock %}
 
-</body>
-</html>
+
+{% block extra_js %}
+<script src="{% static 'accounts/js/seller_history.js' %}" defer></script>
+{% endblock %}
