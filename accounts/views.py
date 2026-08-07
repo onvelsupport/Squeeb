@@ -2835,8 +2835,7 @@ def edit_product(request, product_id):
         product.description = description
 
         product.is_sold = (
-            request.POST.get("is_sold")
-            == "on"
+            request.POST.get("is_sold") == "on"
         )
 
         product.save()
@@ -2850,7 +2849,6 @@ def edit_product(request, product_id):
             "remove_image_ids",
             "",
         )
-
 
         remove_ids = []
 
@@ -2866,12 +2864,9 @@ def edit_product(request, product_id):
 
         if remove_ids:
 
-            images_to_remove = (
-                product.images.filter(
-                    id__in=remove_ids
-                )
+            images_to_remove = product.images.filter(
+                id__in=remove_ids
             )
-
 
             for product_image in images_to_remove:
 
@@ -2890,7 +2885,6 @@ def edit_product(request, product_id):
                         repr(error),
                     )
 
-
                 product_image.delete()
 
 
@@ -2899,12 +2893,8 @@ def edit_product(request, product_id):
         # ==========================================================
 
         remove_main_image = (
-            request.POST.get(
-                "remove_main_image"
-            )
-            == "1"
+            request.POST.get("remove_main_image") == "1"
         )
-
 
         if remove_main_image and product.image:
 
@@ -2921,7 +2911,6 @@ def edit_product(request, product_id):
                     repr(error),
                 )
 
-
             product.image = ""
 
             product.save(
@@ -2935,24 +2924,17 @@ def edit_product(request, product_id):
         # CROP / REPLACE EXISTING PRODUCTIMAGE PHOTOS
         # ==========================================================
 
-        remaining_images = (
-            product.images.all()
-        )
-
+        remaining_images = product.images.all()
 
         for product_image in remaining_images:
 
             field_name = (
-                f"crop_existing_"
-                f"{product_image.id}"
+                f"crop_existing_{product_image.id}"
             )
 
-
-            replacement =
-                request.FILES.get(
-                    field_name
-                )
-
+            replacement = request.FILES.get(
+                field_name
+            )
 
             if not replacement:
                 continue
@@ -2964,7 +2946,6 @@ def edit_product(request, product_id):
                 else ""
             )
 
-
             old_storage = (
                 product_image.image.storage
                 if product_image.image
@@ -2972,9 +2953,7 @@ def edit_product(request, product_id):
             )
 
 
-            product_image.image = (
-                replacement
-            )
+            product_image.image = replacement
 
             product_image.save(
                 update_fields=[
@@ -2986,8 +2965,7 @@ def edit_product(request, product_id):
             if (
                 old_image_name
                 and old_storage
-                and old_image_name
-                != product_image.image.name
+                and old_image_name != product_image.image.name
             ):
 
                 try:
@@ -3008,12 +2986,9 @@ def edit_product(request, product_id):
         # CROP / REPLACE LEGACY MAIN IMAGE
         # ==========================================================
 
-        cropped_main_image = (
-            request.FILES.get(
-                "crop_main_image"
-            )
+        cropped_main_image = request.FILES.get(
+            "crop_main_image"
         )
-
 
         if cropped_main_image:
 
@@ -3023,18 +2998,13 @@ def edit_product(request, product_id):
                 else ""
             )
 
-
             old_main_storage = (
                 product.image.storage
                 if product.image
                 else None
             )
 
-
-            product.image = (
-                cropped_main_image
-            )
-
+            product.image = cropped_main_image
 
             product.save(
                 update_fields=[
@@ -3046,8 +3016,7 @@ def edit_product(request, product_id):
             if (
                 old_main_name
                 and old_main_storage
-                and old_main_name
-                != product.image.name
+                and old_main_name != product.image.name
             ):
 
                 try:
@@ -3068,12 +3037,9 @@ def edit_product(request, product_id):
         # ADD NEW PHOTOS
         # ==========================================================
 
-        new_images = (
-            request.FILES.getlist(
-                "images"
-            )
+        new_images = request.FILES.getlist(
+            "images"
         )
-
 
         for image in new_images:
 
@@ -3087,7 +3053,6 @@ def edit_product(request, product_id):
             request,
             "Product updated successfully.",
         )
-
 
         return redirect(
             "product_detail",
