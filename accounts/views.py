@@ -78,6 +78,52 @@ User = get_user_model()
 
 
 # ==========================================================
+# MARKETPLACE COUNTRY ACCESS
+# ==========================================================
+
+MARKETPLACE_ALLOWED_COUNTRIES = {
+    "uk",
+    "gb",
+    "gbr",
+    "united kingdom",
+    "great britain",
+    "england",
+    "scotland",
+    "wales",
+    "northern ireland",
+}
+
+
+def marketplace_country_allowed(country):
+    country = (country or "").strip().lower()
+
+    return country in MARKETPLACE_ALLOWED_COUNTRIES
+
+
+def marketplace_access_required(view_func):
+    @wraps(view_func)
+    @login_required
+    def wrapper(request, *args, **kwargs):
+
+        if not marketplace_country_allowed(request.user.country):
+
+            messages.error(
+                request,
+                "SQUEEB Marketplace is not currently available in your country."
+            )
+
+            return redirect("dashboard")
+
+        return view_func(
+            request,
+            *args,
+            **kwargs,
+        )
+
+    return wrapper
+
+
+# ==========================================================
 # CUSTOM SQUEEB ADMIN PROTECTION
 # ==========================================================
 
@@ -1374,7 +1420,7 @@ def support_page(request):
 def forgot_password_page(request):
     return render(request, "accounts/auth/forgot_password.html")
 
-@login_required
+@marketplace_access_required
 def marketplace_page(request):
     category = request.GET.get("category")
 
@@ -2701,10 +2747,13 @@ def stripe_webhook(request):
     return HttpResponse(status=200)
 
 
+
+
+
 # ==========================
 # CART
 # ==========================
-@login_required
+@marketplace_access_required
 def add_to_cart(request, product_id):
     product = get_object_or_404(Product, id=product_id)
 
@@ -2722,7 +2771,7 @@ def add_to_cart(request, product_id):
     return redirect("cart")
 
 
-@login_required
+@marketplace_access_required
 def cart_page(request):
     cart = request.session.get("cart", {})
 
@@ -2741,7 +2790,7 @@ def cart_page(request):
     })
 
 
-@login_required
+@marketplace_access_required
 def remove_from_cart(request, product_id):
     cart = request.session.get("cart", {})
     product_id = str(product_id)
@@ -2755,7 +2804,7 @@ def remove_from_cart(request, product_id):
     return redirect("cart")
 
 
-@login_required
+@marketplace_access_required
 def edit_product(request, product_id):
 
     product = get_object_or_404(
@@ -3070,7 +3119,7 @@ def edit_product(request, product_id):
     )
 
 
-@login_required
+@marketplace_access_required
 def product_detail(request, product_id):
     product = get_object_or_404(Product, id=product_id)
 
@@ -3092,7 +3141,7 @@ def product_detail(request, product_id):
 # MARKETPLACE MESSAGES
 # ==========================================================
 
-@login_required
+@marketplace_access_required
 def messages_inbox(request):
     """
     Shows one conversation per product + user pair.
@@ -3172,7 +3221,7 @@ def messages_inbox(request):
     )
 
 
-@login_required
+@marketplace_access_required
 def messages_conversation(
     request,
     product_id,
@@ -3400,7 +3449,7 @@ def messages_conversation(
     )
 
 
-@login_required
+@marketplace_access_required
 def send_product_message(
     request,
     product_id,
@@ -3475,7 +3524,7 @@ def send_product_message(
     )
 
 
-@login_required
+@marketplace_access_required
 def seller_history(request):
     sold_products = Product.objects.filter(seller=request.user, is_sold=True).order_by("-id")
 
@@ -3484,7 +3533,7 @@ def seller_history(request):
     })
 
 
-@login_required
+@marketplace_access_required
 def mark_as_sold(request, product_id):
     product = get_object_or_404(Product, id=product_id)
 
@@ -4501,7 +4550,7 @@ def withdrawal_history_api(request):
 # SELL PRODUCT
 # ==========================
 @csrf_exempt
-@login_required
+@marketplace_access_required
 def sell_product(request):
     if request.method == "POST":
         product = Product.objects.create(
@@ -4525,7 +4574,7 @@ def sell_product(request):
 # ==========================
 # DELETE PRODUCT
 # ==========================
-@login_required
+@marketplace_access_required
 def delete_product(request, product_id):
     product = get_object_or_404(Product, id=product_id)
 
