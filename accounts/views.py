@@ -4818,7 +4818,9 @@ def my_task_submissions_api(request):
 
 @login_required
 def my_tasks_api(request):
-    tasks = Task.objects.filter(creator=request.user).order_by("-created_at")
+    tasks = Task.objects.filter(
+        creator=request.user
+    ).order_by("-created_at")
 
     data = []
 
@@ -4838,9 +4840,17 @@ def my_tasks_api(request):
             status="rejected"
         ).count()
 
-        total_actions = task.available + approved_count + pending_count
+        total_actions = (
+            task.available
+            + approved_count
+            + pending_count
+        )
 
-        status = "completed" if task.available <= 0 else "active"
+        status = (
+            "completed"
+            if task.available <= 0
+            else "active"
+        )
 
         data.append({
             "id": task.id,
@@ -4848,6 +4858,10 @@ def my_tasks_api(request):
             "description": task.short_desc,
             "task_type": task.get_task_type_display(),
             "platform": task.platforms,
+
+            # IMPORTANT
+            "link": task.link or "",
+
             "quantity": total_actions,
             "available": task.available,
             "pending": pending_count,
@@ -4861,8 +4875,12 @@ def my_tasks_api(request):
     return JsonResponse({
         "tasks": data,
         "total": tasks.count(),
-        "active": tasks.filter(available__gt=0).count(),
-        "completed": tasks.filter(available__lte=0).count(),
+        "active": tasks.filter(
+            available__gt=0
+        ).count(),
+        "completed": tasks.filter(
+            available__lte=0
+        ).count(),
     })
 
 
