@@ -1276,7 +1276,300 @@ body.crop-open {
     color: #ffffff;
 }
 
+/* ==========================================================
+   EXISTING IMAGE EDITING
+========================================================== */
 
+.current-image-card {
+    position: relative;
+    overflow: hidden;
+
+    border: 1px solid #e5eaf1;
+    border-radius: 14px;
+
+    background: #ffffff;
+
+    transition:
+        opacity .2s ease,
+        transform .2s ease,
+        border-color .2s ease;
+}
+
+
+.current-image-preview {
+    position: relative;
+
+    height: 145px;
+
+    overflow: hidden;
+
+    background: #f1f5f9;
+}
+
+
+.current-image-preview img {
+    width: 100%;
+    height: 100%;
+
+    display: block;
+
+    object-fit: cover;
+
+    transition:
+        transform .25s ease,
+        opacity .2s ease;
+}
+
+
+.current-image-card:hover
+.current-image-preview img {
+    transform: scale(1.025);
+}
+
+
+.existing-label {
+    position: absolute;
+
+    top: 9px;
+    left: 9px;
+
+    padding: 5px 7px;
+
+    border-radius: 7px;
+
+    background: rgba(15, 23, 42, .8);
+
+    color: #ffffff;
+
+    font-size: 7px;
+    font-weight: 800;
+
+    backdrop-filter: blur(5px);
+}
+
+
+/* ==========================================================
+   EXISTING IMAGE ACTIONS
+========================================================== */
+
+.current-image-actions {
+    padding: 8px;
+
+    display: grid;
+
+    grid-template-columns:
+        1fr
+        1fr;
+
+    gap: 6px;
+
+    background: #ffffff;
+}
+
+
+.current-image-actions button {
+    min-height: 35px;
+
+    border: none;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    gap: 5px;
+
+    border-radius: 9px;
+
+    font-size: 8px;
+    font-weight: 850;
+
+    cursor: pointer;
+
+    transition: .2s ease;
+}
+
+
+.crop-existing-btn,
+.crop-main-btn {
+    background: #eff6ff;
+
+    color: #2563eb;
+}
+
+
+.crop-existing-btn:hover,
+.crop-main-btn:hover {
+    background: #dbeafe;
+}
+
+
+.remove-existing-btn,
+.remove-main-btn {
+    background: #fff1f2;
+
+    color: #dc2626;
+}
+
+
+.remove-existing-btn:hover,
+.remove-main-btn:hover {
+    background: #fee2e2;
+}
+
+
+/* ==========================================================
+   CROPPED INDICATOR
+========================================================== */
+
+.current-image-card.has-crop {
+    border-color: #93c5fd;
+}
+
+
+.current-image-card.has-crop::before {
+    content: "Edited";
+
+    position: absolute;
+
+    z-index: 5;
+
+    top: 9px;
+    right: 9px;
+
+    padding: 5px 8px;
+
+    border-radius: 999px;
+
+    background: #2563eb;
+
+    color: #ffffff;
+
+    font-size: 7px;
+    font-weight: 900;
+
+    text-transform: uppercase;
+}
+
+
+/* ==========================================================
+   REMOVE OVERLAY
+========================================================== */
+
+.remove-overlay {
+    position: absolute;
+
+    inset: 0;
+
+    z-index: 10;
+
+    display: none;
+    flex-direction: column;
+
+    align-items: center;
+    justify-content: center;
+
+    gap: 8px;
+
+    padding: 20px;
+
+    background: rgba(15, 23, 42, .92);
+
+    color: #ffffff;
+
+    text-align: center;
+}
+
+
+.remove-overlay > i {
+    color: #fda4af;
+
+    font-size: 22px;
+}
+
+
+.remove-overlay strong {
+    font-size: 10px;
+}
+
+
+.undo-remove-btn,
+.undo-main-remove-btn {
+    margin-top: 3px;
+
+    min-height: 34px;
+
+    padding: 0 13px;
+
+    border: none;
+
+    border-radius: 9px;
+
+    background: #ffffff;
+
+    color: #111827;
+
+    font-size: 8px;
+    font-weight: 850;
+
+    cursor: pointer;
+}
+
+
+.current-image-card.pending-removal
+.remove-overlay {
+    display: flex;
+}
+
+
+.current-image-card.pending-removal
+.current-image-preview,
+.current-image-card.pending-removal
+.current-image-actions {
+    opacity: .15;
+
+    pointer-events: none;
+}
+
+
+/* ==========================================================
+   CROP SAVE BUTTON
+========================================================== */
+
+.save-crop-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+
+    gap: 6px;
+
+    background:
+        linear-gradient(
+            135deg,
+            #0f172a,
+            #1e3a8a,
+            #2563eb
+        );
+
+    color: #ffffff;
+}
+
+
+/* ==========================================================
+   SMALL SCREENS
+========================================================== */
+
+@media (max-width: 700px) {
+
+    .current-image-preview {
+        height: 125px;
+    }
+
+
+    .current-image-actions {
+        grid-template-columns: 1fr;
+    }
+
+}
 /* ==========================================================
    TABLET
 ========================================================== */

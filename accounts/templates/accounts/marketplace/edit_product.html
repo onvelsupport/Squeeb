@@ -6,36 +6,54 @@ Edit {{ product.title }} | SQUEEB
 {% endblock %}
 
 {% block extra_css %}
-<link rel="stylesheet" href="{% static 'accounts/css/edit_product.css' %}">
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.2/cropper.min.css">
+
+<link
+    rel="stylesheet"
+    href="{% static 'accounts/css/edit_product.css' %}"
+>
+
+<link
+    rel="stylesheet"
+    href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.2/cropper.min.css"
+>
+
 {% endblock %}
+
 
 {% block content %}
 
 <div class="edit-product-page">
 
     <!-- ==========================================================
-         TOP AREA
+         HEADER
     ========================================================== -->
 
     <section class="edit-page-header">
 
         <div>
 
-            <a href="{% url 'product_detail' product.id %}" class="back-link">
+            <a
+                href="{% url 'product_detail' product.id %}"
+                class="back-link"
+            >
                 <i class="fa-solid fa-arrow-left"></i>
                 Back to product
             </a>
+
 
             <span class="page-kicker">
                 SQUEEB MARKET
             </span>
 
-            <h1>Edit your listing</h1>
+
+            <h1>
+                Edit your listing
+            </h1>
+
 
             <p>
-                Update your product information, add photos,
-                change the price or mark the item as sold.
+                Update your information, crop or remove existing photos,
+                add new images and control whether the item is still available.
             </p>
 
         </div>
@@ -79,7 +97,7 @@ Edit {{ product.title }} | SQUEEB
     <div class="edit-layout">
 
         <!-- ======================================================
-             MAIN FORM
+             FORM
         ======================================================= -->
 
         <section class="edit-panel">
@@ -95,7 +113,26 @@ Edit {{ product.title }} | SQUEEB
 
 
                 <!-- ==================================================
-                     BASIC DETAILS
+                     HIDDEN IMAGE ACTION VALUES
+                =================================================== -->
+
+                <input
+                    type="hidden"
+                    name="remove_image_ids"
+                    id="removeImageIds"
+                    value=""
+                >
+
+                <input
+                    type="hidden"
+                    name="remove_main_image"
+                    id="removeMainImage"
+                    value="0"
+                >
+
+
+                <!-- ==================================================
+                     INFORMATION
                 =================================================== -->
 
                 <section class="edit-section">
@@ -110,11 +147,15 @@ Edit {{ product.title }} | SQUEEB
                         <div class="section-heading">
 
                             <div>
-                                <h2>Product information</h2>
+
+                                <h2>
+                                    Product information
+                                </h2>
 
                                 <p>
-                                    Update the main details buyers see.
+                                    Update what buyers see on your listing.
                                 </p>
+
                             </div>
 
                         </div>
@@ -146,9 +187,12 @@ Edit {{ product.title }} | SQUEEB
                                     Price
                                 </label>
 
+
                                 <div class="money-field">
 
-                                    <span>£</span>
+                                    <span>
+                                        £
+                                    </span>
 
                                     <input
                                         id="price"
@@ -170,6 +214,7 @@ Edit {{ product.title }} | SQUEEB
                                 <label for="category">
                                     Category
                                 </label>
+
 
                                 <select
                                     id="category"
@@ -247,6 +292,7 @@ Edit {{ product.title }} | SQUEEB
 
                             </div>
 
+
                             <textarea
                                 id="description"
                                 name="description"
@@ -262,7 +308,7 @@ Edit {{ product.title }} | SQUEEB
 
 
                 <!-- ==================================================
-                     LISTING STATUS
+                     STATUS
                 =================================================== -->
 
                 <section class="edit-section">
@@ -277,17 +323,24 @@ Edit {{ product.title }} | SQUEEB
                         <div class="section-heading">
 
                             <div>
-                                <h2>Listing status</h2>
+
+                                <h2>
+                                    Listing status
+                                </h2>
 
                                 <p>
-                                    Tell buyers whether the item is still available.
+                                    Mark the product as sold when it is no longer available.
                                 </p>
+
                             </div>
 
                         </div>
 
 
-                        <label class="sold-toggle-card" for="is_sold">
+                        <label
+                            class="sold-toggle-card"
+                            for="is_sold"
+                        >
 
                             <div class="sold-toggle-copy">
 
@@ -295,15 +348,17 @@ Edit {{ product.title }} | SQUEEB
                                     <i class="fa-solid fa-bag-shopping"></i>
                                 </span>
 
+
                                 <div>
+
                                     <strong>
                                         Mark this item as sold
                                     </strong>
 
                                     <p>
-                                        The listing will remain visible,
-                                        but buyers will no longer be able to add it to cart.
+                                        Buyers will no longer be able to purchase the item.
                                     </p>
+
                                 </div>
 
                             </div>
@@ -345,62 +400,190 @@ Edit {{ product.title }} | SQUEEB
                         <div class="section-heading">
 
                             <div>
-                                <h2>Current photos</h2>
+
+                                <h2>
+                                    Current photos
+                                </h2>
 
                                 <p>
-                                    These images are already attached to the listing.
+                                    Crop or remove photos already attached to this listing.
                                 </p>
+
                             </div>
 
                         </div>
 
 
-                        <div class="current-images">
+                        <div
+                            class="current-images"
+                            id="currentImages"
+                        >
 
                             {% for image in product.images.all %}
 
-                                <div class="current-image-card">
+                                <article
+                                    class="current-image-card"
+                                    data-image-id="{{ image.id }}"
+                                    data-image-type="gallery"
+                                >
 
-                                    <img
-                                        src="{{ image.image.url }}"
-                                        alt="{{ product.title }}"
-                                    >
-
-                                    <span>
-                                        Current photo
-                                    </span>
-
-                                </div>
-
-                            {% empty %}
-
-                                {% if product.image %}
-
-                                    <div class="current-image-card">
+                                    <div class="current-image-preview">
 
                                         <img
-                                            src="{{ product.image.url }}"
+                                            src="{{ image.image.url }}"
                                             alt="{{ product.title }}"
+                                            crossorigin="anonymous"
                                         >
 
-                                        <span>
-                                            Current photo
+
+                                        <span class="existing-label">
+                                            Listing photo
                                         </span>
 
                                     </div>
 
-                                {% else %}
 
-                                    <div class="empty-current-images">
+                                    <div class="current-image-actions">
 
-                                        <i class="fa-regular fa-image"></i>
+                                        <button
+                                            type="button"
+                                            class="crop-existing-btn"
+                                            data-image-id="{{ image.id }}"
+                                            data-image-url="{{ image.image.url }}"
+                                        >
+
+                                            <i class="fa-solid fa-crop-simple"></i>
+
+                                            Crop
+
+                                        </button>
+
+
+                                        <button
+                                            type="button"
+                                            class="remove-existing-btn"
+                                            data-image-id="{{ image.id }}"
+                                        >
+
+                                            <i class="fa-regular fa-trash-can"></i>
+
+                                            Remove
+
+                                        </button>
+
+                                    </div>
+
+
+                                    <div class="remove-overlay">
+
+                                        <i class="fa-regular fa-trash-can"></i>
 
                                         <strong>
-                                            No photos yet
+                                            Photo will be removed
+                                        </strong>
+
+                                        <button
+                                            type="button"
+                                            class="undo-remove-btn"
+                                            data-image-id="{{ image.id }}"
+                                        >
+                                            Undo
+                                        </button>
+
+                                    </div>
+
+                                </article>
+
+
+                            {% empty %}
+
+
+                                {% if product.image %}
+
+                                    <article
+                                        class="current-image-card"
+                                        data-image-type="main"
+                                    >
+
+                                        <div class="current-image-preview">
+
+                                            <img
+                                                src="{{ product.image.url }}"
+                                                alt="{{ product.title }}"
+                                                crossorigin="anonymous"
+                                            >
+
+                                            <span class="existing-label">
+                                                Listing photo
+                                            </span>
+
+                                        </div>
+
+
+                                        <div class="current-image-actions">
+
+                                            <button
+                                                type="button"
+                                                class="crop-main-btn"
+                                                data-image-url="{{ product.image.url }}"
+                                            >
+
+                                                <i class="fa-solid fa-crop-simple"></i>
+
+                                                Crop
+
+                                            </button>
+
+
+                                            <button
+                                                type="button"
+                                                class="remove-main-btn"
+                                            >
+
+                                                <i class="fa-regular fa-trash-can"></i>
+
+                                                Remove
+
+                                            </button>
+
+                                        </div>
+
+
+                                        <div class="remove-overlay">
+
+                                            <i class="fa-regular fa-trash-can"></i>
+
+                                            <strong>
+                                                Photo will be removed
+                                            </strong>
+
+                                            <button
+                                                type="button"
+                                                class="undo-main-remove-btn"
+                                            >
+                                                Undo
+                                            </button>
+
+                                        </div>
+
+                                    </article>
+
+
+                                {% else %}
+
+                                    <div
+                                        class="empty-current-images"
+                                        id="emptyCurrentImages"
+                                    >
+
+                                        <i class="fa-regular fa-images"></i>
+
+                                        <strong>
+                                            No current photos
                                         </strong>
 
                                         <p>
-                                            Add your first product photos below.
+                                            Add new images below.
                                         </p>
 
                                     </div>
@@ -432,11 +615,15 @@ Edit {{ product.title }} | SQUEEB
                         <div class="section-heading">
 
                             <div>
-                                <h2>Add more photos</h2>
+
+                                <h2>
+                                    Add more photos
+                                </h2>
 
                                 <p>
-                                    New images will be added to the existing listing.
+                                    Upload additional images to your listing.
                                 </p>
+
                             </div>
 
                         </div>
@@ -457,11 +644,11 @@ Edit {{ product.title }} | SQUEEB
                             <div class="upload-copy">
 
                                 <strong>
-                                    Upload additional photos
+                                    Upload new photos
                                 </strong>
 
                                 <span>
-                                    Click to browse or drag and drop images here
+                                    Click to browse or drag images here
                                 </span>
 
                                 <small>
@@ -520,11 +707,11 @@ Edit {{ product.title }} | SQUEEB
                         <div>
 
                             <strong>
-                                Review your changes
+                                Changes are not live yet
                             </strong>
 
                             <span>
-                                Your updated listing will be visible immediately.
+                                Crops and removals are applied when you save.
                             </span>
 
                         </div>
@@ -624,17 +811,17 @@ Edit {{ product.title }} | SQUEEB
 
             <div class="sidebar-tip">
 
-                <i class="fa-solid fa-lightbulb"></i>
+                <i class="fa-solid fa-camera"></i>
 
                 <div>
 
                     <strong>
-                        Listing tip
+                        Photo controls
                     </strong>
 
                     <p>
-                        Accurate titles, clear photos and honest descriptions
-                        help buyers make decisions faster.
+                        Crop existing photos without re-uploading them,
+                        or remove any photo you no longer want on the listing.
                     </p>
 
                 </div>
@@ -682,7 +869,7 @@ Edit {{ product.title }} | SQUEEB
                 </span>
 
                 <h3>
-                    Crop image
+                    Crop photo
                 </h3>
 
             </div>
@@ -693,7 +880,9 @@ Edit {{ product.title }} | SQUEEB
                 class="crop-close"
                 id="cancelCropIcon"
             >
+
                 <i class="fa-solid fa-xmark"></i>
+
             </button>
 
         </div>
@@ -704,6 +893,7 @@ Edit {{ product.title }} | SQUEEB
             <img
                 id="cropImage"
                 alt="Crop preview"
+                crossorigin="anonymous"
             >
 
         </div>
@@ -725,7 +915,11 @@ Edit {{ product.title }} | SQUEEB
                 class="save-crop-btn"
                 id="saveCropBtn"
             >
+
+                <i class="fa-solid fa-check"></i>
+
                 Save Crop
+
             </button>
 
         </div>

@@ -2756,26 +2756,352 @@ def remove_from_cart(request, product_id):
 
 @login_required
 def edit_product(request, product_id):
-    product = get_object_or_404(Product, id=product_id, seller=request.user)
+
+    product = get_object_or_404(
+        Product,
+        id=product_id,
+        seller=request.user,
+    )
 
     if request.method == "POST":
-        product.title = request.POST.get("title")
-        product.price = request.POST.get("price")
-        product.category = request.POST.get("category")
-        product.description = request.POST.get("description")
-        product.is_sold = request.POST.get("is_sold") == "on"
+
+        # ==========================================================
+        # BASIC PRODUCT DETAILS
+        # ==========================================================
+
+        title = request.POST.get(
+            "title",
+            "",
+        ).strip()
+
+        price = request.POST.get(
+            "price",
+            "",
+        ).strip()
+
+        category = request.POST.get(
+            "category",
+            "",
+        ).strip()
+
+        description = request.POST.get(
+            "description",
+            "",
+        ).strip()
+
+
+        if not title:
+
+            messages.error(
+                request,
+                "Product title is required.",
+            )
+
+            return redirect(
+                "edit_product",
+                product_id=product.id,
+            )
+
+
+        if not price:
+
+            messages.error(
+                request,
+                "Product price is required.",
+            )
+
+            return redirect(
+                "edit_product",
+                product_id=product.id,
+            )
+
+
+        if not category:
+
+            messages.error(
+                request,
+                "Product category is required.",
+            )
+
+            return redirect(
+                "edit_product",
+                product_id=product.id,
+            )
+
+
+        product.title = title
+        product.price = price
+        product.category = category
+        product.description = description
+
+        product.is_sold = (
+            request.POST.get("is_sold")
+            == "on"
+        )
+
         product.save()
 
-        images = request.FILES.getlist("images")
 
-        for image in images:
-            ProductImage.objects.create(product=product, image=image)
+        # ==========================================================
+        # REMOVE EXISTING PRODUCTIMAGE PHOTOS
+        # ==========================================================
 
-        return redirect("marketplace")
+        raw_remove_ids = request.POST.get(
+            "remove_image_ids",
+            "",
+        )
 
-    return render(request, "accounts/marketplace/edit_product.html", {
-        "product": product
-    })
+
+        remove_ids = []
+
+        for value in raw_remove_ids.split(","):
+
+            value = value.strip()
+
+            if value.isdigit():
+                remove_ids.append(
+                    int(value)
+                )
+
+
+        if remove_ids:
+
+            images_to_remove = (
+                product.images.filter(
+                    id__in=remove_ids
+                )
+            )
+
+
+            for product_image in images_to_remove:
+
+                try:
+
+                    if product_image.image:
+
+                        product_image.image.delete(
+                            save=False
+                        )
+
+                except Exception as error:
+
+                    print(
+                        "PRODUCT IMAGE FILE DELETE ERROR:",
+                        repr(error),
+                    )
+
+
+                product_image.delete()
+
+
+        # ==========================================================
+        # REMOVE LEGACY MAIN PRODUCT IMAGE
+        # ==========================================================
+
+        remove_main_image = (
+            request.POST.get(
+                "remove_main_image"
+            )
+            == "1"
+        )
+
+
+        if remove_main_image and product.image:
+
+            try:
+
+                product.image.delete(
+                    save=False
+                )
+
+            except Exception as error:
+
+                print(
+                    "MAIN PRODUCT IMAGE DELETE ERROR:",
+                    repr(error),
+                )
+
+
+            product.image = ""
+
+            product.save(
+                update_fields=[
+                    "image"
+                ]
+            )
+
+
+        # ==========================================================
+        # CROP / REPLACE EXISTING PRODUCTIMAGE PHOTOS
+        # ==========================================================
+
+        remaining_images = (
+            product.images.all()
+        )
+
+
+        for product_image in remaining_images:
+
+            field_name = (
+                f"crop_existing_"
+                f"{product_image.id}"
+            )
+
+
+            replacement =
+                request.FILES.get(
+                    field_name
+                )
+
+
+            if not replacement:
+                continue
+
+
+            old_image_name = (
+                product_image.image.name
+                if product_image.image
+                else ""
+            )
+
+
+            old_storage = (
+                product_image.image.storage
+                if product_image.image
+                else None
+            )
+
+
+            product_image.image = (
+                replacement
+            )
+
+            product_image.save(
+                update_fields=[
+                    "image"
+                ]
+            )
+
+
+            if (
+                old_image_name
+                and old_storage
+                and old_image_name
+                != product_image.image.name
+            ):
+
+                try:
+
+                    old_storage.delete(
+                        old_image_name
+                    )
+
+                except Exception as error:
+
+                    print(
+                        "OLD PRODUCT IMAGE DELETE ERROR:",
+                        repr(error),
+                    )
+
+
+        # ==========================================================
+        # CROP / REPLACE LEGACY MAIN IMAGE
+        # ==========================================================
+
+        cropped_main_image = (
+            request.FILES.get(
+                "crop_main_image"
+            )
+        )
+
+
+        if cropped_main_image:
+
+            old_main_name = (
+                product.image.name
+                if product.image
+                else ""
+            )
+
+
+            old_main_storage = (
+                product.image.storage
+                if product.image
+                else None
+            )
+
+
+            product.image = (
+                cropped_main_image
+            )
+
+
+            product.save(
+                update_fields=[
+                    "image"
+                ]
+            )
+
+
+            if (
+                old_main_name
+                and old_main_storage
+                and old_main_name
+                != product.image.name
+            ):
+
+                try:
+
+                    old_main_storage.delete(
+                        old_main_name
+                    )
+
+                except Exception as error:
+
+                    print(
+                        "OLD MAIN IMAGE DELETE ERROR:",
+                        repr(error),
+                    )
+
+
+        # ==========================================================
+        # ADD NEW PHOTOS
+        # ==========================================================
+
+        new_images = (
+            request.FILES.getlist(
+                "images"
+            )
+        )
+
+
+        for image in new_images:
+
+            ProductImage.objects.create(
+                product=product,
+                image=image,
+            )
+
+
+        messages.success(
+            request,
+            "Product updated successfully.",
+        )
+
+
+        return redirect(
+            "product_detail",
+            product_id=product.id,
+        )
+
+
+    return render(
+        request,
+        "accounts/marketplace/edit_product.html",
+        {
+            "product": product,
+        },
+    )
 
 
 @login_required

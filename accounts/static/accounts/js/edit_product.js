@@ -4,6 +4,10 @@ document.addEventListener("DOMContentLoaded", () => {
        ELEMENTS
     ========================================================== */
 
+    const form =
+        document.getElementById("editProductForm");
+
+
     const imageInput =
         document.getElementById("images");
 
@@ -15,6 +19,13 @@ document.addEventListener("DOMContentLoaded", () => {
 
     const uploadZone =
         document.querySelector(".upload-zone");
+
+
+    const removeImageIdsInput =
+        document.getElementById("removeImageIds");
+
+    const removeMainImageInput =
+        document.getElementById("removeMainImage");
 
 
     const cropModal =
@@ -48,9 +59,6 @@ document.addEventListener("DOMContentLoaded", () => {
     const descriptionCounter =
         document.getElementById("descriptionCounter");
 
-    const form =
-        document.getElementById("editProductForm");
-
 
     const sidebarTitle =
         document.getElementById("sidebarTitle");
@@ -62,27 +70,42 @@ document.addEventListener("DOMContentLoaded", () => {
         document.getElementById("sidebarCategory");
 
 
+    /* ==========================================================
+       STATE
+    ========================================================== */
+
     let selectedFiles = [];
+
     let cropper = null;
-    let editingIndex = null;
+
+    let cropMode = null;
+
+    let cropNewIndex = null;
+
+    let cropExistingId = null;
+
+    let cropExistingCard = null;
+
+    let removedExistingIds =
+        new Set();
 
 
 
     /* ==========================================================
-       LIVE SIDEBAR PREVIEW
+       LIVE TEXT PREVIEW
     ========================================================== */
 
     titleInput?.addEventListener(
         "input",
         () => {
 
-            if (sidebarTitle) {
-
-                sidebarTitle.textContent =
-                    titleInput.value.trim() ||
-                    "Product title";
-
+            if (!sidebarTitle) {
+                return;
             }
+
+            sidebarTitle.textContent =
+                titleInput.value.trim()
+                || "Product title";
 
         }
     );
@@ -168,7 +191,339 @@ document.addEventListener("DOMContentLoaded", () => {
 
 
     /* ==========================================================
-       FILE SELECTION
+       EXISTING PHOTO REMOVE
+    ========================================================== */
+
+    document
+        .querySelectorAll(
+            ".remove-existing-btn"
+        )
+        .forEach(button => {
+
+            button.addEventListener(
+                "click",
+                () => {
+
+                    const imageId =
+                        button.dataset.imageId;
+
+
+                    if (!imageId) {
+                        return;
+                    }
+
+
+                    removedExistingIds.add(
+                        String(imageId)
+                    );
+
+
+                    syncRemovedImageIds();
+
+
+                    const card =
+                        button.closest(
+                            ".current-image-card"
+                        );
+
+
+                    card?.classList.add(
+                        "pending-removal"
+                    );
+
+                }
+            );
+
+        });
+
+
+    document
+        .querySelectorAll(
+            ".undo-remove-btn"
+        )
+        .forEach(button => {
+
+            button.addEventListener(
+                "click",
+                () => {
+
+                    const imageId =
+                        button.dataset.imageId;
+
+
+                    removedExistingIds.delete(
+                        String(imageId)
+                    );
+
+
+                    syncRemovedImageIds();
+
+
+                    const card =
+                        button.closest(
+                            ".current-image-card"
+                        );
+
+
+                    card?.classList.remove(
+                        "pending-removal"
+                    );
+
+                }
+            );
+
+        });
+
+
+    function syncRemovedImageIds() {
+
+        if (!removeImageIdsInput) {
+            return;
+        }
+
+
+        removeImageIdsInput.value =
+            Array
+                .from(
+                    removedExistingIds
+                )
+                .join(",");
+
+    }
+
+
+
+    /* ==========================================================
+       LEGACY MAIN IMAGE REMOVE
+    ========================================================== */
+
+    document
+        .querySelectorAll(
+            ".remove-main-btn"
+        )
+        .forEach(button => {
+
+            button.addEventListener(
+                "click",
+                () => {
+
+                    if (
+                        removeMainImageInput
+                    ) {
+
+                        removeMainImageInput.value =
+                            "1";
+
+                    }
+
+
+                    button
+                        .closest(
+                            ".current-image-card"
+                        )
+                        ?.classList.add(
+                            "pending-removal"
+                        );
+
+                }
+            );
+
+        });
+
+
+    document
+        .querySelectorAll(
+            ".undo-main-remove-btn"
+        )
+        .forEach(button => {
+
+            button.addEventListener(
+                "click",
+                () => {
+
+                    if (
+                        removeMainImageInput
+                    ) {
+
+                        removeMainImageInput.value =
+                            "0";
+
+                    }
+
+
+                    button
+                        .closest(
+                            ".current-image-card"
+                        )
+                        ?.classList.remove(
+                            "pending-removal"
+                        );
+
+                }
+            );
+
+        });
+
+
+
+    /* ==========================================================
+       CROP EXISTING PRODUCTIMAGE
+    ========================================================== */
+
+    document
+        .querySelectorAll(
+            ".crop-existing-btn"
+        )
+        .forEach(button => {
+
+            button.addEventListener(
+                "click",
+                () => {
+
+                    const imageId =
+                        button.dataset.imageId;
+
+                    const imageUrl =
+                        button.dataset.imageUrl;
+
+
+                    if (
+                        !imageId ||
+                        !imageUrl
+                    ) {
+                        return;
+                    }
+
+
+                    cropMode =
+                        "existing";
+
+
+                    cropExistingId =
+                        String(imageId);
+
+
+                    cropExistingCard =
+                        button.closest(
+                            ".current-image-card"
+                        );
+
+
+                    openCropFromUrl(
+                        imageUrl
+                    );
+
+                }
+            );
+
+        });
+
+
+
+    /* ==========================================================
+       CROP LEGACY MAIN IMAGE
+    ========================================================== */
+
+    document
+        .querySelectorAll(
+            ".crop-main-btn"
+        )
+        .forEach(button => {
+
+            button.addEventListener(
+                "click",
+                () => {
+
+                    const imageUrl =
+                        button.dataset.imageUrl;
+
+
+                    if (!imageUrl) {
+                        return;
+                    }
+
+
+                    cropMode =
+                        "main";
+
+
+                    cropExistingCard =
+                        button.closest(
+                            ".current-image-card"
+                        );
+
+
+                    openCropFromUrl(
+                        imageUrl
+                    );
+
+                }
+            );
+
+        });
+
+
+
+    /* ==========================================================
+       OPEN EXISTING IMAGE IN CROPPER
+    ========================================================== */
+
+    function openCropFromUrl(url) {
+
+        if (
+            !cropModal ||
+            !cropImage
+        ) {
+            return;
+        }
+
+
+        destroyCropper();
+
+
+        cropModal.classList.add(
+            "show"
+        );
+
+
+        document.body.classList.add(
+            "crop-open"
+        );
+
+
+        cropImage.crossOrigin =
+            "anonymous";
+
+
+        cropImage.src =
+            url;
+
+
+        cropImage.onload =
+            () => {
+
+                createCropper();
+
+            };
+
+
+        cropImage.onerror =
+            () => {
+
+                closeCropModal();
+
+                alert(
+                    "Unable to load this image for editing."
+                );
+
+            };
+
+    }
+
+
+
+    /* ==========================================================
+       NEW PHOTO SELECTION
     ========================================================== */
 
     imageInput?.addEventListener(
@@ -176,13 +531,15 @@ document.addEventListener("DOMContentLoaded", () => {
         () => {
 
             const files =
-                Array.from(
-                    imageInput.files
-                ).filter(file =>
-                    file.type.startsWith(
-                        "image/"
+                Array
+                    .from(
+                        imageInput.files
                     )
-                );
+                    .filter(file =>
+                        file.type.startsWith(
+                            "image/"
+                        )
+                    );
 
 
             selectedFiles = [
@@ -191,8 +548,9 @@ document.addEventListener("DOMContentLoaded", () => {
             ];
 
 
-            updateFileInput();
-            renderPreviews();
+            updateNewFileInput();
+
+            renderNewPreviews();
 
         }
     );
@@ -203,7 +561,7 @@ document.addEventListener("DOMContentLoaded", () => {
        RENDER NEW IMAGE PREVIEWS
     ========================================================== */
 
-    function renderPreviews() {
+    function renderNewPreviews() {
 
         if (
             !previewGrid ||
@@ -259,7 +617,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
                             <img
                                 src="${event.target.result}"
-                                alt="New selected image"
+                                alt="New selected product image"
                             >
 
                             <div class="preview-actions">
@@ -306,7 +664,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
 
     /* ==========================================================
-       PREVIEW ACTIONS
+       NEW IMAGE ACTIONS
     ========================================================== */
 
     previewGrid?.addEventListener(
@@ -327,16 +685,31 @@ document.addEventListener("DOMContentLoaded", () => {
 
             if (editButton) {
 
-                editingIndex =
+                const index =
                     Number(
                         editButton.dataset.index
                     );
 
 
-                openCropModal(
-                    selectedFiles[
-                        editingIndex
-                    ]
+                const file =
+                    selectedFiles[index];
+
+
+                if (!file) {
+                    return;
+                }
+
+
+                cropMode =
+                    "new";
+
+
+                cropNewIndex =
+                    index;
+
+
+                openCropFromFile(
+                    file
                 );
 
             }
@@ -356,8 +729,9 @@ document.addEventListener("DOMContentLoaded", () => {
                 );
 
 
-                updateFileInput();
-                renderPreviews();
+                updateNewFileInput();
+
+                renderNewPreviews();
 
             }
 
@@ -367,10 +741,10 @@ document.addEventListener("DOMContentLoaded", () => {
 
 
     /* ==========================================================
-       OPEN CROP
+       OPEN NEW FILE IN CROPPER
     ========================================================== */
 
-    function openCropModal(file) {
+    function openCropFromFile(file) {
 
         if (
             !file ||
@@ -388,6 +762,14 @@ document.addEventListener("DOMContentLoaded", () => {
         reader.onload =
             event => {
 
+                destroyCropper();
+
+
+                cropImage.removeAttribute(
+                    "crossorigin"
+                );
+
+
                 cropImage.src =
                     event.target.result;
 
@@ -402,23 +784,12 @@ document.addEventListener("DOMContentLoaded", () => {
                 );
 
 
-                cropper?.destroy();
+                cropImage.onload =
+                    () => {
 
+                        createCropper();
 
-                cropper =
-                    new Cropper(
-                        cropImage,
-                        {
-                            viewMode: 1,
-                            autoCropArea: 1,
-                            movable: true,
-                            zoomable: true,
-                            rotatable: true,
-                            scalable: true,
-                            responsive: true,
-                            background: false
-                        }
-                    );
+                    };
 
             };
 
@@ -432,6 +803,41 @@ document.addEventListener("DOMContentLoaded", () => {
 
 
     /* ==========================================================
+       CREATE CROPPER
+    ========================================================== */
+
+    function createCropper() {
+
+        destroyCropper();
+
+
+        cropper =
+            new Cropper(
+                cropImage,
+                {
+                    viewMode: 1,
+
+                    autoCropArea: 1,
+
+                    movable: true,
+
+                    zoomable: true,
+
+                    rotatable: true,
+
+                    scalable: true,
+
+                    responsive: true,
+
+                    background: false
+                }
+            );
+
+    }
+
+
+
+    /* ==========================================================
        SAVE CROP
     ========================================================== */
 
@@ -439,10 +845,7 @@ document.addEventListener("DOMContentLoaded", () => {
         "click",
         () => {
 
-            if (
-                !cropper ||
-                editingIndex === null
-            ) {
+            if (!cropper) {
                 return;
             }
 
@@ -456,26 +859,33 @@ document.addEventListener("DOMContentLoaded", () => {
                 });
 
 
+            if (!canvas) {
+
+                alert(
+                    "Unable to crop this image."
+                );
+
+                return;
+            }
+
+
             canvas.toBlob(
                 blob => {
 
                     if (!blob) {
+
+                        alert(
+                            "Unable to save this crop."
+                        );
+
                         return;
                     }
 
 
-                    const oldFile =
-                        selectedFiles[
-                            editingIndex
-                        ];
-
-
-                    selectedFiles[
-                        editingIndex
-                    ] =
+                    const file =
                         new File(
                             [blob],
-                            oldFile.name,
+                            `squeeb-crop-${Date.now()}.jpg`,
                             {
                                 type:
                                     "image/jpeg",
@@ -486,15 +896,78 @@ document.addEventListener("DOMContentLoaded", () => {
                         );
 
 
-                    updateFileInput();
-                    renderPreviews();
+                    /* ----------------------------------------------
+                       NEW IMAGE
+                    ---------------------------------------------- */
+
+                    if (
+                        cropMode === "new" &&
+                        cropNewIndex !== null
+                    ) {
+
+                        selectedFiles[
+                            cropNewIndex
+                        ] = file;
+
+
+                        updateNewFileInput();
+
+                        renderNewPreviews();
+
+                    }
+
+
+                    /* ----------------------------------------------
+                       EXISTING PRODUCTIMAGE
+                    ---------------------------------------------- */
+
+                    if (
+                        cropMode === "existing" &&
+                        cropExistingId
+                    ) {
+
+                        createExistingCropInput(
+                            cropExistingId,
+                            file
+                        );
+
+
+                        updateCurrentCardPreview(
+                            cropExistingCard,
+                            blob
+                        );
+
+                    }
+
+
+                    /* ----------------------------------------------
+                       LEGACY MAIN IMAGE
+                    ---------------------------------------------- */
+
+                    if (
+                        cropMode === "main"
+                    ) {
+
+                        createMainCropInput(
+                            file
+                        );
+
+
+                        updateCurrentCardPreview(
+                            cropExistingCard,
+                            blob
+                        );
+
+                    }
+
+
                     closeCropModal();
 
                 },
 
                 "image/jpeg",
 
-                .9
+                0.92
             );
 
         }
@@ -503,7 +976,174 @@ document.addEventListener("DOMContentLoaded", () => {
 
 
     /* ==========================================================
-       CLOSE CROP
+       EXISTING CROP FILE INPUT
+    ========================================================== */
+
+    function createExistingCropInput(
+        imageId,
+        file
+    ) {
+
+        const inputId =
+            `crop-existing-input-${imageId}`;
+
+
+        let input =
+            document.getElementById(
+                inputId
+            );
+
+
+        if (!input) {
+
+            input =
+                document.createElement(
+                    "input"
+                );
+
+
+            input.type =
+                "file";
+
+
+            input.hidden =
+                true;
+
+
+            input.id =
+                inputId;
+
+
+            input.name =
+                `crop_existing_${imageId}`;
+
+
+            form.appendChild(
+                input
+            );
+
+        }
+
+
+        const transfer =
+            new DataTransfer();
+
+
+        transfer.items.add(
+            file
+        );
+
+
+        input.files =
+            transfer.files;
+
+    }
+
+
+
+    /* ==========================================================
+       LEGACY MAIN CROP INPUT
+    ========================================================== */
+
+    function createMainCropInput(file) {
+
+        let input =
+            document.getElementById(
+                "cropMainImageInput"
+            );
+
+
+        if (!input) {
+
+            input =
+                document.createElement(
+                    "input"
+                );
+
+
+            input.type =
+                "file";
+
+
+            input.hidden =
+                true;
+
+
+            input.id =
+                "cropMainImageInput";
+
+
+            input.name =
+                "crop_main_image";
+
+
+            form.appendChild(
+                input
+            );
+
+        }
+
+
+        const transfer =
+            new DataTransfer();
+
+
+        transfer.items.add(
+            file
+        );
+
+
+        input.files =
+            transfer.files;
+
+    }
+
+
+
+    /* ==========================================================
+       UPDATE CURRENT IMAGE PREVIEW
+    ========================================================== */
+
+    function updateCurrentCardPreview(
+        card,
+        blob
+    ) {
+
+        if (!card) {
+            return;
+        }
+
+
+        const image =
+            card.querySelector("img");
+
+
+        if (!image) {
+            return;
+        }
+
+
+        image.removeAttribute(
+            "crossorigin"
+        );
+
+
+        image.src =
+            URL.createObjectURL(
+                blob
+            );
+
+
+        card.classList.add(
+            "has-crop"
+        );
+
+    }
+
+
+
+    /* ==========================================================
+       CLOSE CROPPER
     ========================================================== */
 
     cancelCropBtn?.addEventListener(
@@ -554,6 +1194,20 @@ document.addEventListener("DOMContentLoaded", () => {
     );
 
 
+    function destroyCropper() {
+
+        if (cropper) {
+
+            cropper.destroy();
+
+            cropper =
+                null;
+
+        }
+
+    }
+
+
     function closeCropModal() {
 
         cropModal?.classList.remove(
@@ -566,43 +1220,58 @@ document.addEventListener("DOMContentLoaded", () => {
         );
 
 
-        cropper?.destroy();
-
-
-        cropper = null;
-        editingIndex = null;
+        destroyCropper();
 
 
         if (cropImage) {
+
+            cropImage.onload =
+                null;
+
+            cropImage.onerror =
+                null;
 
             cropImage.src =
                 "";
 
         }
 
+
+        cropMode =
+            null;
+
+        cropNewIndex =
+            null;
+
+        cropExistingId =
+            null;
+
+        cropExistingCard =
+            null;
+
     }
 
 
 
     /* ==========================================================
-       UPDATE FILE INPUT
+       UPDATE NEW FILE INPUT
     ========================================================== */
 
-    function updateFileInput() {
+    function updateNewFileInput() {
 
         if (!imageInput) {
             return;
         }
 
 
-        const dataTransfer =
+        const transfer =
             new DataTransfer();
 
 
         selectedFiles.forEach(
             file => {
 
-                dataTransfer.items.add(
+                transfer.items.add(
                     file
                 );
 
@@ -611,7 +1280,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
 
         imageInput.files =
-            dataTransfer.files;
+            transfer.files;
 
     }
 
@@ -661,13 +1330,15 @@ document.addEventListener("DOMContentLoaded", () => {
 
 
             const files =
-                Array.from(
-                    event.dataTransfer.files
-                ).filter(file =>
-                    file.type.startsWith(
-                        "image/"
+                Array
+                    .from(
+                        event.dataTransfer.files
                     )
-                );
+                    .filter(file =>
+                        file.type.startsWith(
+                            "image/"
+                        )
+                    );
 
 
             selectedFiles = [
@@ -676,8 +1347,9 @@ document.addEventListener("DOMContentLoaded", () => {
             ];
 
 
-            updateFileInput();
-            renderPreviews();
+            updateNewFileInput();
+
+            renderNewPreviews();
 
         }
     );
@@ -714,7 +1386,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
 
     /* ==========================================================
-       FORM VALIDATION
+       VALIDATE FORM
     ========================================================== */
 
     form?.addEventListener(
@@ -780,7 +1452,9 @@ document.addEventListener("DOMContentLoaded", () => {
             }
 
 
-            updateFileInput();
+            syncRemovedImageIds();
+
+            updateNewFileInput();
 
         }
     );
