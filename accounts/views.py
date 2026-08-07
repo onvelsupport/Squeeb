@@ -11,6 +11,7 @@ import urllib.error
 import urllib.request
 from decimal import Decimal
 from functools import wraps
+from django.db.models import Q
 
 
 # ==========================================================
@@ -3087,26 +3088,308 @@ def product_detail(request, product_id):
         }
     )
 
+# ==========================================================
+# MARKETPLACE MESSAGES
+# ==========================================================
+
 @login_required
-def send_product_message(request, product_id):
-    product = get_object_or_404(Product, id=product_id)
+def messages_inbox(request):
+    """
+    Shows one conversation per product + user pair.
 
-    if request.user == product.seller:
-        return redirect("product_detail", product_id=product.id)
+    The newest message becomes the inbox preview.
+    """
 
-    if request.method == "POST":
-        message = request.POST.get("message")
+    user = request.user
 
-        ProductMessage.objects.create(
-            product=product,
-            sender=request.user,
-            receiver=product.seller,
-            message=message
+    all_messages = (
+        ProductMessage.objects
+        .filter(
+            Q(sender=user) |
+            Q(receiver=user)
+        )
+        .select_related(
+            "product",
+            "sender",
+            "receiver",
+        )
+        .order_by("-created_at")
+    )
+
+    conversations = {}
+
+
+    for message in all_messages:
+
+        if message.sender_id == user.id:
+            other_user = message.receiver
+        else:
+            other_user = message.sender
+
+
+        key = (
+            message.product_id,
+            other_user.id,
         )
 
-        return redirect("product_detail", product_id=product.id)
 
-    return redirect("product_detail", product_id=product.id)
+        if key not in conversations:
+
+            conversations[key] = {
+                "product": message.product,
+                "other_user": other_user,
+                "last_message": message,
+                "unread_count": 0,
+            }
+
+
+        if (
+            message.receiver_id == user.id
+            and not message.is_read
+        ):
+
+            conversations[key]["unread_count"] += 1
+
+
+    conversation_list = list(
+        conversations.values()
+    )
+
+
+    total_unread = sum(
+        conversation["unread_count"]
+        for conversation in conversation_list
+    )
+
+
+    return render(
+        request,
+        "accounts/marketplace/messages.html",
+        {
+            "conversations": conversation_list,
+            "total_unread": total_unread,
+        },
+    )
+
+
+@login_required
+def messages_conversation(
+    request,
+    product_id,
+    user_id,
+):
+    """
+    Opens a buyer/seller conversation for one product.
+    """
+
+    product = get_object_or_404(
+        Product,
+        id=product_id,
+    )
+
+
+    other_user = get_object_or_404(
+        User,
+        id=user_id,
+    )
+
+
+    # Prevent trying to message yourself.
+    if other_user.id == request.user.id:
+
+        return redirect(
+            "messages_inbox"
+        )
+
+
+    # One participant must be the product seller.
+    participant_ids = {
+        request.user.id,
+        other_user.id,
+    }
+
+
+    if product.seller_id not in participant_ids:
+
+        return redirect(
+            "messages_inbox"
+        )
+
+
+    conversation_messages = (
+        ProductMessage.objects
+        .filter(
+            product=product,
+        )
+        .filter(
+            Q(
+                sender=request.user,
+                receiver=other_user,
+            )
+            |
+            Q(
+                sender=other_user,
+                receiver=request.user,
+            )
+        )
+        .select_related(
+            "sender",
+            "receiver",
+        )
+        .order_by("created_at")
+    )
+
+
+    # ==========================================================
+    # SEND REPLY
+    # ==========================================================
+
+    if request.method == "POST":
+
+        message_text = (
+            request.POST
+            .get(
+                "message",
+                "",
+            )
+            .strip()
+        )
+
+
+        if message_text:
+
+            new_message = (
+                ProductMessage.objects.create(
+                    product=product,
+                    sender=request.user,
+                    receiver=other_user,
+                    message=message_text,
+                )
+            )
+
+
+            Notification.objects.create(
+                user=other_user,
+                title="New marketplace message",
+                message=(
+                    f"{request.user.username} sent you "
+                    f"a message about {product.title}."
+                ),
+                link=reverse(
+                    "messages_conversation",
+                    args=[
+                        product.id,
+                        request.user.id,
+                    ],
+                ),
+            )
+
+
+        return redirect(
+            "messages_conversation",
+            product_id=product.id,
+            user_id=other_user.id,
+        )
+
+
+    # ==========================================================
+    # MARK RECEIVED MESSAGES AS READ
+    # ==========================================================
+
+    ProductMessage.objects.filter(
+        product=product,
+        sender=other_user,
+        receiver=request.user,
+        is_read=False,
+    ).update(
+        is_read=True
+    )
+
+
+    return render(
+        request,
+        "accounts/marketplace/messages_conversation.html",
+        {
+            "product": product,
+            "other_user": other_user,
+            "conversation_messages": conversation_messages,
+        },
+    )
+
+
+@login_required
+def send_product_message(
+    request,
+    product_id,
+):
+    """
+    Starts a conversation from the product-detail page.
+    """
+
+    product = get_object_or_404(
+        Product,
+        id=product_id,
+    )
+
+
+    if request.user == product.seller:
+
+        return redirect(
+            "product_detail",
+            product_id=product.id,
+        )
+
+
+    if request.method == "POST":
+
+        message_text = (
+            request.POST
+            .get(
+                "message",
+                "",
+            )
+            .strip()
+        )
+
+
+        if message_text:
+
+            ProductMessage.objects.create(
+                product=product,
+                sender=request.user,
+                receiver=product.seller,
+                message=message_text,
+            )
+
+
+            Notification.objects.create(
+                user=product.seller,
+                title="New marketplace message",
+                message=(
+                    f"{request.user.username} sent you "
+                    f"a message about {product.title}."
+                ),
+                link=reverse(
+                    "messages_conversation",
+                    args=[
+                        product.id,
+                        request.user.id,
+                    ],
+                ),
+            )
+
+
+            return redirect(
+                "messages_conversation",
+                product_id=product.id,
+                user_id=product.seller.id,
+            )
+
+
+    return redirect(
+        "product_detail",
+        product_id=product.id,
+    )
 
 
 @login_required

@@ -1,0 +1,307 @@
+{% extends 'accounts/base.html' %}
+{% load static %}
+
+{% block title %}
+Messages | SQUEEB
+{% endblock %}
+
+
+{% block extra_css %}
+<link
+    rel="stylesheet"
+    href="{% static 'accounts/css/messages.css' %}"
+>
+{% endblock %}
+
+
+{% block content %}
+
+<div class="messages-page">
+
+    <!-- ==========================================================
+         HEADER
+    ========================================================== -->
+
+    <section class="messages-header">
+
+        <div>
+
+            <a
+                href="{% url 'marketplace' %}"
+                class="messages-back"
+            >
+
+                <i class="fa-solid fa-arrow-left"></i>
+
+                Marketplace
+
+            </a>
+
+
+            <span class="messages-kicker">
+                SQUEEB MARKET
+            </span>
+
+
+            <h1>
+                Messages
+            </h1>
+
+
+            <p>
+                Your marketplace conversations with buyers and sellers.
+            </p>
+
+        </div>
+
+
+        <div class="message-stat">
+
+            <span class="message-stat-icon">
+
+                <i class="fa-regular fa-message"></i>
+
+            </span>
+
+
+            <div>
+
+                <small>
+                    Unread
+                </small>
+
+                <strong>
+                    {{ total_unread }}
+                </strong>
+
+            </div>
+
+        </div>
+
+    </section>
+
+
+    <!-- ==========================================================
+         INBOX
+    ========================================================== -->
+
+    <section class="inbox-panel">
+
+        <div class="inbox-top">
+
+            <div>
+
+                <span>
+                    INBOX
+                </span>
+
+                <h2>
+                    Conversations
+                </h2>
+
+            </div>
+
+
+            {% if conversations %}
+
+                <span class="conversation-total">
+
+                    {{ conversations|length }}
+
+                    conversation{{ conversations|length|pluralize }}
+
+                </span>
+
+            {% endif %}
+
+        </div>
+
+
+        {% if conversations %}
+
+        <div class="conversation-list">
+
+            {% for conversation in conversations %}
+
+            <a
+                href="{% url 'messages_conversation' conversation.product.id conversation.other_user.id %}"
+                class="
+                    conversation-row
+                    {% if conversation.unread_count %}
+                        unread
+                    {% endif %}
+                "
+            >
+
+                <!-- ==============================================
+                     PRODUCT IMAGE
+                =============================================== -->
+
+                <div class="conversation-product-image">
+
+                    {% if conversation.product.images.first %}
+
+                        <img
+                            src="{{ conversation.product.images.first.image.url }}"
+                            alt="{{ conversation.product.title }}"
+                        >
+
+                    {% elif conversation.product.image %}
+
+                        <img
+                            src="{{ conversation.product.image.url }}"
+                            alt="{{ conversation.product.title }}"
+                        >
+
+                    {% else %}
+
+                        <div class="conversation-placeholder">
+
+                            <i class="fa-regular fa-image"></i>
+
+                        </div>
+
+                    {% endif %}
+
+                </div>
+
+
+                <!-- ==============================================
+                     INFO
+                =============================================== -->
+
+                <div class="conversation-main">
+
+                    <div class="conversation-heading">
+
+                        <strong>
+                            {{ conversation.other_user.username }}
+                        </strong>
+
+
+                        <time>
+                            {{ conversation.last_message.created_at|date:"d M, H:i" }}
+                        </time>
+
+                    </div>
+
+
+                    <span class="conversation-product">
+
+                        {{ conversation.product.title }}
+
+                    </span>
+
+
+                    <div class="conversation-preview">
+
+                        {% if conversation.last_message.sender == request.user %}
+
+                            <span class="you-label">
+                                You:
+                            </span>
+
+                        {% endif %}
+
+
+                        <p>
+
+                            {{ conversation.last_message.message|truncatechars:90 }}
+
+                        </p>
+
+                    </div>
+
+                </div>
+
+
+                <!-- ==============================================
+                     RIGHT
+                =============================================== -->
+
+                <div class="conversation-side">
+
+                    {% if conversation.unread_count %}
+
+                        <span class="unread-count">
+
+                            {{ conversation.unread_count }}
+
+                        </span>
+
+                    {% endif %}
+
+
+                    <i class="fa-solid fa-chevron-right"></i>
+
+                </div>
+
+            </a>
+
+            {% endfor %}
+
+        </div>
+
+
+        {% else %}
+
+        <!-- ======================================================
+             EMPTY
+        ======================================================= -->
+
+        <div class="empty-messages">
+
+            <div class="empty-message-icon">
+
+                <i class="fa-regular fa-message"></i>
+
+            </div>
+
+
+            <span>
+                YOUR INBOX
+            </span>
+
+
+            <h2>
+                No messages yet
+            </h2>
+
+
+            <p>
+                When you message a seller or somebody contacts you
+                about one of your listings, the conversation will
+                appear here.
+            </p>
+
+
+            <a
+                href="{% url 'marketplace' %}"
+                class="browse-market-btn"
+            >
+
+                <span>
+                    Browse Marketplace
+                </span>
+
+                <i class="fa-solid fa-arrow-right"></i>
+
+            </a>
+
+        </div>
+
+        {% endif %}
+
+    </section>
+
+</div>
+
+{% endblock %}
+
+
+{% block extra_js %}
+<script
+    src="{% static 'accounts/js/messages.js' %}"
+    defer
+></script>
+{% endblock %}

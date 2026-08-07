@@ -83,6 +83,8 @@ from .views import (
     influencer_terms,
     update_password_api,
     update_password_page,
+    messages_inbox,
+    messages_conversation,
 )
 
 
@@ -521,6 +523,23 @@ path(
         send_product_message,
         name="send_product_message",
     ),
+
+
+    # ==========================================================
+# MARKETPLACE MESSAGES
+# ==========================================================
+
+path(
+    "messages/",
+    messages_inbox,
+    name="messages_inbox",
+),
+
+path(
+    "messages/<int:product_id>/<int:user_id>/",
+    messages_conversation,
+    name="messages_conversation",
+),
 
     # ==========================================================
     # SHOPPING CART
