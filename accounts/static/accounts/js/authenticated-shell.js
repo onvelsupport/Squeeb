@@ -1,18 +1,21 @@
 document.addEventListener("DOMContentLoaded", () => {
 
     /*
-     * Shared logged-in header functionality only.
+     * ==========================================================
+     * SHARED AUTHENTICATED SQUEEB SHELL
+     * ==========================================================
      *
-     * API shapes used by the current backend:
-     * /api/search/?q=
-     *   { results: [{ name, type, url }] }
-     *
-     * /api/notifications/
-     *   { notifications: [...], unread_count: number }
-     *
-     * /api/notifications/read/
-     *   POST -> { success: true }
+     * Handles:
+     * - Mobile dashboard navigation
+     * - Global search
+     * - Notifications
+     * - Global close behaviour
      */
+
+
+    /* ==========================================================
+       ELEMENTS
+    ========================================================== */
 
     const mobileMenuBtn =
         document.getElementById("mobileMenuBtn");
@@ -20,11 +23,13 @@ document.addEventListener("DOMContentLoaded", () => {
     const mobileDropdown =
         document.getElementById("mobileDropdown");
 
+
     const searchInput =
         document.getElementById("globalSearchInput");
 
     const searchResults =
         document.getElementById("searchResults");
+
 
     const openNotificationsBtn =
         document.getElementById("openNotifications");
@@ -52,7 +57,12 @@ document.addEventListener("DOMContentLoaded", () => {
     let notificationsPromise = null;
 
 
+    /* ==========================================================
+       HELPERS
+    ========================================================== */
+
     function escapeHtml(value) {
+
         const div =
             document.createElement("div");
 
@@ -70,22 +80,29 @@ document.addEventListener("DOMContentLoaded", () => {
                 ? document.cookie.split(";")
                 : [];
 
+
         for (let cookie of cookies) {
 
-            cookie = cookie.trim();
+            cookie =
+                cookie.trim();
+
 
             if (
                 cookie.startsWith(
                     `${name}=`
                 )
             ) {
+
                 return decodeURIComponent(
                     cookie.substring(
                         name.length + 1
                     )
                 );
+
             }
+
         }
+
 
         return "";
     }
@@ -98,25 +115,34 @@ document.addEventListener("DOMContentLoaded", () => {
                 "content-type"
             ) || "";
 
+
         if (
             !contentType.includes(
                 "application/json"
             )
         ) {
+
             return {};
+
         }
 
+
         try {
+
             return await response.json();
+
         } catch {
+
             return {};
+
         }
     }
 
 
-    /* ======================================================
-       LOGGED-IN MOBILE MENU
-       ====================================================== */
+
+    /* ==========================================================
+       MOBILE DASHBOARD MENU
+    ========================================================== */
 
     function setMobileMenu(open) {
 
@@ -124,18 +150,60 @@ document.addEventListener("DOMContentLoaded", () => {
             !mobileMenuBtn ||
             !mobileDropdown
         ) {
+
             return;
+
         }
 
-        mobileDropdown.hidden = !open;
 
-        mobileMenuBtn.setAttribute(
-            "aria-expanded",
-            String(open)
-        );
+        /*
+         * IMPORTANT:
+         *
+         * base.html starts the menu with:
+         *
+         * hidden
+         *
+         * Some of the SQUEEB shell CSS also uses:
+         *
+         * .mobile-dropdown.show
+         *
+         * Therefore we handle BOTH.
+         */
+
+        if (open) {
+
+            mobileDropdown.hidden =
+                false;
+
+            mobileDropdown.classList.add(
+                "show"
+            );
+
+            mobileMenuBtn.setAttribute(
+                "aria-expanded",
+                "true"
+            );
+
+        } else {
+
+            mobileDropdown.classList.remove(
+                "show"
+            );
+
+            mobileDropdown.hidden =
+                true;
+
+            mobileMenuBtn.setAttribute(
+                "aria-expanded",
+                "false"
+            );
+
+        }
+
 
         const icon =
             mobileMenuBtn.querySelector("i");
+
 
         if (icon) {
 
@@ -144,79 +212,184 @@ document.addEventListener("DOMContentLoaded", () => {
                 !open
             );
 
+
             icon.classList.toggle(
                 "fa-xmark",
                 open
             );
+
         }
+
     }
 
 
+    /*
+     * Make sure menu starts closed.
+     */
+
+    if (
+        mobileMenuBtn &&
+        mobileDropdown
+    ) {
+
+        setMobileMenu(false);
+
+    }
+
+
+    /*
+     * Hamburger click
+     */
+
     mobileMenuBtn?.addEventListener(
         "click",
-        (event) => {
+        event => {
 
+            event.preventDefault();
             event.stopPropagation();
 
-            const open =
+
+            const currentlyOpen =
                 mobileMenuBtn.getAttribute(
                     "aria-expanded"
-                ) !== "true";
+                ) === "true";
 
-            setMobileMenu(open);
+
+            setMobileMenu(
+                !currentlyOpen
+            );
+
         }
     );
 
+
+    /*
+     * Stop clicks inside dropdown from
+     * immediately reaching document click.
+     */
 
     mobileDropdown?.addEventListener(
         "click",
-        (event) => {
+        event => {
 
-            if (
-                event.target.closest("a")
-            ) {
+            event.stopPropagation();
+
+
+            const link =
+                event.target.closest("a");
+
+
+            if (link) {
+
                 setMobileMenu(false);
+
             }
+
         }
     );
 
 
-    /* ======================================================
-       SEARCH
-       ====================================================== */
+
+    /* ==========================================================
+       GLOBAL SEARCH
+    ========================================================== */
 
     function closeSearchResults() {
 
         if (!searchResults) {
+
             return;
+
         }
 
-        searchResults.hidden = true;
-        searchResults.innerHTML = "";
+
+        searchResults.hidden =
+            true;
+
+        searchResults.classList.remove(
+            "show"
+        );
+
+        searchResults.innerHTML =
+            "";
+
 
         searchInput?.setAttribute(
             "aria-expanded",
             "false"
         );
+
+    }
+
+
+    function showSearchResults() {
+
+        if (!searchResults) {
+
+            return;
+
+        }
+
+
+        searchResults.hidden =
+            false;
+
+        searchResults.classList.add(
+            "show"
+        );
+
+
+        searchInput?.setAttribute(
+            "aria-expanded",
+            "true"
+        );
+
     }
 
 
     function searchIcon(type) {
 
         const value =
-            String(type || "").toLowerCase();
+            String(
+                type || ""
+            ).toLowerCase();
 
-        if (value === "user") {
+
+        if (
+            value === "user"
+        ) {
+
             return "fa-user";
+
         }
 
-        if (value === "product") {
+
+        if (
+            value === "product"
+        ) {
+
             return "fa-bag-shopping";
+
         }
 
-        if (value === "task") {
+
+        if (
+            value === "task"
+        ) {
+
             return "fa-list-check";
+
         }
+
+
+        if (
+            value === "service"
+        ) {
+
+            return "fa-briefcase";
+
+        }
+
 
         return "fa-magnifying-glass";
     }
@@ -225,10 +398,16 @@ document.addEventListener("DOMContentLoaded", () => {
     function renderSearchResults(results) {
 
         if (!searchResults) {
+
             return;
+
         }
 
-        if (!results.length) {
+
+        if (
+            !Array.isArray(results) ||
+            results.length === 0
+        ) {
 
             searchResults.innerHTML = `
                 <div class="search-empty">
@@ -236,63 +415,79 @@ document.addEventListener("DOMContentLoaded", () => {
                 </div>
             `;
 
-            searchResults.hidden = false;
 
-            searchInput?.setAttribute(
-                "aria-expanded",
-                "true"
-            );
+            showSearchResults();
 
             return;
+
         }
 
+
         searchResults.innerHTML =
-            results.map((item) => {
+            results
+                .map(item => {
 
-                const name =
-                    escapeHtml(
-                        item.name ||
-                        "Result"
-                    );
+                    const name =
+                        escapeHtml(
+                            item.name ||
+                            "Result"
+                        );
 
-                const type =
-                    escapeHtml(
-                        item.type ||
-                        "Result"
-                    );
 
-                const url =
-                    String(
-                        item.url || "#"
-                    );
+                    const type =
+                        escapeHtml(
+                            item.type ||
+                            "Result"
+                        );
 
-                const icon =
-                    searchIcon(item.type);
 
-                return `
-                    <a
-                        href="${escapeHtml(url)}"
-                        class="search-result-item"
-                        role="option"
-                    >
-                        <span class="search-result-icon">
-                            <i class="fa-solid ${icon}"></i>
-                        </span>
+                    const url =
+                        escapeHtml(
+                            String(
+                                item.url ||
+                                "#"
+                            )
+                        );
 
-                        <span class="search-result-copy">
-                            <strong>${name}</strong>
-                            <span>${type}</span>
-                        </span>
-                    </a>
-                `;
-            }).join("");
 
-        searchResults.hidden = false;
+                    const icon =
+                        searchIcon(
+                            item.type
+                        );
 
-        searchInput?.setAttribute(
-            "aria-expanded",
-            "true"
-        );
+
+                    return `
+                        <a
+                            href="${url}"
+                            class="search-result-item"
+                            role="option"
+                        >
+
+                            <span class="search-result-icon">
+                                <i class="fa-solid ${icon}"></i>
+                            </span>
+
+                            <span class="search-result-copy">
+
+                                <strong>
+                                    ${name}
+                                </strong>
+
+                                <span>
+                                    ${type}
+                                </span>
+
+                            </span>
+
+                        </a>
+                    `;
+
+                })
+                .join("");
+
+
+        showSearchResults();
+
     }
 
 
@@ -302,57 +497,75 @@ document.addEventListener("DOMContentLoaded", () => {
             !searchResults ||
             query.length < 2
         ) {
+
             closeSearchResults();
+
             return;
+
         }
 
+
         searchController?.abort();
+
 
         searchController =
             new AbortController();
 
+
         searchResults.innerHTML = `
             <div class="search-loading">
+                <i class="fa-solid fa-spinner fa-spin"></i>
                 Searching...
             </div>
         `;
 
-        searchResults.hidden = false;
+
+        showSearchResults();
+
 
         try {
 
-            const response = await fetch(
-                `/api/search/?q=${
-                    encodeURIComponent(query)
-                }`,
-                {
-                    credentials:
-                        "same-origin",
+            const response =
+                await fetch(
+                    `/api/search/?q=${encodeURIComponent(query)}`,
+                    {
+                        credentials:
+                            "same-origin",
 
-                    headers: {
-                        Accept:
-                            "application/json",
-                    },
+                        headers: {
+                            Accept:
+                                "application/json"
+                        },
 
-                    signal:
-                        searchController.signal,
-                }
-            );
+                        signal:
+                            searchController.signal
+                    }
+                );
+
 
             if (!response.ok) {
+
                 throw new Error(
                     "Search unavailable."
                 );
+
             }
 
+
             const data =
-                await parseJson(response);
+                await parseJson(
+                    response
+                );
+
 
             renderSearchResults(
-                Array.isArray(data.results)
+                Array.isArray(
+                    data.results
+                )
                     ? data.results
                     : []
             );
+
 
         } catch (error) {
 
@@ -360,13 +573,17 @@ document.addEventListener("DOMContentLoaded", () => {
                 error.name ===
                 "AbortError"
             ) {
+
                 return;
+
             }
+
 
             console.error(
                 "GLOBAL SEARCH ERROR:",
                 error
             );
+
 
             searchResults.innerHTML = `
                 <div class="search-empty">
@@ -374,8 +591,11 @@ document.addEventListener("DOMContentLoaded", () => {
                 </div>
             `;
 
-            searchResults.hidden = false;
+
+            showSearchResults();
+
         }
+
     }
 
 
@@ -384,60 +604,114 @@ document.addEventListener("DOMContentLoaded", () => {
         () => {
 
             const query =
-                searchInput.value.trim();
+                searchInput
+                    .value
+                    .trim();
+
 
             window.clearTimeout(
                 searchTimer
             );
 
-            if (query.length < 2) {
+
+            if (
+                query.length < 2
+            ) {
+
                 closeSearchResults();
+
                 return;
+
             }
+
 
             searchTimer =
                 window.setTimeout(
-                    () => runSearch(query),
+                    () => {
+
+                        runSearch(
+                            query
+                        );
+
+                    },
                     350
                 );
+
+        }
+    );
+
+
+    searchInput?.addEventListener(
+        "focus",
+        () => {
+
+            const query =
+                searchInput
+                    .value
+                    .trim();
+
+
+            if (
+                query.length >= 2 &&
+                searchResults?.innerHTML.trim()
+            ) {
+
+                showSearchResults();
+
+            }
+
         }
     );
 
 
     searchInput?.addEventListener(
         "keydown",
-        (event) => {
+        event => {
 
-            if (event.key === "Escape") {
+            if (
+                event.key ===
+                "Escape"
+            ) {
+
                 closeSearchResults();
+
                 searchInput.blur();
+
             }
+
         }
     );
 
 
     searchResults?.addEventListener(
         "click",
-        (event) => {
+        event => {
 
             if (
                 event.target.closest("a")
             ) {
+
                 closeSearchResults();
+
             }
+
         }
     );
 
 
-    /* ======================================================
-       NOTIFICATIONS
-       ====================================================== */
+
+    /* ==========================================================
+       NOTIFICATION COUNT
+    ========================================================== */
 
     function setNotificationCount(value) {
 
         if (!notificationCount) {
+
             return;
+
         }
+
 
         const count =
             Number.parseInt(
@@ -445,113 +719,176 @@ document.addEventListener("DOMContentLoaded", () => {
                 10
             ) || 0;
 
+
         notificationCount.textContent =
             String(count);
 
+
         notificationCount.hidden =
             count <= 0;
+
     }
 
+
+
+    /* ==========================================================
+       NOTIFICATION LINK
+    ========================================================== */
 
     function notificationLink(value) {
 
         const link =
-            String(value || "").trim();
+            String(
+                value || ""
+            ).trim();
+
 
         if (
             !link ||
-            link.startsWith("javascript:")
+            link
+                .toLowerCase()
+                .startsWith(
+                    "javascript:"
+                )
         ) {
+
             return "#";
+
         }
+
 
         return link;
     }
 
 
+
+    /* ==========================================================
+       RENDER NOTIFICATIONS
+    ========================================================== */
+
     function renderNotifications(items) {
 
         if (!notificationList) {
+
             return;
+
         }
 
-        if (!items.length) {
+
+        if (
+            !Array.isArray(items) ||
+            items.length === 0
+        ) {
 
             notificationList.innerHTML = `
                 <div class="empty-notification">
+
                     <i class="fa-regular fa-bell-slash"></i>
 
                     <p>
                         You do not have any notifications yet.
                     </p>
+
                 </div>
             `;
 
+
             return;
+
         }
 
+
         notificationList.innerHTML =
-            items.map((item) => {
+            items
+                .map(item => {
 
-                const title =
-                    escapeHtml(
-                        item.title ||
-                        "Notification"
-                    );
+                    const title =
+                        escapeHtml(
+                            item.title ||
+                            "Notification"
+                        );
 
-                const message =
-                    escapeHtml(
-                        item.message || ""
-                    );
 
-                const createdAt =
-                    escapeHtml(
-                        item.created_at || ""
-                    );
+                    const message =
+                        escapeHtml(
+                            item.message ||
+                            ""
+                        );
 
-                const link =
-                    escapeHtml(
-                        notificationLink(
-                            item.link
-                        )
-                    );
 
-                const unread =
-                    item.is_read
-                        ? ""
-                        : "unread";
+                    const createdAt =
+                        escapeHtml(
+                            item.created_at ||
+                            ""
+                        );
 
-                const unreadDot =
-                    item.is_read
-                        ? ""
-                        : `
-                            <span
-                                class="notification-unread-dot"
-                                aria-hidden="true"
-                            ></span>
-                        `;
 
-                return `
-                    <a
-                        href="${link}"
-                        class="notification-item ${unread}"
-                    >
-                        <span class="notification-icon">
-                            <i class="fa-regular fa-bell"></i>
-                        </span>
+                    const link =
+                        escapeHtml(
+                            notificationLink(
+                                item.link
+                            )
+                        );
 
-                        <span class="notification-copy">
-                            <strong>${title}</strong>
-                            <p>${message}</p>
-                            <time>${createdAt}</time>
-                        </span>
 
-                        ${unreadDot}
-                    </a>
-                `;
-            }).join("");
+                    const unreadClass =
+                        item.is_read
+                            ? ""
+                            : "unread";
+
+
+                    const unreadDot =
+                        item.is_read
+                            ? ""
+                            : `
+                                <span
+                                    class="notification-unread-dot"
+                                    aria-hidden="true"
+                                ></span>
+                            `;
+
+
+                    return `
+                        <a
+                            href="${link}"
+                            class="notification-item ${unreadClass}"
+                        >
+
+                            <span class="notification-icon">
+                                <i class="fa-regular fa-bell"></i>
+                            </span>
+
+                            <span class="notification-copy">
+
+                                <strong>
+                                    ${title}
+                                </strong>
+
+                                <p>
+                                    ${message}
+                                </p>
+
+                                <time>
+                                    ${createdAt}
+                                </time>
+
+                            </span>
+
+                            ${unreadDot}
+
+                        </a>
+                    `;
+
+                })
+                .join("");
+
     }
 
+
+
+    /* ==========================================================
+       LOAD NOTIFICATIONS
+    ========================================================== */
 
     async function loadNotifications(
         force = false
@@ -561,25 +898,35 @@ document.addEventListener("DOMContentLoaded", () => {
             notificationsLoaded &&
             !force
         ) {
+
             return;
+
         }
 
+
         if (notificationsPromise) {
+
             return notificationsPromise;
+
         }
+
 
         if (notificationList) {
 
             notificationList.innerHTML = `
                 <div class="notification-loading">
+
                     <i class="fa-solid fa-spinner fa-spin"></i>
 
                     <p>
                         Loading notifications...
                     </p>
+
                 </div>
             `;
+
         }
+
 
         notificationsPromise =
             (async () => {
@@ -595,19 +942,26 @@ document.addEventListener("DOMContentLoaded", () => {
 
                                 headers: {
                                     Accept:
-                                        "application/json",
-                                },
+                                        "application/json"
+                                }
                             }
                         );
 
+
                     if (!response.ok) {
+
                         throw new Error(
                             "Unable to load notifications."
                         );
+
                     }
 
+
                     const data =
-                        await parseJson(response);
+                        await parseJson(
+                            response
+                        );
+
 
                     const items =
                         Array.isArray(
@@ -616,16 +970,20 @@ document.addEventListener("DOMContentLoaded", () => {
                             ? data.notifications
                             : [];
 
+
                     renderNotifications(
                         items
                     );
+
 
                     setNotificationCount(
                         data.unread_count
                     );
 
+
                     notificationsLoaded =
                         true;
+
 
                 } catch (error) {
 
@@ -634,78 +992,109 @@ document.addEventListener("DOMContentLoaded", () => {
                         error
                     );
 
-                    if (notificationList) {
+
+                    if (
+                        notificationList
+                    ) {
 
                         notificationList.innerHTML = `
                             <div class="notification-error">
+
                                 <i class="fa-solid fa-triangle-exclamation"></i>
 
                                 <p>
                                     Unable to load notifications.
                                     Please try again.
                                 </p>
+
                             </div>
                         `;
+
                     }
+
 
                 } finally {
 
                     notificationsPromise =
                         null;
+
                 }
+
             })();
 
+
         return notificationsPromise;
+
     }
 
+
+
+    /* ==========================================================
+       MARK NOTIFICATIONS AS READ
+    ========================================================== */
 
     async function markNotificationsRead() {
 
         try {
 
-            const response = await fetch(
-                "/api/notifications/read/",
-                {
-                    method: "POST",
+            const response =
+                await fetch(
+                    "/api/notifications/read/",
+                    {
+                        method:
+                            "POST",
 
-                    credentials:
-                        "same-origin",
+                        credentials:
+                            "same-origin",
 
-                    headers: {
-                        Accept:
-                            "application/json",
+                        headers: {
 
-                        "X-CSRFToken":
-                            getCookie(
-                                "csrftoken"
-                            ),
+                            Accept:
+                                "application/json",
 
-                        "X-Requested-With":
-                            "XMLHttpRequest",
-                    },
-                }
-            );
+                            "X-CSRFToken":
+                                getCookie(
+                                    "csrftoken"
+                                ),
+
+                            "X-Requested-With":
+                                "XMLHttpRequest"
+                        }
+                    }
+                );
+
 
             if (!response.ok) {
+
                 return;
+
             }
 
-            setNotificationCount(0);
+
+            setNotificationCount(
+                0
+            );
+
 
             notificationList
                 ?.querySelectorAll(
                     ".notification-item.unread"
                 )
-                .forEach((item) => {
+                .forEach(item => {
 
                     item.classList.remove(
                         "unread"
                     );
 
-                    item.querySelector(
-                        ".notification-unread-dot"
-                    )?.remove();
+
+                    item
+                        .querySelector(
+                            ".notification-unread-dot"
+                        )
+                        ?.remove();
+
                 });
+
 
         } catch (error) {
 
@@ -713,9 +1102,16 @@ document.addEventListener("DOMContentLoaded", () => {
                 "MARK NOTIFICATIONS READ ERROR:",
                 error
             );
+
         }
+
     }
 
+
+
+    /* ==========================================================
+       NOTIFICATION PANEL
+    ========================================================== */
 
     function setNotificationPanel(open) {
 
@@ -723,75 +1119,157 @@ document.addEventListener("DOMContentLoaded", () => {
             !notificationPanel ||
             !notificationOverlay
         ) {
+
             return;
+
         }
+
 
         notificationPanel.classList.toggle(
             "show",
             open
         );
 
+
         notificationPanel.setAttribute(
             "aria-hidden",
             String(!open)
         );
 
+
         notificationOverlay.hidden =
             !open;
+
 
         openNotificationsBtn?.setAttribute(
             "aria-expanded",
             String(open)
         );
 
+
         document.body.classList.toggle(
             "notification-open",
             open
         );
+
     }
 
 
+
+    /* ==========================================================
+       OPEN NOTIFICATIONS
+    ========================================================== */
+
     openNotificationsBtn?.addEventListener(
         "click",
-        async () => {
+        async event => {
 
-            setMobileMenu(false);
+            event.preventDefault();
+            event.stopPropagation();
+
+
+            /*
+             * Close other header UI first.
+             */
+
+            setMobileMenu(
+                false
+            );
+
+
             closeSearchResults();
 
-            setNotificationPanel(true);
+
+            setNotificationPanel(
+                true
+            );
+
 
             await loadNotifications();
 
-            /*
-             * Mark as read only after the panel has successfully
-             * had a chance to load the current notification list.
-             */
-            if (notificationsLoaded) {
+
+            if (
+                notificationsLoaded
+            ) {
+
                 await markNotificationsRead();
+
             }
+
         }
     );
 
 
+
+    /* ==========================================================
+       CLOSE NOTIFICATIONS
+    ========================================================== */
+
     closeNotificationsBtn?.addEventListener(
         "click",
-        () => setNotificationPanel(false)
+        event => {
+
+            event.preventDefault();
+
+            setNotificationPanel(
+                false
+            );
+
+        }
     );
 
 
     notificationOverlay?.addEventListener(
         "click",
-        () => setNotificationPanel(false)
+        () => {
+
+            setNotificationPanel(
+                false
+            );
+
+        }
     );
 
 
-    /* ======================================================
-       GLOBAL CLOSE BEHAVIOUR
-       ====================================================== */
+
+    /* ==========================================================
+       NOTIFICATION ITEM CLICK
+    ========================================================== */
+
+    notificationList?.addEventListener(
+        "click",
+        event => {
+
+            const link =
+                event.target.closest(
+                    ".notification-item"
+                );
+
+
+            if (link) {
+
+                setNotificationPanel(
+                    false
+                );
+
+            }
+
+        }
+    );
+
+
+
+    /* ==========================================================
+       CLICK OUTSIDE
+    ========================================================== */
 
     document.addEventListener(
         "click",
-        (event) => {
+        event => {
+
+            /*
+             * Mobile menu
+             */
 
             if (
                 mobileMenuBtn &&
@@ -804,9 +1282,17 @@ document.addEventListener("DOMContentLoaded", () => {
                     event.target
                 )
             ) {
-                setMobileMenu(false);
+
+                setMobileMenu(
+                    false
+                );
+
             }
 
+
+            /*
+             * Search
+             */
 
             if (
                 searchInput &&
@@ -819,34 +1305,78 @@ document.addEventListener("DOMContentLoaded", () => {
                     event.target
                 )
             ) {
+
                 closeSearchResults();
+
             }
+
         }
     );
 
+
+
+    /* ==========================================================
+       ESCAPE KEY
+    ========================================================== */
 
     document.addEventListener(
         "keydown",
-        (event) => {
+        event => {
 
-            if (event.key !== "Escape") {
+            if (
+                event.key !==
+                "Escape"
+            ) {
+
                 return;
+
             }
 
-            setMobileMenu(false);
+
+            setMobileMenu(
+                false
+            );
+
+
             closeSearchResults();
-            setNotificationPanel(false);
+
+
+            setNotificationPanel(
+                false
+            );
+
         }
     );
 
+
+
+    /* ==========================================================
+       RESPONSIVE RESET
+    ========================================================== */
 
     window.addEventListener(
         "resize",
         () => {
 
-            if (window.innerWidth > 1050) {
-                setMobileMenu(false);
+            /*
+             * Desktop breakpoint.
+             *
+             * Closing here means that if someone opens
+             * the mobile menu and then rotates/resizes,
+             * it cannot remain stuck open.
+             */
+
+            if (
+                window.innerWidth >
+                1050
+            ) {
+
+                setMobileMenu(
+                    false
+                );
+
             }
+
         }
     );
 
