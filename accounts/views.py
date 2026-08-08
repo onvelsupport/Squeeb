@@ -3341,6 +3341,10 @@ def messages_conversation(
             )
 
 
+        # ======================================================
+        # SAVE MESSAGE
+        # ======================================================
+
         new_message = ProductMessage.objects.create(
             product=product,
             sender=request.user,
@@ -3350,7 +3354,7 @@ def messages_conversation(
 
 
         # ======================================================
-        # NOTIFICATION
+        # IN-APP NOTIFICATION
         # ======================================================
 
         try:
@@ -3362,12 +3366,16 @@ def messages_conversation(
                     f"{request.user.username} sent you "
                     f"a message about {product.title}."
                 ),
+                link=reverse(
+                    "messages_conversation",
+                    args=[
+                        product.id,
+                        request.user.id,
+                    ],
+                ),
             )
 
         except Exception as error:
-
-            # Messaging should still succeed even if
-            # notification creation has a problem.
 
             print(
                 "MESSAGE NOTIFICATION ERROR:",
@@ -3375,7 +3383,7 @@ def messages_conversation(
             )
 
 
-                # ======================================================
+        # ======================================================
         # EMAIL RECEIVER
         # ======================================================
 
@@ -3386,31 +3394,46 @@ def messages_conversation(
                 site_url = getattr(
                     settings,
                     "SITE_URL",
-                    "https://squeeb.co.uk"
+                    "https://squeeb.co.uk",
                 ).rstrip("/")
 
-                conversation_url = (
-                    f"{site_url}/marketplace/messages/"
-                    f"{product.id}/{request.user.id}/"
+
+                conversation_path = reverse(
+                    "messages_conversation",
+                    args=[
+                        product.id,
+                        request.user.id,
+                    ],
                 )
+
+
+                conversation_url = (
+                    f"{site_url}{conversation_path}"
+                )
+
 
                 message_preview = message_text
 
+
                 if len(message_preview) > 180:
+
                     message_preview = (
                         message_preview[:177]
                         + "..."
                     )
 
+
                 send_account_email(
                     user=other_user,
 
                     subject=(
-                        f"New Marketplace message from "
+                        "New Marketplace message from "
                         f"@{request.user.username}"
                     ),
 
-                    heading="You have a new Marketplace message",
+                    heading=(
+                        "You have a new Marketplace message"
+                    ),
 
                     message=(
                         f"@{request.user.username} sent you "
@@ -3439,10 +3462,11 @@ def messages_conversation(
                     action_url=conversation_url,
                 )
 
+
             except Exception as error:
 
-                # The Marketplace message must still be sent
-                # even if the email provider has a problem.
+                # Message still succeeds even if
+                # the email provider fails.
                 print(
                     "MARKETPLACE MESSAGE EMAIL ERROR:",
                     repr(error),
@@ -3575,6 +3599,10 @@ def send_product_message(
 
         if message_text:
 
+            # ==================================================
+            # SAVE MESSAGE
+            # ==================================================
+
             ProductMessage.objects.create(
                 product=product,
                 sender=request.user,
@@ -3583,54 +3611,87 @@ def send_product_message(
             )
 
 
-            Notification.objects.create(
-                user=product.seller,
-                title="New marketplace message",
-                message=(
-                    f"{request.user.username} sent you "
-                    f"a message about {product.title}."
-                ),
-                link=reverse(
-                    "messages_conversation",
-                    args=[
-                        product.id,
-                        request.user.id,
-                    ],
-                ),
-            )
+            # ==================================================
+            # IN-APP NOTIFICATION
+            # ==================================================
 
-                        if product.seller.email:
+            try:
+
+                Notification.objects.create(
+                    user=product.seller,
+                    title="New marketplace message",
+                    message=(
+                        f"{request.user.username} sent you "
+                        f"a message about {product.title}."
+                    ),
+                    link=reverse(
+                        "messages_conversation",
+                        args=[
+                            product.id,
+                            request.user.id,
+                        ],
+                    ),
+                )
+
+            except Exception as error:
+
+                print(
+                    "MESSAGE NOTIFICATION ERROR:",
+                    repr(error),
+                )
+
+
+            # ==================================================
+            # EMAIL SELLER
+            # ==================================================
+
+            if product.seller.email:
 
                 try:
 
                     site_url = getattr(
                         settings,
                         "SITE_URL",
-                        "https://squeeb.co.uk"
+                        "https://squeeb.co.uk",
                     ).rstrip("/")
 
-                    conversation_url = (
-                        f"{site_url}/marketplace/messages/"
-                        f"{product.id}/{request.user.id}/"
+
+                    conversation_path = reverse(
+                        "messages_conversation",
+                        args=[
+                            product.id,
+                            request.user.id,
+                        ],
                     )
+
+
+                    conversation_url = (
+                        f"{site_url}{conversation_path}"
+                    )
+
 
                     message_preview = message_text
 
+
                     if len(message_preview) > 180:
+
                         message_preview = (
                             message_preview[:177]
                             + "..."
                         )
 
+
                     send_account_email(
                         user=product.seller,
 
                         subject=(
-                            f"New Marketplace message from "
+                            "New Marketplace message from "
                             f"@{request.user.username}"
                         ),
 
-                        heading="You have a new Marketplace message",
+                        heading=(
+                            "You have a new Marketplace message"
+                        ),
 
                         message=(
                             f"@{request.user.username} is "
@@ -3658,6 +3719,7 @@ def send_product_message(
 
                         action_url=conversation_url,
                     )
+
 
                 except Exception as error:
 
