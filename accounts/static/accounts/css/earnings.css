@@ -1317,3 +1317,46 @@ input{
         font-size:12px;
     }
 }
+
+
+/* ==========================================================
+   MEMBERSHIP PRICE
+========================================================== */
+
+.membership-price-text {
+    margin-top: 6px;
+    color: #475569;
+    font-size: 13px;
+    line-height: 1.45;
+}
+
+.membership-price-text strong {
+    display: inline;
+    color: #0f172a;
+    font-weight: 900;
+}
+
+#membershipButtonPrice {
+    margin-left: 4px;
+    opacity: .9;
+}
+
+.activate-membership-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+}
+
+@media(max-width:700px){
+    .membership-price-text {
+        display: block !important;
+        margin-top: 5px;
+        font-size: 12px;
+    }
+
+    .activate-membership-btn {
+        flex: 0 0 auto;
+        white-space: nowrap;
+    }
+}

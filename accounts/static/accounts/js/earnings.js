@@ -4,9 +4,34 @@ document.addEventListener("DOMContentLoaded", () => {
     const withdrawalMessage = document.getElementById("withdrawalMessage");
     const withdrawalFee = document.getElementById("withdrawalFee");
 
-    const activateMembershipBtn = document.getElementById(
-        "activateMembershipBtn"
-    );
+    const activateMembershipBtn =
+        document.getElementById("activateMembershipBtn");
+
+    const membershipPriceText =
+        document.getElementById("membershipPriceText");
+
+    const membershipPrice =
+        document.getElementById("membershipPrice");
+
+    const membershipButtonPrice =
+        document.getElementById("membershipButtonPrice");
+
+    let currentMembershipPrice = 10;
+
+    function getMembershipPrice(country) {
+        const normalizedCountry =
+            String(country || "")
+                .trim()
+                .toLowerCase();
+
+        const isNigeria = [
+            "nigeria",
+            "ng",
+            "nga"
+        ].includes(normalizedCountry);
+
+        return isNigeria ? 5 : 10;
+    }
 
     const membershipActiveBadge = document.getElementById(
         "membershipActiveBadge"
@@ -166,6 +191,22 @@ document.addEventListener("DOMContentLoaded", () => {
 
             const user = await parseJsonResponse(response);
 
+            const userCountry =
+                user.country || "";
+
+            currentMembershipPrice =
+                getMembershipPrice(userCountry);
+
+            if (membershipPrice) {
+                membershipPrice.textContent =
+                    `£${currentMembershipPrice.toFixed(2)}`;
+            }
+
+            if (membershipButtonPrice) {
+                membershipButtonPrice.textContent =
+                    `• £${currentMembershipPrice.toFixed(2)}`;
+            }
+
             setText(
                 "usernameDisplay",
                 user.username || "User"
@@ -248,6 +289,10 @@ document.addEventListener("DOMContentLoaded", () => {
                 activateMembershipBtn.style.display = "none";
             }
 
+            if (membershipPriceText) {
+                membershipPriceText.hidden = true;
+            }
+
             if (membershipActiveBadge) {
                 membershipActiveBadge.hidden = false;
                 membershipActiveBadge.style.display = "flex";
@@ -277,6 +322,10 @@ document.addEventListener("DOMContentLoaded", () => {
                 activateMembershipBtn.style.display = "none";
             }
 
+            if (membershipPriceText) {
+                membershipPriceText.hidden = true;
+            }
+
             if (membershipActiveBadge) {
                 membershipActiveBadge.hidden = true;
                 membershipActiveBadge.style.display = "none";
@@ -300,9 +349,15 @@ document.addEventListener("DOMContentLoaded", () => {
             withdrawalFee.textContent = "10%";
         }
 
+        if (membershipPriceText) {
+            membershipPriceText.hidden = false;
+        }
+
         if (activateMembershipBtn) {
             activateMembershipBtn.hidden = false;
-            activateMembershipBtn.style.display = "block";
+            activateMembershipBtn.style.display = "inline-flex";
+            activateMembershipBtn.innerHTML =
+                `Activate Membership <span id="membershipButtonPrice">• £${currentMembershipPrice.toFixed(2)}</span>`;
         }
 
         if (membershipActiveBadge) {
@@ -1187,9 +1242,18 @@ document.addEventListener("DOMContentLoaded", () => {
     activateMembershipBtn?.addEventListener(
         "click",
         async () => {
+            const confirmed = window.confirm(
+                `Activate SQUEEB Membership for £${currentMembershipPrice.toFixed(2)}?\n\n` +
+                "This amount will be deducted from your SQUEEB wallet."
+            );
+
+            if (!confirmed) {
+                return;
+            }
+
             activateMembershipBtn.disabled = true;
             activateMembershipBtn.textContent =
-                "Processing...";
+                `Processing £${currentMembershipPrice.toFixed(2)}...`;
 
             try {
                 const response = await fetch(
@@ -1223,10 +1287,6 @@ document.addEventListener("DOMContentLoaded", () => {
                     "Membership activated successfully."
                 );
 
-                /*
-                 * Refresh user information so the membership
-                 * badge and withdrawal fee update immediately.
-                 */
                 await loadUser();
 
             } catch (error) {
@@ -1242,8 +1302,8 @@ document.addEventListener("DOMContentLoaded", () => {
             } finally {
                 activateMembershipBtn.disabled = false;
 
-                activateMembershipBtn.textContent =
-                    "Activate Membership";
+                activateMembershipBtn.innerHTML =
+                    `Activate Membership <span id="membershipButtonPrice">• £${currentMembershipPrice.toFixed(2)}</span>`;
             }
         }
     );
