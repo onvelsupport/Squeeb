@@ -1,7 +1,11 @@
 {% extends 'accounts/base.html' %}
 {% load static %}
 
-{% block title %}Review Submissions | SQUEEB{% endblock %}
+
+{% block title %}
+Review Submissions | SQUEEB
+{% endblock %}
+
 
 {% block extra_css %}
 <link
@@ -10,6 +14,7 @@
 >
 {% endblock %}
 
+
 {% block content %}
 
 <div
@@ -17,80 +22,223 @@
     id="reviewPage"
     data-task-id="{{ task.id }}"
 >
+
     <main class="review-page">
 
-        <!-- HEADER -->
+        <!-- =====================================================
+             HEADER
+        ====================================================== -->
+
         <section class="review-app-header">
 
-            <div>
-                <span class="review-kicker">TASK REVIEW</span>
+            <div class="review-header-copy">
 
-                <h1>{{ task.title }}</h1>
+                <span class="review-kicker">
+                    TASK REVIEW
+                </span>
+
+                <h1>
+                    {{ task.title }}
+                </h1>
 
                 <p>
-                    Review worker proof and approve or reject submissions.
+                    Review worker proof and manage previous submissions.
                 </p>
+
             </div>
+
 
             <a
                 href="{% url 'my_tasks' %}"
                 class="review-back-btn"
             >
                 <i class="fa-solid fa-arrow-left"></i>
-                <span>My Tasks</span>
+
+                <span>
+                    My Tasks
+                </span>
             </a>
 
         </section>
 
 
-        <!-- TASK INFO -->
+        <!-- =====================================================
+             TASK INFO
+        ====================================================== -->
+
         <section class="review-task-strip">
 
             <div class="review-task-icon">
                 <i class="fa-solid fa-list-check"></i>
             </div>
 
-            <div>
-                <span>REVIEW QUEUE</span>
-                <strong>Pending task submissions</strong>
+
+            <div class="review-task-copy">
+
+                <span>
+                    REVIEW QUEUE
+                </span>
+
+                <strong>
+                    Task submissions
+                </strong>
+
                 <small>
-                    Approving a valid submission credits the worker.
+                    Review new proof or view previously approved and rejected submissions.
                 </small>
+
             </div>
 
         </section>
 
 
-        <!-- SUBMISSIONS -->
+        <!-- =====================================================
+             SUBMISSIONS
+        ====================================================== -->
+
         <section class="review-section">
 
+            <!-- =================================================
+                 SECTION HEADER
+            ================================================== -->
+
             <div class="review-section-heading">
+
                 <div>
-                    <span>SUBMISSIONS</span>
-                    <h2>Proof awaiting review</h2>
+
+                    <span>
+                        SUBMISSIONS
+                    </span>
+
+                    <h2 id="reviewSectionTitle">
+                        Proof awaiting review
+                    </h2>
+
                 </div>
 
-                <small id="reviewCount">Loading…</small>
+
+                <div class="review-heading-actions">
+
+                    <small id="reviewCount">
+                        Loading…
+                    </small>
+
+
+                    <button
+                        type="button"
+                        class="approve-all-btn"
+                        id="approveAllBtn"
+                        hidden
+                    >
+                        <i class="fa-solid fa-check-double"></i>
+
+                        <span>
+                            Approve All
+                        </span>
+                    </button>
+
+                </div>
+
             </div>
+
+
+            <!-- =================================================
+                 FILTER TABS
+            ================================================== -->
+
+            <div
+                class="review-tabs"
+                role="tablist"
+                aria-label="Submission status"
+            >
+
+                <button
+                    type="button"
+                    class="review-tab active"
+                    data-status="pending"
+                    role="tab"
+                    aria-selected="true"
+                >
+                    <i class="fa-regular fa-clock"></i>
+
+                    Pending
+
+                    <span id="pendingTabCount">
+                        0
+                    </span>
+                </button>
+
+
+                <button
+                    type="button"
+                    class="review-tab"
+                    data-status="approved"
+                    role="tab"
+                    aria-selected="false"
+                >
+                    <i class="fa-solid fa-check"></i>
+
+                    Approved
+
+                    <span id="approvedTabCount">
+                        0
+                    </span>
+                </button>
+
+
+                <button
+                    type="button"
+                    class="review-tab"
+                    data-status="rejected"
+                    role="tab"
+                    aria-selected="false"
+                >
+                    <i class="fa-solid fa-xmark"></i>
+
+                    Rejected
+
+                    <span id="rejectedTabCount">
+                        0
+                    </span>
+                </button>
+
+            </div>
+
+
+            <!-- =================================================
+                 LIST
+            ================================================== -->
 
             <div
                 class="review-list"
                 id="reviewList"
                 aria-live="polite"
             >
+
                 <div class="empty-review">
+
                     <i class="fa-solid fa-spinner fa-spin"></i>
-                    <h3>Loading submissions</h3>
-                    <p>Please wait while we fetch submitted proofs.</p>
+
+                    <h3>
+                        Loading submissions
+                    </h3>
+
+                    <p>
+                        Please wait while we fetch submitted proofs.
+                    </p>
+
                 </div>
+
             </div>
 
         </section>
 
     </main>
+
 </div>
 
 {% endblock %}
+
 
 {% block extra_js %}
 <script

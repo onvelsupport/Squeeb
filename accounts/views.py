@@ -5512,15 +5512,46 @@ def task_submission_reviews(request, task_id):
 
 @login_required
 def task_submission_reviews_api(request, task_id):
-    task = get_object_or_404(Task, id=task_id)
+    task = get_object_or_404(
+        Task,
+        id=task_id
+    )
 
-    if task.creator != request.user and not request.user.is_staff:
-        return JsonResponse({"error": "Not allowed"}, status=403)
+    if (
+        task.creator != request.user
+        and not request.user.is_staff
+    ):
+        return JsonResponse(
+            {"error": "Not allowed"},
+            status=403
+        )
 
-    submissions = TaskCompletion.objects.filter(
-        task=task,
-        status="pending"
-    ).select_related("user", "task").order_by("-completed_at")
+    status_filter = (
+        request.GET
+        .get("status", "pending")
+        .strip()
+        .lower()
+    )
+
+    if status_filter not in {
+        "pending",
+        "approved",
+        "rejected",
+    }:
+        status_filter = "pending"
+
+    submissions = (
+        TaskCompletion.objects
+        .filter(
+            task=task,
+            status=status_filter,
+        )
+        .select_related(
+            "user",
+            "task",
+        )
+        .order_by("-completed_at")
+    )
 
     data = []
 
@@ -5528,14 +5559,47 @@ def task_submission_reviews_api(request, task_id):
         data.append({
             "id": submission.id,
             "worker": submission.user.username,
-            "reward": str(submission.reward_amount),
-            "proof": submission.proof.url if submission.proof else "",
-            "submitted_at": submission.completed_at.strftime("%d %b %Y, %I:%M %p"),
+            "reward": str(
+                submission.reward_amount
+            ),
+            "proof": (
+                submission.proof.url
+                if submission.proof
+                else ""
+            ),
+            "status": submission.status,
+            "submitted_at": (
+                submission.completed_at.strftime(
+                    "%d %b %Y, %I:%M %p"
+                )
+            ),
+            "reviewed_at": (
+                submission.reviewed_at.strftime(
+                    "%d %b %Y, %I:%M %p"
+                )
+                if submission.reviewed_at
+                else ""
+            ),
         })
 
     return JsonResponse({
         "task": task.title,
-        "submissions": data
+        "status": status_filter,
+        "submissions": data,
+        "counts": {
+            "pending": TaskCompletion.objects.filter(
+                task=task,
+                status="pending",
+            ).count(),
+            "approved": TaskCompletion.objects.filter(
+                task=task,
+                status="approved",
+            ).count(),
+            "rejected": TaskCompletion.objects.filter(
+                task=task,
+                status="rejected",
+            ).count(),
+        },
     })
 # ==========================
 # MEMBERSHIP PAYMENT
