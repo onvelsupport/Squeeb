@@ -3375,6 +3375,80 @@ def messages_conversation(
             )
 
 
+                # ======================================================
+        # EMAIL RECEIVER
+        # ======================================================
+
+        if other_user.email:
+
+            try:
+
+                site_url = getattr(
+                    settings,
+                    "SITE_URL",
+                    "https://squeeb.co.uk"
+                ).rstrip("/")
+
+                conversation_url = (
+                    f"{site_url}/marketplace/messages/"
+                    f"{product.id}/{request.user.id}/"
+                )
+
+                message_preview = message_text
+
+                if len(message_preview) > 180:
+                    message_preview = (
+                        message_preview[:177]
+                        + "..."
+                    )
+
+                send_account_email(
+                    user=other_user,
+
+                    subject=(
+                        f"New Marketplace message from "
+                        f"@{request.user.username}"
+                    ),
+
+                    heading="You have a new Marketplace message",
+
+                    message=(
+                        f"@{request.user.username} sent you "
+                        f"a message about '{product.title}'."
+                    ),
+
+                    details=[
+                        {
+                            "label": "From",
+                            "value": (
+                                f"@{request.user.username}"
+                            ),
+                        },
+                        {
+                            "label": "Product",
+                            "value": product.title,
+                        },
+                        {
+                            "label": "Message",
+                            "value": message_preview,
+                        },
+                    ],
+
+                    action_text="View Message",
+
+                    action_url=conversation_url,
+                )
+
+            except Exception as error:
+
+                # The Marketplace message must still be sent
+                # even if the email provider has a problem.
+                print(
+                    "MARKETPLACE MESSAGE EMAIL ERROR:",
+                    repr(error),
+                )
+
+
         # ======================================================
         # AJAX RESPONSE
         # ======================================================
@@ -3524,6 +3598,73 @@ def send_product_message(
                     ],
                 ),
             )
+
+                        if product.seller.email:
+
+                try:
+
+                    site_url = getattr(
+                        settings,
+                        "SITE_URL",
+                        "https://squeeb.co.uk"
+                    ).rstrip("/")
+
+                    conversation_url = (
+                        f"{site_url}/marketplace/messages/"
+                        f"{product.id}/{request.user.id}/"
+                    )
+
+                    message_preview = message_text
+
+                    if len(message_preview) > 180:
+                        message_preview = (
+                            message_preview[:177]
+                            + "..."
+                        )
+
+                    send_account_email(
+                        user=product.seller,
+
+                        subject=(
+                            f"New Marketplace message from "
+                            f"@{request.user.username}"
+                        ),
+
+                        heading="You have a new Marketplace message",
+
+                        message=(
+                            f"@{request.user.username} is "
+                            f"interested in '{product.title}'."
+                        ),
+
+                        details=[
+                            {
+                                "label": "From",
+                                "value": (
+                                    f"@{request.user.username}"
+                                ),
+                            },
+                            {
+                                "label": "Product",
+                                "value": product.title,
+                            },
+                            {
+                                "label": "Message",
+                                "value": message_preview,
+                            },
+                        ],
+
+                        action_text="View Message",
+
+                        action_url=conversation_url,
+                    )
+
+                except Exception as error:
+
+                    print(
+                        "MARKETPLACE MESSAGE EMAIL ERROR:",
+                        repr(error),
+                    )
 
 
             return redirect(
