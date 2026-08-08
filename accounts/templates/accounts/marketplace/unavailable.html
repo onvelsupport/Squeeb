@@ -1,0 +1,64 @@
+{% extends 'accounts/base.html' %}
+{% load static %}
+
+{% block title %}
+Marketplace Unavailable | SQUEEB
+{% endblock %}
+
+
+{% block content %}
+
+<main class="marketplace-unavailable-page">
+
+    <section class="marketplace-unavailable-card">
+
+        <div class="marketplace-unavailable-icon">
+            <i class="fa-solid fa-store"></i>
+        </div>
+
+
+        <span class="marketplace-unavailable-kicker">
+            SQUEEB MARKETPLACE
+        </span>
+
+
+        <h1>
+            Marketplace isn't available in your country yet
+        </h1>
+
+
+        <p>
+            We're gradually rolling out SQUEEB Marketplace
+            to more countries.
+        </p>
+
+
+        <p class="marketplace-country">
+            Your account country:
+            <strong>{{ country }}</strong>
+        </p>
+
+
+        <div class="marketplace-unavailable-actions">
+
+            <a
+                href="{% url 'dashboard' %}"
+                class="marketplace-home-btn"
+            >
+                <i class="fa-solid fa-arrow-left"></i>
+                Back to Dashboard
+            </a>
+
+        </div>
+
+
+        <small>
+            We'll make Marketplace available automatically
+            when support launches in your country.
+        </small>
+
+    </section>
+
+</main>
+
+{% endblock %}

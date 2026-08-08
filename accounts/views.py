@@ -91,7 +91,7 @@ MARKETPLACE_ALLOWED_COUNTRIES = {
     "scotland",
     "wales",
     "northern ireland",
-    "nigeria",
+    #"nigeria",
 }
 
 
@@ -106,23 +106,37 @@ def marketplace_access_required(view_func):
     @login_required
     def wrapper(request, *args, **kwargs):
 
-        if not marketplace_country_allowed(request.user.country):
-
-            messages.error(
-                request,
-                "SQUEEB Marketplace is not currently available in your country."
+        if not marketplace_country_allowed(
+            request.user.country
+        ):
+            return redirect(
+                "marketplace_unavailable"
             )
-
-            return redirect("dashboard")
 
         return view_func(
             request,
             *args,
-            **kwargs,
+            **kwargs
         )
 
     return wrapper
 
+
+@login_required
+def marketplace_unavailable(request):
+
+    country = (
+        request.user.country
+        or "your country"
+    )
+
+    return render(
+        request,
+        "accounts/marketplace/unavailable.html",
+        {
+            "country": country,
+        }
+    )
 
 # ==========================================================
 # CUSTOM SQUEEB ADMIN PROTECTION

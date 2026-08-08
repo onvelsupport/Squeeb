@@ -82,6 +82,7 @@ from .views import (
     reject_campaign_submission,
     influencer_terms,
     update_password_api,
+    marketplace_unavailable,
     update_password_page,
     messages_inbox,
     messages_conversation,
@@ -522,6 +523,13 @@ path(
         "marketplace/product/<int:product_id>/message/",
         send_product_message,
         name="send_product_message",
+    ),
+
+
+    path(
+    "marketplace/unavailable/",
+    marketplace_unavailable,
+    name="marketplace_unavailable"
     ),
 
 
