@@ -28,6 +28,7 @@ import stripe
 from django.conf import settings
 from django.contrib import messages
 from .email_utils import send_account_email
+from .mobile_auth import issue_mobile_token
 
 from django.contrib.auth import (
     authenticate,
@@ -50,6 +51,7 @@ from django.template.loader import render_to_string
 from django.urls import reverse
 from django.utils import timezone
 from django.views.decorators.csrf import csrf_exempt
+from django.middleware.csrf import get_token
 from django.views.decorators.http import require_POST
 
 
@@ -75,6 +77,15 @@ from .models import (
 
 
 User = get_user_model()
+
+
+# ==========================================================
+# MOBILE APP SUPPORT API
+# ==========================================================
+
+def mobile_csrf(request):
+    """Issue the CSRF token used by the React Native client."""
+    return JsonResponse({"csrfToken": get_token(request)})
 
 
 # ==========================================================
@@ -120,6 +131,26 @@ def marketplace_access_required(view_func):
         )
 
     return wrapper
+
+
+@login_required
+def mobile_marketplace_api(request):
+    """Return active marketplace listings as JSON for the native app."""
+    if not marketplace_country_allowed(request.user.country):
+        return JsonResponse({"products": [], "available": False})
+
+    products = Product.objects.filter(is_sold=False).select_related("seller").order_by("-created_at")
+    data = [{
+        "id": product.id,
+        "title": product.title,
+        "price": str(product.price),
+        "description": product.description,
+        "category": product.category,
+        "seller": product.seller.username,
+        "image": request.build_absolute_uri(product.image.url) if product.image else "",
+        "created_at": product.created_at.strftime("%d %b %Y"),
+    } for product in products]
+    return JsonResponse({"products": data, "available": True})
 
 
 @login_required
@@ -870,19 +901,17 @@ def bank_details(request):
 def bank_details_api(request):
     user = request.user
 
-    is_nigeria = _is_nigeria_country(
-        user.country
-    )
+    # Mobile/web bank payouts are currently Nigeria-only.
+    # Keep the destination type independent of the profile country so users
+    # can save a Nigerian payout account even when their SQUEEB profile is
+    # registered in another country.
+    is_nigeria = True
 
     if request.method == "GET":
         return JsonResponse(
             {
                 "success": True,
-                "country": (
-                    "Nigeria"
-                    if is_nigeria
-                    else user.country
-                ),
+                "country": "Nigeria",
                 "is_nigeria": is_nigeria,
                 "account_name": user.bank_account_name or "",
                 "bank_name": user.bank_name or "",
@@ -1689,7 +1718,8 @@ def login_user(request):
     return JsonResponse({
         "success": True,
         "message": "Login successful",
-        "redirect_url": "/dashboard/"
+        "redirect_url": "/dashboard/",
+        "mobile_token": issue_mobile_token(user),
     })
 
 
@@ -1831,20 +1861,8 @@ def _get_nigerian_banks(force_refresh=False):
 
 @login_required
 def nigerian_banks_api(request):
-    if not _is_nigeria_country(
-        request.user.country
-    ):
-        return JsonResponse(
-            {
-                "success": False,
-                "message": (
-                    "Nigerian banks are available "
-                    "to Nigerian users only."
-                ),
-            },
-            status=403,
-        )
-
+    # This endpoint lists Nigerian payout destinations. It is available to
+    # any authenticated SQUEEB user who chooses the Nigeria Bank payout rail.
     try:
         banks = _get_nigerian_banks()
 
@@ -2242,6 +2260,7 @@ def transaction_history_api(request):
             "amount": str(payment.amount),
             "status": payment.status,
             "date": payment.created_at.strftime("%d %b %Y, %I:%M %p"),
+            "_created_at": payment.created_at,
         })
 
     # Withdrawals
@@ -2251,9 +2270,12 @@ def transaction_history_api(request):
             "amount": str(withdrawal.amount),
             "status": withdrawal.status,
             "date": withdrawal.created_at.strftime("%d %b %Y, %I:%M %p"),
+            "_created_at": withdrawal.created_at,
         })
 
-    transactions.sort(key=lambda x: x["date"], reverse=True)
+    transactions.sort(key=lambda x: x["_created_at"], reverse=True)
+    for transaction in transactions:
+        transaction.pop("_created_at", None)
 
     return JsonResponse({
         "transactions": transactions
@@ -3792,6 +3814,10 @@ def user_info(request):
     return JsonResponse({
         "username": request.user.username,
         "email": request.user.email,
+        "first_name": request.user.first_name,
+        "last_name": request.user.last_name,
+        "phone_number": getattr(request.user, "phone_number", "") or "",
+        "city": getattr(request.user, "city", "") or "",
         "country": request.user.country,
         "balance": str(request.user.balance),
         "earnings": str(request.user.earnings),
@@ -3998,17 +4024,9 @@ def request_withdrawal(request):
         )
 
     if method == "Bank":
-        if not _is_nigeria_country(user.country):
-            return JsonResponse(
-            {
-                "success": False,
-                "message": (
-                    "Bank withdrawals are currently available "
-                    "to Nigerian users only."
-                ),
-            },
-            status=403,
-        )
+        # The bank rail is Nigeria-only, but the SQUEEB profile itself does
+        # not need to be registered in Nigeria. The saved destination bank
+        # is validated against the Nigerian bank list below.
         minimum_withdrawal = Decimal("5.00")
     else:
         minimum_withdrawal = Decimal("10.00")
@@ -4068,18 +4086,6 @@ def request_withdrawal(request):
     payout_amount = None
 
     if method == "Bank":
-        if not _is_nigeria_country(user.country):
-            return JsonResponse(
-                {
-                    "success": False,
-                    "message": (
-                        "Bank withdrawals are currently available "
-                        "to Nigerian users only."
-                    ),
-                },
-                status=403,
-            )
-
         account_name = (
             user.bank_account_name or ""
         ).strip()
