@@ -1360,3 +1360,36 @@ input{
         white-space: nowrap;
     }
 }
+
+
+/* =========================================================
+   EARNINGS SUMMARY REFINEMENT
+   Dashboard owns the wallet balance; Earnings focuses on income.
+   ========================================================= */
+.earnings-summary-title{
+    display:flex;
+    flex-direction:column;
+    gap:4px;
+}
+.earnings-summary-title span{
+    color:rgba(255,255,255,.58);
+    font-size:11px;
+    font-weight:800;
+    letter-spacing:.11em;
+}
+.earnings-summary-title strong{
+    font-size:14px;
+    font-weight:800;
+}
+.earnings-summary-stats{
+    grid-template-columns:repeat(2,minmax(0,1fr));
+}
+.earnings-summary-stats > div:nth-child(2){
+    border-left:1px solid rgba(255,255,255,.12);
+}
+@media (max-width:600px){
+    .earnings-summary-card{padding:19px 18px;border-radius:22px;}
+    .earnings-summary-card .earnings-main-balance{margin-top:18px;}
+    .earnings-summary-card .earnings-main-balance h2{font-size:clamp(31px,10vw,42px);}
+    .earnings-summary-card .earnings-wallet-stats{margin-top:17px;padding-top:13px;}
+}

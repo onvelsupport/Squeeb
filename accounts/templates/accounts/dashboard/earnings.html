@@ -27,38 +27,25 @@
             </a>
         </section>
 
-        <!-- Wallet / account summary -->
-        <section class="earnings-wallet-card">
+        <!-- Earnings summary: focus this page on income, not wallet balance -->
+        <section class="earnings-wallet-card earnings-summary-card">
             <div class="earnings-wallet-top">
-                <div class="earnings-user-row">
-                    <img
-                        src="{% static 'accounts/img/avatar.png' %}"
-                        alt="Profile"
-                    >
-
-                    <div>
-                        <span>Signed in as</span>
-                        <strong id="usernameDisplay">{{ request.user.username }}</strong>
-                        <small id="usernameTag">@{{ request.user.username }}</small>
-                    </div>
+                <div class="earnings-summary-title">
+                    <span>EARNINGS OVERVIEW</span>
+                    <strong>What you've earned on SQUEEB</strong>
                 </div>
 
                 <div class="earnings-wallet-icon">
-                    <i class="fa-solid fa-wallet"></i>
+                    <i class="fa-solid fa-chart-line"></i>
                 </div>
             </div>
 
             <div class="earnings-main-balance">
-                <span>Available balance</span>
-                <h2 id="balanceAmount">£{{ request.user.balance|floatformat:2 }}</h2>
+                <span>Total earnings</span>
+                <h2 id="earningsTotal">£{{ request.user.earnings|floatformat:2 }}</h2>
             </div>
 
-            <div class="earnings-wallet-stats">
-                <div>
-                    <span>Total earnings</span>
-                    <strong id="earningsTotal">£{{ request.user.earnings|floatformat:2 }}</strong>
-                </div>
-
+            <div class="earnings-wallet-stats earnings-summary-stats">
                 <div>
                     <span>Approved tasks</span>
                     <strong id="tasksCompleted">0</strong>

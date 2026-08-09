@@ -1363,3 +1363,63 @@ body.modal-open {
         font-size: 12px;
     }
 }
+
+
+/* =========================================================
+   COMPACT WITHDRAWAL SUMMARY
+   Keep cash-out context without repeating the dashboard wallet hero.
+   ========================================================= */
+.withdraw-wallet-card-compact{
+    padding:18px 20px;
+    border-radius:20px;
+    background:#fff;
+    color:var(--withdraw-text);
+    border:1px solid var(--withdraw-border);
+    box-shadow:0 8px 24px rgba(20,29,63,.06);
+}
+.withdraw-wallet-card-compact::after{display:none;}
+.withdraw-available-row{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:16px;
+}
+.withdraw-available-copy{
+    min-width:0;
+    display:flex;
+    flex-direction:column;
+    gap:5px;
+}
+.withdraw-available-copy span{
+    color:var(--withdraw-muted);
+    font-size:12px;
+    font-weight:700;
+}
+.withdraw-available-copy strong{
+    color:var(--withdraw-text);
+    font-size:clamp(22px,4vw,30px);
+    line-height:1.1;
+    letter-spacing:-.025em;
+    overflow-wrap:anywhere;
+}
+.withdraw-wallet-card-compact .withdraw-wallet-symbol{
+    width:40px;
+    height:40px;
+    border-radius:12px;
+    color:#fff;
+    background:linear-gradient(135deg,var(--withdraw-navy-1),var(--withdraw-navy-2));
+    border:0;
+}
+.withdraw-wallet-card-compact .withdraw-wallet-meta{
+    margin-top:14px;
+    padding-top:12px;
+    border-top:1px solid var(--withdraw-border);
+}
+.withdraw-wallet-card-compact .withdraw-wallet-meta span{color:var(--withdraw-muted);font-size:11px;}
+.withdraw-wallet-card-compact .withdraw-wallet-meta strong{color:var(--withdraw-text);font-size:13px;}
+.withdraw-wallet-card-compact .withdraw-wallet-meta > div + div{border-left:1px solid var(--withdraw-border);}
+@media (max-width:600px){
+    .withdraw-wallet-card-compact{padding:15px 16px;border-radius:17px;}
+    .withdraw-available-copy strong{font-size:24px;}
+    .withdraw-wallet-card-compact .withdraw-wallet-meta{margin-top:11px;padding-top:10px;}
+}

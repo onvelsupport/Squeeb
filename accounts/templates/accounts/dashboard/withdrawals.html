@@ -28,12 +28,12 @@
             </div>
         </section>
 
-        <!-- Main balance card -->
-        <section class="withdraw-wallet-card">
-            <div class="withdraw-wallet-top">
-                <div>
-                    <span>Available balance</span>
-                    <h2 id="balanceAmount">£{{ request.user.balance|floatformat:2 }}</h2>
+        <!-- Compact cash-out summary: dashboard remains the primary wallet view -->
+        <section class="withdraw-wallet-card withdraw-wallet-card-compact">
+            <div class="withdraw-available-row">
+                <div class="withdraw-available-copy">
+                    <span>Available to withdraw</span>
+                    <strong id="balanceAmount">£{{ request.user.balance|floatformat:2 }}</strong>
                 </div>
 
                 <div class="withdraw-wallet-symbol">
