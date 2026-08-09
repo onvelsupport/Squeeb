@@ -1,271 +1,318 @@
 /* ==========================================================
    SQUEEB NATIVE APP SHELL
-   Enabled only when app-shell.js detects the Capacitor/WebView app.
-   Normal browser rendering is unchanged.
+   Only active inside the Capacitor/WebView app.
+   Normal browser rendering remains unchanged.
    ========================================================== */
 
 html.squeeb-native-app,
-html.squeeb-native-app body{
-    overscroll-behavior-y:none;
-    -webkit-tap-highlight-color:transparent;
+html.squeeb-native-app body {
+    width: 100%;
+    min-height: 100%;
+    overflow-x: hidden !important;
+    overflow-y: auto !important;
+    overscroll-behavior-x: none;
+    overscroll-behavior-y: contain;
+    -webkit-overflow-scrolling: touch;
+    -webkit-tap-highlight-color: transparent;
+    touch-action: pan-y !important;
 }
 
-html.squeeb-native-app body{
-    min-height:100dvh;
-    background:#f6f7f9;
-    padding-bottom:calc(76px + env(safe-area-inset-bottom, 0px));
+html.squeeb-native-app body {
+    min-height: 100dvh;
+    position: static !important;
+    background: #f6f7f9;
+    padding-bottom: calc(76px + env(safe-area-inset-bottom, 0px));
 }
 
-html.squeeb-native-app body.public-layout{
-    padding-bottom:env(safe-area-inset-bottom, 0px);
+html.squeeb-native-app body.public-layout {
+    padding-bottom: env(safe-area-inset-bottom, 0px);
 }
 
-html.squeeb-native-app .site-main{
-    min-height:calc(100dvh - 64px - 76px);
+html.squeeb-native-app .site-main {
+    min-height: calc(100dvh - 64px - 76px);
+    overflow: visible !important;
 }
 
-/* Hide website-only chrome in the native app. */
+/* Hide website-only chrome inside the native app. */
 html.squeeb-native-app .site-footer,
 html.squeeb-native-app .mobile-dropdown,
 html.squeeb-native-app .dashboard-nav,
 html.squeeb-native-app .mobile-menu-btn,
-html.squeeb-native-app .top-actions .logout-btn{
-    display:none !important;
+html.squeeb-native-app .top-actions .logout-btn {
+    display: none !important;
 }
 
-/* Public auth screens should feel like standalone app screens. */
-html.squeeb-native-app body.public-layout .site-header{
-    display:none !important;
+/* Public auth screens should feel standalone. */
+html.squeeb-native-app body.public-layout .site-header {
+    display: none !important;
 }
 
-html.squeeb-native-app body.public-layout .site-main{
-    min-height:100dvh;
+html.squeeb-native-app body.public-layout .site-main {
+    min-height: 100dvh;
 }
 
 /* ----------------------------------------------------------
-   Compact native-style authenticated top bar
+   Compact authenticated top bar
    ---------------------------------------------------------- */
-html.squeeb-native-app .dashboard-topbar{
-    position:sticky;
-    top:0;
-    z-index:1500;
-    width:100%;
-    max-width:none;
-    min-height:calc(58px + env(safe-area-inset-top, 0px));
-    margin:0;
+html.squeeb-native-app .dashboard-topbar {
+    position: sticky;
+    top: 0;
+    z-index: 1500;
+    width: 100%;
+    max-width: none;
+    min-height: calc(62px + env(safe-area-inset-top, 0px));
+    margin: 0;
     padding:
-        calc(7px + env(safe-area-inset-top, 0px))
+        calc(9px + env(safe-area-inset-top, 0px))
         14px
-        7px;
-    grid-template-columns:auto 1fr auto;
-    gap:10px;
-    border:0;
-    border-bottom:1px solid #eceef2;
-    border-radius:0;
-    background:rgba(255,255,255,.97);
-    box-shadow:0 3px 14px rgba(15,23,42,.045);
-    backdrop-filter:blur(18px);
+        9px;
+    grid-template-columns: auto 1fr auto;
+    align-items: center;
+    gap: 10px;
+    border: 0;
+    border-bottom: 1px solid #eceef2;
+    border-radius: 0;
+    background: rgba(255, 255, 255, 0.98);
+    box-shadow: 0 3px 14px rgba(15, 23, 42, 0.045);
+    backdrop-filter: blur(18px);
 }
 
-html.squeeb-native-app .dashboard-brand img{
-    width:98px;
+html.squeeb-native-app .dashboard-brand,
+html.squeeb-native-app .dashboard-brand img {
+    display: block;
 }
 
-html.squeeb-native-app .dashboard-search{
-    position:static;
-    justify-self:end;
-    display:flex;
-    align-items:center;
+html.squeeb-native-app .dashboard-brand img {
+    width: 98px;
+    height: auto;
 }
 
-html.squeeb-native-app .dashboard-search > i{
-    position:static;
-    width:38px;
-    height:38px;
-    display:grid;
-    place-items:center;
-    transform:none;
-    color:#2d3648;
-    background:#f3f5f8;
-    border:1px solid #e8ebef;
-    border-radius:50%;
-    font-size:14px;
-    pointer-events:none;
+html.squeeb-native-app .dashboard-search {
+    position: static;
+    justify-self: end;
+    display: flex;
+    align-items: center;
 }
 
-html.squeeb-native-app .dashboard-search input{
-    position:absolute;
-    width:38px;
-    height:38px;
-    min-height:38px;
-    padding:0;
-    opacity:0;
-    border:0;
-    cursor:pointer;
+html.squeeb-native-app .dashboard-search > i {
+    position: static;
+    width: 38px;
+    height: 38px;
+    display: grid;
+    place-items: center;
+    transform: none;
+    color: #2d3648;
+    background: #f3f5f8;
+    border: 1px solid #e8ebef;
+    border-radius: 50%;
+    font-size: 14px;
+    pointer-events: none;
 }
 
-html.squeeb-native-app .dashboard-search input::placeholder{
-    color:transparent;
+html.squeeb-native-app .dashboard-search input {
+    position: absolute;
+    width: 38px;
+    height: 38px;
+    min-height: 38px;
+    padding: 0;
+    opacity: 0;
+    border: 0;
+    cursor: pointer;
 }
 
-html.squeeb-native-app .dashboard-search:focus-within input{
-    position:fixed;
-    top:calc(62px + env(safe-area-inset-top, 0px));
-    left:12px;
-    right:12px;
-    z-index:1800;
-    width:calc(100% - 24px);
-    height:52px;
-    min-height:52px;
-    padding:0 17px;
-    opacity:1;
-    color:#141821;
-    background:#fff;
-    border:1px solid #dfe3e9;
-    border-radius:15px;
-    box-shadow:0 14px 34px rgba(15,23,42,.15);
-    cursor:text;
-    font-size:16px;
+html.squeeb-native-app .dashboard-search input::placeholder {
+    color: transparent;
 }
 
-html.squeeb-native-app .dashboard-search:focus-within input::placeholder{
-    color:#8b93a1;
+html.squeeb-native-app .dashboard-search:focus-within input {
+    position: fixed;
+    top: calc(66px + env(safe-area-inset-top, 0px));
+    left: 12px;
+    right: 12px;
+    z-index: 1800;
+    width: calc(100% - 24px);
+    height: 52px;
+    min-height: 52px;
+    padding: 0 17px;
+    opacity: 1;
+    color: #141821;
+    background: #fff;
+    border: 1px solid #dfe3e9;
+    border-radius: 15px;
+    box-shadow: 0 14px 34px rgba(15, 23, 42, 0.15);
+    cursor: text;
+    font-size: 16px;
 }
 
-html.squeeb-native-app .search-results{
-    position:fixed;
-    top:calc(121px + env(safe-area-inset-top, 0px));
-    left:12px;
-    right:12px;
-    z-index:1800;
-    max-height:55dvh;
-    border-radius:15px;
+html.squeeb-native-app .dashboard-search:focus-within input::placeholder {
+    color: #8b93a1;
 }
 
-html.squeeb-native-app .top-actions{
-    display:flex;
+html.squeeb-native-app .search-results {
+    position: fixed;
+    top: calc(125px + env(safe-area-inset-top, 0px));
+    left: 12px;
+    right: 12px;
+    z-index: 1800;
+    max-height: 55dvh;
+    border-radius: 15px;
 }
 
-html.squeeb-native-app .icon-btn{
-    width:38px;
-    height:38px;
-    border-radius:50%;
-    background:#f3f5f8;
+html.squeeb-native-app .top-actions {
+    display: flex;
+    align-items: center;
+}
+
+html.squeeb-native-app .icon-btn {
+    width: 38px;
+    height: 38px;
+    border-radius: 50%;
+    background: #f3f5f8;
 }
 
 /* ----------------------------------------------------------
-   Native bottom tab bar
+   Native bottom navigation
    ---------------------------------------------------------- */
-.app-bottom-nav{
-    display:none;
+.app-bottom-nav {
+    display: none;
 }
 
-html.squeeb-native-app .app-bottom-nav{
-    position:fixed;
-    left:0;
-    right:0;
-    bottom:0;
-    z-index:1600;
-    height:calc(70px + env(safe-area-inset-bottom, 0px));
-    padding:6px 8px env(safe-area-inset-bottom, 0px);
-    display:grid;
-    grid-template-columns:repeat(5,1fr);
-    align-items:start;
-    background:rgba(255,255,255,.98);
-    border-top:1px solid #e7e9ee;
-    box-shadow:0 -5px 22px rgba(15,23,42,.055);
-    backdrop-filter:blur(18px);
+html.squeeb-native-app .app-bottom-nav {
+    position: fixed !important;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 2147483000;
+    height: calc(74px + env(safe-area-inset-bottom, 0px));
+    padding: 7px 8px env(safe-area-inset-bottom, 0px);
+    display: grid !important;
+    grid-template-columns: repeat(5, 1fr);
+    align-items: start;
+    background: rgba(255, 255, 255, 0.99);
+    border-top: 1px solid #e7e9ee;
+    box-shadow: 0 -5px 22px rgba(15, 23, 42, 0.07);
+    backdrop-filter: blur(18px);
+    pointer-events: auto !important;
+    touch-action: manipulation !important;
 }
 
-html.squeeb-native-app .app-bottom-nav a{
-    position:relative;
-    min-width:0;
-    height:58px;
-    display:flex;
-    flex-direction:column;
-    align-items:center;
-    justify-content:center;
-    gap:4px;
-    color:#7a8190;
-    border-radius:13px;
-    font-size:10px;
-    font-weight:800;
-    line-height:1;
-    user-select:none;
+html.squeeb-native-app .app-bottom-nav a {
+    position: relative;
+    z-index: 2;
+    min-width: 0;
+    height: 60px;
+    display: flex !important;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    color: #737b89;
+    border-radius: 13px;
+    font-size: 10.5px;
+    font-weight: 800;
+    line-height: 1;
+    text-decoration: none;
+    user-select: none;
+    cursor: pointer;
+    pointer-events: auto !important;
+    touch-action: manipulation !important;
 }
 
-html.squeeb-native-app .app-bottom-nav .app-nav-icon{
-    width:28px;
-    height:25px;
-    display:grid;
-    place-items:center;
-    border-radius:9px;
-    font-size:18px;
+html.squeeb-native-app .app-bottom-nav .app-nav-icon {
+    width: 30px;
+    height: 27px;
+    display: grid;
+    place-items: center;
+    border-radius: 9px;
+    font-size: 18px;
+    pointer-events: none;
 }
 
-html.squeeb-native-app .app-bottom-nav a.active{
-    color:#111827;
+html.squeeb-native-app .app-bottom-nav a > span {
+    pointer-events: none;
 }
 
-html.squeeb-native-app .app-bottom-nav a.active .app-nav-icon{
-    color:#315efb;
-    background:#eef2ff;
+html.squeeb-native-app .app-bottom-nav a.active {
+    color: #111827;
 }
 
-html.squeeb-native-app .app-bottom-nav .app-nav-primary .app-nav-icon{
-    width:44px;
-    height:44px;
-    margin-top:-20px;
-    color:#fff;
-    background:#111827;
-    border:4px solid #fff;
-    border-radius:50%;
-    box-shadow:0 6px 18px rgba(15,23,42,.2);
-    font-size:17px;
+html.squeeb-native-app .app-bottom-nav a.active .app-nav-icon {
+    color: #315efb;
+    background: #eef2ff;
 }
 
-html.squeeb-native-app .app-bottom-nav .app-nav-primary{
-    padding-top:9px;
+html.squeeb-native-app .app-bottom-nav .app-nav-primary {
+    padding-top: 9px;
 }
 
-html.squeeb-native-app .app-bottom-nav .app-nav-primary.active .app-nav-icon{
-    color:#fff;
-    background:#315efb;
+html.squeeb-native-app .app-bottom-nav .app-nav-primary .app-nav-icon {
+    width: 46px;
+    height: 46px;
+    margin-top: -22px;
+    color: #fff;
+    background: #111827;
+    border: 4px solid #fff;
+    border-radius: 50%;
+    box-shadow: 0 7px 20px rgba(15, 23, 42, 0.23);
+    font-size: 18px;
 }
 
-/* App-friendly drawers and interaction. */
-html.squeeb-native-app .notification-panel{
-    padding-top:env(safe-area-inset-top, 0px);
+html.squeeb-native-app .app-bottom-nav .app-nav-primary.active .app-nav-icon {
+    color: #fff;
+    background: #315efb;
+}
+
+/* ----------------------------------------------------------
+   Drawers, overlays and interaction safeguards
+   ---------------------------------------------------------- */
+html.squeeb-native-app .notification-panel {
+    padding-top: env(safe-area-inset-top, 0px);
+}
+
+html.squeeb-native-app .notification-overlay[hidden],
+html.squeeb-native-app .modal-overlay[hidden],
+html.squeeb-native-app .mobile-menu-overlay[hidden],
+html.squeeb-native-app .drawer-overlay[hidden] {
+    display: none !important;
+    pointer-events: none !important;
+}
+
+html.squeeb-native-app .notification-overlay:not(.show):not(.active),
+html.squeeb-native-app .modal-overlay:not(.show):not(.active),
+html.squeeb-native-app .mobile-menu-overlay:not(.show):not(.active),
+html.squeeb-native-app .drawer-overlay:not(.show):not(.active) {
+    pointer-events: none;
 }
 
 html.squeeb-native-app a,
-html.squeeb-native-app button{
-    touch-action:manipulation;
+html.squeeb-native-app button,
+html.squeeb-native-app [role="button"] {
+    touch-action: manipulation;
 }
 
 html.squeeb-native-app input,
 html.squeeb-native-app textarea,
-html.squeeb-native-app select{
-    font-size:max(16px,1em);
+html.squeeb-native-app select {
+    font-size: max(16px, 1em);
 }
 
-html.squeeb-native-app ::-webkit-scrollbar{
-    width:0;
-    height:0;
+html.squeeb-native-app ::-webkit-scrollbar {
+    width: 0;
+    height: 0;
 }
 
-@media(max-width:700px){
-    html.squeeb-native-app .dashboard-topbar{
-        grid-template-columns:auto 1fr auto;
-        min-height:calc(58px + env(safe-area-inset-top, 0px));
+@media (max-width: 700px) {
+    html.squeeb-native-app .dashboard-topbar {
+        grid-template-columns: auto 1fr auto;
+        min-height: calc(62px + env(safe-area-inset-top, 0px));
         padding:
-            calc(7px + env(safe-area-inset-top, 0px))
+            calc(9px + env(safe-area-inset-top, 0px))
             14px
-            7px;
-        gap:10px;
+            9px;
+        gap: 10px;
     }
 
-    html.squeeb-native-app .dashboard-brand img{
-        width:98px;
+    html.squeeb-native-app .dashboard-brand img {
+        width: 98px;
     }
 }
