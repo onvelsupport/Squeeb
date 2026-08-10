@@ -1,6 +1,15 @@
 from django.contrib.auth import views as auth_views
 from django.urls import path
 
+from .mobile_marketplace import (
+    mobile_marketplace_list,
+    mobile_marketplace_mine,
+    mobile_marketplace_sell,
+    mobile_marketplace_update,
+    mobile_marketplace_sold,
+    mobile_marketplace_delete,
+)
+
 from .views import (
     about,
     acceptable_use,
@@ -38,6 +47,8 @@ from .views import (
     login_user,
     logout_user,
     marketplace_page,
+    mobile_csrf,
+    mobile_marketplace_api,
     mark_as_sold,
     mark_notifications_read,
     more_page,
@@ -98,6 +109,15 @@ urlpatterns = [
     path("home/", homepage, name="home"),
     path("about/", about, name="about"),
     path("support/", support_page, name="support"),
+
+    # React Native support endpoints
+    path("api/mobile/csrf/", mobile_csrf, name="mobile_csrf"),
+    path("api/mobile/marketplace/", mobile_marketplace_list, name="mobile_marketplace_api"),
+    path("api/mobile/marketplace/mine/", mobile_marketplace_mine, name="mobile_marketplace_mine"),
+    path("api/mobile/marketplace/sell/", mobile_marketplace_sell, name="mobile_marketplace_sell"),
+    path("api/mobile/marketplace/<int:product_id>/update/", mobile_marketplace_update, name="mobile_marketplace_update"),
+    path("api/mobile/marketplace/<int:product_id>/sold/", mobile_marketplace_sold, name="mobile_marketplace_sold"),
+    path("api/mobile/marketplace/<int:product_id>/delete/", mobile_marketplace_delete, name="mobile_marketplace_delete"),
 
     # ==========================================================
     # AUTHENTICATION PAGES
