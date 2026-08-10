@@ -218,6 +218,8 @@ ADMIN_EMAIL = "sammyperazzi@gmail.com"
 # STRIPE
 # =============================
 STRIPE_SECRET_KEY = os.getenv("STRIPE_SECRET_KEY")
+STRIPE_PUBLISHABLE_KEY = os.getenv("STRIPE_PUBLISHABLE_KEY", "")
+APPLE_MERCHANT_IDENTIFIER = os.getenv("APPLE_MERCHANT_IDENTIFIER", "merchant.uk.co.squeeb")
 STRIPE_WEBHOOK_SECRET = os.getenv("STRIPE_WEBHOOK_SECRET")
 
 

@@ -28,6 +28,8 @@ from .views import (
     complete_task,
     create_cart_checkout,
     create_funding_checkout,
+    create_mobile_funding_intent,
+    mobile_stripe_config,
     create_task,
     dashboard,
     delete_product,
@@ -605,6 +607,18 @@ path(
         "api/create-funding-checkout/",
         create_funding_checkout,
         name="create_funding_checkout",
+    ),
+
+    path(
+        "api/mobile/stripe-config/",
+        mobile_stripe_config,
+        name="mobile_stripe_config",
+    ),
+
+    path(
+        "api/mobile/funding-intent/",
+        create_mobile_funding_intent,
+        name="create_mobile_funding_intent",
     ),
 
     path(

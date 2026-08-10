@@ -903,11 +903,14 @@ def bank_details(request):
 def bank_details_api(request):
     user = request.user
 
-    # Mobile/web bank payouts are currently Nigeria-only.
-    # Keep the destination type independent of the profile country so users
-    # can save a Nigerian payout account even when their SQUEEB profile is
-    # registered in another country.
-    is_nigeria = True
+    # Nigerian bank details are available only to users whose SQUEEB
+    # account country is Nigeria.
+    is_nigeria = _is_nigeria_country(user.country)
+    if not is_nigeria:
+        return JsonResponse(
+            {"success": False, "error": "Nigerian bank payouts are available only to Nigerian SQUEEB accounts."},
+            status=403,
+        )
 
     if request.method == "GET":
         return JsonResponse(
@@ -1967,6 +1970,98 @@ def _start_nigerian_funding(request, amount):
 
 
 @csrf_exempt
+def mobile_stripe_config(request):
+    if request.method != "GET":
+        return JsonResponse({"error": "GET method required"}, status=400)
+    return JsonResponse({
+        "publishable_key": getattr(settings, "STRIPE_PUBLISHABLE_KEY", "") or "",
+        "merchant_identifier": getattr(settings, "APPLE_MERCHANT_IDENTIFIER", "merchant.uk.co.squeeb"),
+    })
+
+
+@login_required
+def create_mobile_funding_intent(request):
+    """Create a Stripe PaymentIntent for native React Native card / Apple Pay funding."""
+    if request.method != "POST":
+        return JsonResponse({"error": "POST method required"}, status=400)
+
+    if _is_nigeria_country(request.user.country):
+        return JsonResponse(
+            {"error": "Nigerian wallet funding must be completed in Naira."},
+            status=400,
+        )
+
+    publishable_key = getattr(settings, "STRIPE_PUBLISHABLE_KEY", "") or ""
+    if not publishable_key:
+        return JsonResponse(
+            {"error": "Stripe publishable key is not configured on the SQUEEB server."},
+            status=503,
+        )
+
+    try:
+        data = json.loads(request.body.decode("utf-8") or "{}")
+        amount = Decimal(str(data.get("amount", "0"))).quantize(Decimal("0.01"))
+    except Exception:
+        return JsonResponse({"error": "Invalid amount"}, status=400)
+
+    if amount < Decimal("1.00"):
+        return JsonResponse({"error": "Minimum funding amount is £1.00"}, status=400)
+
+    percentage_fee = (amount * Decimal("0.02")).quantize(Decimal("0.01"))
+    fixed_fee = Decimal("0.25")
+    fee = (percentage_fee + fixed_fee).quantize(Decimal("0.01"))
+    total_charged = (amount + fee).quantize(Decimal("0.01"))
+
+    try:
+        with transaction.atomic():
+            payment = FundingPayment.objects.create(
+                user=request.user,
+                amount=amount,
+                fee=fee,
+                total_charged=total_charged,
+                method="card",
+                provider="stripe",
+                currency_paid="GBP",
+                amount_paid=total_charged,
+                status="pending",
+            )
+
+            intent = stripe.PaymentIntent.create(
+                amount=int(total_charged * 100),
+                currency="gbp",
+                automatic_payment_methods={"enabled": True},
+                receipt_email=request.user.email or None,
+                metadata={
+                    "payment_id": str(payment.id),
+                    "user_id": str(request.user.id),
+                    "purpose": "wallet_funding",
+                    "wallet_amount": str(amount),
+                    "fee": str(fee),
+                    "total_charged": str(total_charged),
+                    "method": "card",
+                    "source": "react_native",
+                },
+            )
+
+            payment.provider_reference = intent.id
+            payment.save(update_fields=["provider_reference"])
+
+        return JsonResponse({
+            "client_secret": intent.client_secret,
+            "publishable_key": publishable_key,
+            "payment_intent_id": intent.id,
+            "payment_id": payment.id,
+            "wallet_amount": str(amount),
+            "percentage_fee": str(percentage_fee),
+            "fixed_fee": str(fixed_fee),
+            "fee": str(fee),
+            "total_charged": str(total_charged),
+            "currency": "GBP",
+        })
+    except Exception as exc:
+        return JsonResponse({"error": str(exc)}, status=500)
+
+
 @login_required
 def create_funding_checkout(request):
     if request.method != "POST":
@@ -2782,6 +2877,36 @@ def stripe_webhook(request):
 
         except FundingPayment.DoesNotExist:
             return HttpResponse(status=404)
+
+    elif event["type"] == "payment_intent.succeeded":
+        intent = event["data"]["object"]
+        payment_id = (intent.get("metadata") or {}).get("payment_id")
+
+        if payment_id:
+            try:
+                with transaction.atomic():
+                    payment = FundingPayment.objects.select_for_update().get(id=payment_id)
+                    if payment.status != "paid":
+                        user = payment.user
+                        user.balance = (user.balance or Decimal("0")) + payment.amount
+                        user.save(update_fields=["balance"])
+                        payment.status = "paid"
+                        payment.paid_at = timezone.now()
+                        payment.provider_reference = intent.get("id", payment.provider_reference)
+                        payment.save(update_fields=["status", "paid_at", "provider_reference"])
+                        send_account_email(
+                            user=user,
+                            subject="Your SQUEEB wallet has been funded",
+                            heading="Wallet funding successful",
+                            message="Your card or Apple Pay payment was successful and the funds have been added to your wallet.",
+                            details=[
+                                {"label": "Amount credited", "value": f"£{payment.amount}"},
+                                {"label": "Funding fee", "value": f"£{payment.fee}"},
+                                {"label": "New balance", "value": f"£{user.balance}"},
+                            ],
+                        )
+            except FundingPayment.DoesNotExist:
+                return HttpResponse(status=404)
 
     return HttpResponse(status=200)
 
@@ -3831,6 +3956,7 @@ def user_info(request):
         "referrals": referrals_count,
 
         "is_member": request.user.is_member,
+        "is_staff": request.user.is_staff,
         "first_withdrawal_completed": (
             request.user.first_withdrawal_completed
         ),
@@ -4026,9 +4152,14 @@ def request_withdrawal(request):
         )
 
     if method == "Bank":
-        # The bank rail is Nigeria-only, but the SQUEEB profile itself does
-        # not need to be registered in Nigeria. The saved destination bank
-        # is validated against the Nigerian bank list below.
+        if not _is_nigeria_country(user.country):
+            return JsonResponse(
+                {
+                    "success": False,
+                    "message": "Nigeria bank withdrawal is available only to Nigerian SQUEEB accounts.",
+                },
+                status=403,
+            )
         minimum_withdrawal = Decimal("5.00")
     else:
         minimum_withdrawal = Decimal("10.00")
