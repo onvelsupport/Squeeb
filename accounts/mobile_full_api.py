@@ -1,15 +1,19 @@
 import json
 from decimal import Decimal
 from django.contrib.auth.decorators import login_required
+from django.db import transaction
 from django.db.models import Q
 from django.http import JsonResponse
 from django.shortcuts import get_object_or_404
+from django.urls import reverse
 from django.template.loader import render_to_string
 from django.utils.html import strip_tags
 from django.utils import timezone
 from django.views.decorators.http import require_http_methods
 from django.conf import settings
 import stripe
+
+from .email_utils import send_account_email
 
 from .models import (
     User, Follow, Task, TaskCompletion, AdminCampaign, CampaignSubmission,
@@ -47,6 +51,8 @@ def mobile_public_profile(request, username):
         'last_name': u.last_name,
         'country': u.country,
         'is_member': u.is_member,
+        'squeebers': u.followers_set.count(),
+        'connections': u.following_set.count(),
         'followers': u.followers_set.count(),
         'following': u.following_set.count(),
         'is_following': Follow.objects.filter(follower=request.user, following=u).exists(),
@@ -87,12 +93,97 @@ def mobile_task_reviews(request, task_id):
     if task.creator_id != request.user.id and not _admin(request.user):
         return JsonResponse({'error':'Not allowed.'}, status=403)
     status = (request.GET.get('status') or 'pending').lower()
-    if status not in {'pending','approved','rejected'}: status='pending'
+    if status not in {'pending','approved','rejected'}:
+        status='pending'
     qs = TaskCompletion.objects.filter(task=task, status=status).select_related('user').order_by('-completed_at')
-    return JsonResponse({'task':{'id':task.id,'title':task.title},'status':status,'submissions':[
-        {'id':s.id,'worker':s.user.username,'reward':str(s.reward_amount),'proof':_img(request,s.proof),'submitted_at':s.completed_at.strftime('%d %b %Y, %I:%M %p'),'reviewed_at':s.reviewed_at.strftime('%d %b %Y, %I:%M %p') if s.reviewed_at else ''}
-        for s in qs
-    ]})
+    counts = {key: TaskCompletion.objects.filter(task=task, status=key).count() for key in ('pending','approved','rejected')}
+    return JsonResponse({
+        'task':{'id':task.id,'title':task.title},
+        'status':status,
+        'counts':counts,
+        'submissions':[
+            {
+                'id':s.id,
+                'worker':s.user.username,
+                'reward':str(s.reward_amount or task.worker_reward),
+                'proof':_img(request,s.proof),
+                'submitted_at':s.completed_at.strftime('%d %b %Y, %I:%M %p'),
+                'reviewed_at':s.reviewed_at.strftime('%d %b %Y, %I:%M %p') if s.reviewed_at else '',
+                'status':s.status,
+            } for s in qs
+        ]
+    })
+
+
+@login_required
+@require_http_methods(['POST'])
+@transaction.atomic
+def mobile_task_review_action(request, completion_id, action):
+    completion = get_object_or_404(
+        TaskCompletion.objects.select_for_update().select_related('task','user'),
+        id=completion_id,
+    )
+    if completion.task.creator_id != request.user.id and not _admin(request.user):
+        return JsonResponse({'error':'Not allowed.'}, status=403)
+    if completion.status != 'pending':
+        return JsonResponse({'error':f'This submission is already {completion.status}.'}, status=400)
+
+    if action == 'approve':
+        reward = completion.reward_amount or completion.task.worker_reward
+        completion.status = 'approved'
+        completion.reward_amount = reward
+        completion.reviewed_at = timezone.now()
+        completion.save(update_fields=['status','reward_amount','reviewed_at'])
+        worker = User.objects.select_for_update().get(pk=completion.user_id)
+        worker.balance += reward
+        worker.earnings += reward
+        worker.tasks_completed += 1
+        worker.save(update_fields=['balance','earnings','tasks_completed'])
+        RecentActivity.objects.create(username=worker.username, platform=completion.task.platforms, message=f'@{worker.username} earned £{reward}', amount=reward)
+        Notification.objects.create(user=worker, title='Task approved', message=f"Your proof for '{completion.task.title}' was approved. £{reward} has been added to your balance.")
+        try:
+            send_account_email(user=worker, subject='Your SQUEEB wallet has been credited', heading='Task reward added', message=f"Your proof for '{completion.task.title}' was approved and your reward has been added to your wallet.", details=[{'label':'Reward','value':f'£{reward}'},{'label':'New balance','value':f'£{worker.balance}'},{'label':'Status','value':'Approved'}])
+        except Exception:
+            pass
+        return JsonResponse({'success':True,'message':'Task approved and worker paid.'})
+
+    if action == 'reject':
+        try:
+            data = json.loads(request.body or '{}')
+        except Exception:
+            data = {}
+        reason = (data.get('rejection_reason') or 'Please make sure your screenshot clearly shows the completed task.').strip()
+        completion.status = 'rejected'
+        completion.reviewed_at = timezone.now()
+        completion.save(update_fields=['status','reviewed_at'])
+        completion.task.available += 1
+        completion.task.save(update_fields=['available'])
+        Notification.objects.create(user=completion.user, title='Task rejected', message=f"Your proof for '{completion.task.title}' was rejected. {reason}")
+        return JsonResponse({'success':True,'message':'Task submission rejected.'})
+    return JsonResponse({'error':'Invalid action.'}, status=400)
+
+
+@login_required
+@require_http_methods(['POST'])
+@transaction.atomic
+def mobile_task_review_approve_all(request, task_id):
+    task = get_object_or_404(Task, id=task_id)
+    if task.creator_id != request.user.id and not _admin(request.user):
+        return JsonResponse({'error':'Not allowed.'}, status=403)
+    submissions = list(TaskCompletion.objects.select_for_update().select_related('user').filter(task=task, status='pending'))
+    approved = 0
+    total_paid = Decimal('0.00')
+    for completion in submissions:
+        reward = completion.reward_amount or task.worker_reward
+        completion.status='approved'; completion.reward_amount=reward; completion.reviewed_at=timezone.now()
+        completion.save(update_fields=['status','reward_amount','reviewed_at'])
+        worker=User.objects.select_for_update().get(pk=completion.user_id)
+        worker.balance += reward; worker.earnings += reward; worker.tasks_completed += 1
+        worker.save(update_fields=['balance','earnings','tasks_completed'])
+        Notification.objects.create(user=worker,title='Task approved',message=f"Your proof for '{task.title}' was approved. £{reward} has been added to your balance.")
+        RecentActivity.objects.create(username=worker.username,platform=task.platforms,message=f'@{worker.username} earned £{reward}',amount=reward)
+        approved += 1; total_paid += reward
+    return JsonResponse({'success':True,'approved':approved,'total_paid':str(total_paid),'message':f'Approved {approved} submission(s).'})
 
 
 @login_required
@@ -145,17 +236,36 @@ def mobile_messages(request):
 @login_required
 @require_http_methods(['GET','POST'])
 def mobile_conversation(request, product_id, user_id):
-    if not _is_market_country(request.user): return JsonResponse({'error':'Marketplace unavailable in your country.'},status=403)
-    p=get_object_or_404(Product,id=product_id); other=get_object_or_404(User,id=user_id)
-    if request.method=='POST':
-        data=json.loads(request.body or '{}') if request.content_type and 'json' in request.content_type else request.POST
+    if not _is_market_country(request.user):
+        return JsonResponse({'error':'Marketplace unavailable in your country.'},status=403)
+    p = get_object_or_404(Product.objects.select_related('seller'), id=product_id)
+    other = get_object_or_404(User, id=user_id)
+    if other.id == request.user.id:
+        return JsonResponse({'error':'You cannot message yourself.'}, status=400)
+    if p.seller_id not in {request.user.id, other.id}:
+        return JsonResponse({'error':'This conversation is not available.'}, status=403)
+
+    if request.method == 'POST':
+        try:
+            data=json.loads(request.body or '{}') if request.content_type and 'json' in request.content_type else request.POST
+        except Exception:
+            data={}
         text=(data.get('message') or '').strip()
-        if not text: return JsonResponse({'error':'Message cannot be empty.'},status=400)
-        ProductMessage.objects.create(product=p,sender=request.user,receiver=other,message=text)
-        Notification.objects.create(user=other,title='Marketplace message',message=f'@{request.user.username} sent you a message about {p.title}.')
+        if not text:
+            return JsonResponse({'error':'Message cannot be empty.'},status=400)
+        if len(text) > 2000:
+            return JsonResponse({'error':'Message must be 2000 characters or fewer.'},status=400)
+        msg=ProductMessage.objects.create(product=p,sender=request.user,receiver=other,message=text)
+        Notification.objects.create(user=other,title='New marketplace message',message=f'@{request.user.username} sent you a message about {p.title}.',link=reverse('messages_conversation',args=[p.id,request.user.id]))
+        if other.email:
+            try:
+                send_account_email(user=other,subject=f'New Marketplace message from @{request.user.username}',heading='You have a new Marketplace message',message=f'@{request.user.username} sent you a message about {p.title}: {text[:180]}',details=[{'label':'Product','value':p.title},{'label':'From','value':f'@{request.user.username}'}])
+            except Exception:
+                pass
+
     ProductMessage.objects.filter(product=p,sender=other,receiver=request.user,is_read=False).update(is_read=True)
     qs=ProductMessage.objects.filter(product=p).filter(Q(sender=request.user,receiver=other)|Q(sender=other,receiver=request.user)).select_related('sender').order_by('created_at')
-    return JsonResponse({'product':{'id':p.id,'title':p.title},'other':{'id':other.id,'username':other.username},'messages':[{'id':m.id,'sender':m.sender.username,'mine':m.sender_id==request.user.id,'message':m.message,'created_at':m.created_at.strftime('%d %b %Y, %I:%M %p')} for m in qs]})
+    return JsonResponse({'product':{'id':p.id,'title':p.title,'image':_img(request,p.image)},'other':{'id':other.id,'username':other.username},'messages':[{'id':m.id,'sender':m.sender.username,'mine':m.sender_id==request.user.id,'message':m.message,'created_at':m.created_at.strftime('%d %b %Y, %I:%M %p')} for m in qs]})
 
 
 @login_required
@@ -163,11 +273,50 @@ def mobile_conversation(request, product_id, user_id):
 def mobile_admin_dashboard(request):
     if not _admin(request.user): return JsonResponse({'error':'Admin access required.'},status=403)
     return JsonResponse({
-        'users':User.objects.count(),'members':User.objects.filter(is_member=True).count(),'tasks':Task.objects.count(),
-        'pending_task_submissions':TaskCompletion.objects.filter(status='pending').count(),
-        'campaigns':AdminCampaign.objects.count(),'pending_campaign_submissions':CampaignSubmission.objects.filter(status='pending').count(),
-        'pending_withdrawals':request.user._meta.apps.get_model('accounts','WithdrawalRequest').objects.filter(status='pending').count(),
+        'campaigns_count': AdminCampaign.objects.count(),
+        'active_campaigns': AdminCampaign.objects.filter(status='active').count(),
+        'pending_submissions': CampaignSubmission.objects.filter(status='pending').count(),
+        'pending_task_submissions': TaskCompletion.objects.filter(status='pending').count(),
+        'users': User.objects.count(),
+        'members': User.objects.filter(is_member=True).count(),
+        'tasks': Task.objects.count(),
+        'pending_withdrawals': request.user._meta.apps.get_model('accounts','WithdrawalRequest').objects.filter(status='pending').count(),
     })
+
+
+@login_required
+@require_http_methods(['POST'])
+def mobile_admin_campaign_create(request):
+    if not _admin(request.user):
+        return JsonResponse({'error':'Admin access required.'}, status=403)
+    data = request.POST
+    required=['title','description','reward','platform','max_participants','start_date','end_date']
+    if any(not str(data.get(k,'')).strip() for k in required):
+        return JsonResponse({'error':'Please fill in all required campaign fields.'}, status=400)
+    try:
+        reward=Decimal(str(data.get('reward')).strip())
+        max_participants=int(str(data.get('max_participants')).strip())
+    except Exception:
+        return JsonResponse({'error':'Reward and maximum participants must be valid numbers.'}, status=400)
+    if reward <= 0 or max_participants <= 0:
+        return JsonResponse({'error':'Reward and maximum participants must be greater than zero.'}, status=400)
+    start_date=str(data.get('start_date')).strip()
+    end_date=str(data.get('end_date')).strip()
+    if end_date < start_date:
+        return JsonResponse({'error':'Campaign end date cannot be before the start date.'}, status=400)
+    campaign=AdminCampaign.objects.create(
+        title=str(data.get('title')).strip(),
+        description=str(data.get('description')).strip(),
+        reward=reward,
+        platform=str(data.get('platform')).strip().lower(),
+        max_participants=max_participants,
+        start_date=start_date,
+        end_date=end_date,
+        status=str(data.get('status') or 'draft').strip().lower(),
+        image=request.FILES.get('image'),
+        created_by=request.user,
+    )
+    return JsonResponse({'success':True,'message':'Campaign posted successfully.','campaign_id':campaign.id}, status=201)
 
 
 @login_required
@@ -185,7 +334,7 @@ def mobile_admin_campaign_submissions(request):
     status=(request.GET.get('status') or 'pending').lower()
     qs=CampaignSubmission.objects.select_related('campaign','user').order_by('-created_at')
     if status in {'pending','approved','rejected'}: qs=qs.filter(status=status)
-    return JsonResponse({'submissions':[{'id':s.id,'campaign':s.campaign.title,'campaign_id':s.campaign_id,'username':s.user.username,'video_link':s.video_link,'screenshot':_img(request,s.screenshot),'status':s.status,'rejection_reason':s.rejection_reason,'created_at':s.created_at.strftime('%d %b %Y, %I:%M %p')} for s in qs]})
+    return JsonResponse({'status':status,'counts':{k:CampaignSubmission.objects.filter(status=k).count() for k in ('pending','approved','rejected')},'all_count':CampaignSubmission.objects.count(),'submissions':[{'id':s.id,'campaign':s.campaign.title,'campaign_id':s.campaign_id,'username':s.user.username,'email':s.user.email,'platform':s.campaign.platform,'reward':str(s.campaign.reward),'video_link':s.video_link,'screenshot':_img(request,s.screenshot),'status':s.status,'rejection_reason':s.rejection_reason,'created_at':s.created_at.strftime('%d %b %Y, %I:%M %p'),'reviewed_at':s.reviewed_at.strftime('%d %b %Y, %I:%M %p') if s.reviewed_at else ''} for s in qs]})
 
 
 @login_required
@@ -198,7 +347,7 @@ def mobile_feature_manifest(request):
         'marketplace':nigeria or uk,'membership_price':'5.00' if nigeria else '10.00',
         'funding_methods':['flutterwave'] if nigeria else ['card','apple_pay','bank_transfer'],
         'withdrawal_methods':['nigeria_bank'] if nigeria else ['paypal'],
-        'features':['dashboard','earn_tasks','campaigns','post_task','my_posted_tasks','task_reviews','approved_tasks','wallet','funding','withdrawals','membership','referrals','notifications','transactions','profiles','following','search','recent_activity','marketplace','sell','edit_listing','mark_sold','delete_listing','cart','checkout','messages','profile_edit','password','support','about','legal'] + (['admin_dashboard','admin_campaigns','admin_campaign_reviews'] if _admin(request.user) else [])
+        'features':['dashboard','earn_tasks','campaigns','post_task','my_posted_tasks','task_reviews','approved_tasks','wallet','funding','withdrawals','membership','referrals','notifications','transactions','profiles','squeebers','connections','search','recent_activity','marketplace','sell','edit_listing','mark_sold','delete_listing','cart','checkout','messages','profile_edit','password','support','about','legal'] + (['admin_dashboard','admin_campaigns','admin_campaign_reviews'] if _admin(request.user) else [])
     })
 
 

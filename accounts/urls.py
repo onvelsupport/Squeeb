@@ -10,6 +10,14 @@ from .mobile_marketplace import (
     mobile_marketplace_delete,
 )
 
+
+from .mobile_full_api import (
+    mobile_public_profile, mobile_search, mobile_recent_activity, mobile_task_reviews, mobile_task_review_action, mobile_task_review_approve_all,
+    mobile_market_product, mobile_cart, mobile_messages, mobile_conversation,
+    mobile_admin_dashboard, mobile_admin_campaigns, mobile_admin_campaign_submissions, mobile_admin_campaign_create,
+    mobile_feature_manifest, mobile_market_checkout, mobile_admin_campaign_action, mobile_content_page,
+)
+
 from .views import (
     about,
     acceptable_use,
@@ -103,6 +111,26 @@ from .views import (
 
 
 urlpatterns = [
+    # Complete React Native feature API
+    path('api/mobile/features/', mobile_feature_manifest, name='mobile_feature_manifest'),
+    path('api/mobile/content/<str:slug>/', mobile_content_page, name='mobile_content_page'),
+    path('api/mobile/search/', mobile_search, name='mobile_search'),
+    path('api/mobile/recent-activity/', mobile_recent_activity, name='mobile_recent_activity'),
+    path('api/mobile/profile/<str:username>/', mobile_public_profile, name='mobile_public_profile'),
+    path('api/mobile/tasks/<int:task_id>/reviews/', mobile_task_reviews, name='mobile_task_reviews'),
+    path('api/mobile/task-reviews/<int:completion_id>/<str:action>/', mobile_task_review_action, name='mobile_task_review_action'),
+    path('api/mobile/tasks/<int:task_id>/reviews/approve-all/', mobile_task_review_approve_all, name='mobile_task_review_approve_all'),
+    path('api/mobile/marketplace/product/<int:product_id>/', mobile_market_product, name='mobile_market_product'),
+    path('api/mobile/cart/', mobile_cart, name='mobile_cart'),
+    path('api/mobile/messages/', mobile_messages, name='mobile_messages'),
+    path('api/mobile/messages/<int:product_id>/<int:user_id>/', mobile_conversation, name='mobile_conversation'),
+    path('api/mobile/admin/dashboard/', mobile_admin_dashboard, name='mobile_admin_dashboard'),
+    path('api/mobile/admin/campaigns/', mobile_admin_campaigns, name='mobile_admin_campaigns'),
+    path('api/mobile/admin/campaigns/create/', mobile_admin_campaign_create, name='mobile_admin_campaign_create'),
+    path('api/mobile/admin/campaign-submissions/', mobile_admin_campaign_submissions, name='mobile_admin_campaign_submissions'),
+    path('api/mobile/marketplace/checkout/', mobile_market_checkout, name='mobile_market_checkout'),
+    path('api/mobile/admin/campaign-submissions/<int:submission_id>/<str:action>/', mobile_admin_campaign_action, name='mobile_admin_campaign_action'),
+
     # ==========================================================
     # PUBLIC PAGES
     # ==========================================================
