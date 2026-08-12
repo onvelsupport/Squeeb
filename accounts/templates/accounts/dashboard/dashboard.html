@@ -21,6 +21,7 @@ Dashboard | SQUEEB
     id="dashboardPage"
     data-country="{{ request.user.country|default:''|escape }}"
     data-nigeria="{{ is_nigerian|yesno:'true,false' }}"
+    data-balance="{{ request.user.balance|default:'0' }}"
 >
     <main class="dashboard-main squeeb-app-main">
 

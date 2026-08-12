@@ -51,6 +51,10 @@ document.addEventListener("DOMContentLoaded", () => {
         if (element) element.textContent = value;
     }
 
+    const GBP_NGN_RATE_CACHE_KEY = "squeeb_gbp_ngn_rate";
+    const GBP_NGN_RATE_CACHE_TIME_KEY = "squeeb_gbp_ngn_rate_updated_at";
+    const GBP_NGN_RATE_CACHE_MS = 30 * 60 * 1000;
+
     async function refreshDashboardNairaEstimate(balanceOverride = null) {
         if (!isNigerian) return;
 
@@ -58,9 +62,26 @@ document.addEventListener("DOMContentLoaded", () => {
         const labelEl = byId("dashboardNairaLabel");
         if (!amountEl) return;
 
-        try {
-            if (labelEl) labelEl.textContent = "Updating estimate…";
+        let balance = Number.parseFloat(balanceOverride);
+        if (!Number.isFinite(balance)) {
+            const renderedBalance = Number.parseFloat(dashboardPage?.dataset.balance || "");
+            if (Number.isFinite(renderedBalance)) balance = renderedBalance;
+        }
 
+        let cachedRate = Number.parseFloat(localStorage.getItem(GBP_NGN_RATE_CACHE_KEY) || "0") || 0;
+        const cachedAt = Number.parseInt(localStorage.getItem(GBP_NGN_RATE_CACHE_TIME_KEY) || "0", 10) || 0;
+
+        // Render the last known conversion immediately; never blank an existing estimate
+        // while a fresh rate is being fetched.
+        if (cachedRate > 0 && Number.isFinite(balance)) {
+            amountEl.textContent = `≈ ${naira(balance * cachedRate)}`;
+            if (labelEl) labelEl.textContent = `Estimated • £1 = ${naira(cachedRate)}`;
+        }
+
+        // Avoid another network request while the locally cached estimate is fresh.
+        if (cachedRate > 0 && Date.now() - cachedAt < GBP_NGN_RATE_CACHE_MS) return;
+
+        try {
             const response = await fetch("/api/exchange-rate/gbp-ngn/", {
                 credentials: "same-origin",
                 headers: { Accept: "application/json" },
@@ -72,7 +93,10 @@ document.addEventListener("DOMContentLoaded", () => {
             }
 
             const rate = Number.parseFloat(data.rate || 0) || 0;
-            let balance = Number.parseFloat(balanceOverride);
+            if (rate <= 0) throw new Error("Invalid exchange rate.");
+
+            localStorage.setItem(GBP_NGN_RATE_CACHE_KEY, String(rate));
+            localStorage.setItem(GBP_NGN_RATE_CACHE_TIME_KEY, String(Date.now()));
 
             if (!Number.isFinite(balance)) {
                 const userResponse = await fetch("/api/user-info/", {
@@ -87,8 +111,10 @@ document.addEventListener("DOMContentLoaded", () => {
             if (labelEl) labelEl.textContent = `Estimated • £1 = ${naira(rate)}`;
         } catch (error) {
             console.error("DASHBOARD NAIRA ESTIMATE ERROR:", error);
-            amountEl.textContent = "≈ ₦—";
-            if (labelEl) labelEl.textContent = "Naira estimate unavailable";
+            if (cachedRate <= 0) {
+                amountEl.textContent = "≈ ₦—";
+                if (labelEl) labelEl.textContent = "Naira estimate unavailable";
+            }
         }
     }
 
