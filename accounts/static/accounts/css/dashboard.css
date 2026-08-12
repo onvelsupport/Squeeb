@@ -4311,6 +4311,27 @@ select,
     overflow-wrap: anywhere;
 }
 
+.squeeb-app-dashboard .app-wallet-naira-estimate {
+    margin-top: 10px;
+    display: flex;
+    align-items: baseline;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.squeeb-app-dashboard .app-wallet-naira-estimate strong {
+    color: #fff;
+    font-size: 17px;
+    font-weight: 800;
+    letter-spacing: -.02em;
+}
+
+.squeeb-app-dashboard .app-wallet-naira-estimate small {
+    color: rgba(255,255,255,.58);
+    font-size: 11px;
+    font-weight: 600;
+}
+
 .squeeb-app-dashboard .app-wallet-icon {
     width: 48px;
     height: 48px;

@@ -45,6 +45,12 @@ Dashboard | SQUEEB
                 <div>
                     <span>Available balance</span>
                     <h2 id="balanceAmount">£{{ request.user.balance|floatformat:2 }}</h2>
+                    {% if is_nigerian %}
+                    <div class="app-wallet-naira-estimate" id="dashboardNairaEstimate" aria-live="polite">
+                        <strong id="dashboardNairaAmount">≈ ₦—</strong>
+                        <small id="dashboardNairaLabel">Estimated in Naira</small>
+                    </div>
+                    {% endif %}
                 </div>
 
                 <div class="app-wallet-icon">

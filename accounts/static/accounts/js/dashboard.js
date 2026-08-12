@@ -51,6 +51,47 @@ document.addEventListener("DOMContentLoaded", () => {
         if (element) element.textContent = value;
     }
 
+    async function refreshDashboardNairaEstimate(balanceOverride = null) {
+        if (!isNigerian) return;
+
+        const amountEl = byId("dashboardNairaAmount");
+        const labelEl = byId("dashboardNairaLabel");
+        if (!amountEl) return;
+
+        try {
+            if (labelEl) labelEl.textContent = "Updating estimate…";
+
+            const response = await fetch("/api/exchange-rate/gbp-ngn/", {
+                credentials: "same-origin",
+                headers: { Accept: "application/json" },
+            });
+            const data = await parseJsonResponse(response);
+
+            if (!response.ok || data.success === false) {
+                throw new Error(data.message || "Unable to load exchange rate.");
+            }
+
+            const rate = Number.parseFloat(data.rate || 0) || 0;
+            let balance = Number.parseFloat(balanceOverride);
+
+            if (!Number.isFinite(balance)) {
+                const userResponse = await fetch("/api/user-info/", {
+                    credentials: "same-origin",
+                    headers: { Accept: "application/json" },
+                });
+                const userData = await parseJsonResponse(userResponse);
+                balance = Number.parseFloat(userData.balance || 0) || 0;
+            }
+
+            amountEl.textContent = `≈ ${naira(balance * rate)}`;
+            if (labelEl) labelEl.textContent = `Estimated • £1 = ${naira(rate)}`;
+        } catch (error) {
+            console.error("DASHBOARD NAIRA ESTIMATE ERROR:", error);
+            amountEl.textContent = "≈ ₦—";
+            if (labelEl) labelEl.textContent = "Naira estimate unavailable";
+        }
+    }
+
     async function parseJsonResponse(response) {
         const contentType = response.headers.get("content-type") || "";
 
@@ -120,6 +161,7 @@ document.addEventListener("DOMContentLoaded", () => {
             setText("following", data.following || 0);
             setText("balanceAmount", money(data.balance));
             setText("earningsTotal", money(data.earnings));
+            refreshDashboardNairaEstimate(data.balance);
 
             const membershipBanner = byId("membershipBanner");
 
@@ -130,6 +172,8 @@ document.addEventListener("DOMContentLoaded", () => {
             console.error("USER SUMMARY REFRESH ERROR:", error);
         }
     }
+
+    refreshDashboardNairaEstimate();
 
     // ==========================================================
     // LOGOUT
