@@ -12,6 +12,9 @@ document.addEventListener("DOMContentLoaded", () => {
     const completedTasks =
         document.getElementById("completedTasks");
 
+    const approveAllTasksBtn =
+        document.getElementById("approveAllTasksBtn");
+
 
     if (!taskList) {
         return;
@@ -669,6 +672,96 @@ document.addEventListener("DOMContentLoaded", () => {
         return loadPromise;
 
     }
+
+
+/* ==========================================================
+   APPROVE ALL TASKS
+========================================================== */
+
+if (approveAllTasksBtn) {
+
+    approveAllTasksBtn.addEventListener(
+        "click",
+        async () => {
+
+            const confirmed = window.confirm(
+                "Are you sure you want to approve ALL pending task submissions?\n\n" +
+                "Every pending submission belonging to your created tasks " +
+                "will be approved and the workers will be paid."
+            );
+
+            if (!confirmed) {
+                return;
+            }
+
+            const originalHtml =
+                approveAllTasksBtn.innerHTML;
+
+            approveAllTasksBtn.disabled = true;
+
+            approveAllTasksBtn.innerHTML = `
+                <i class="fa-solid fa-spinner fa-spin"></i>
+                <span>Approving...</span>
+            `;
+
+            try {
+
+                const response =
+                    await fetch(
+                        "/api/approve-all-task-completions/",
+                        {
+                            method: "POST",
+                            credentials: "same-origin",
+                            headers: {
+                                "Accept": "application/json",
+                            },
+                        }
+                    );
+
+                const data =
+                    await response.json();
+
+                if (!response.ok || !data.success) {
+                    throw new Error(
+                        data.error ||
+                        "Unable to approve tasks."
+                    );
+                }
+
+                alert(
+                    data.message ||
+                    "All pending tasks have been approved."
+                );
+
+                /*
+                 * Reload the task list so the pending/approved
+                 * numbers immediately update.
+                 */
+                await loadMyTasks();
+
+            } catch (error) {
+
+                console.error(
+                    "APPROVE ALL TASKS ERROR:",
+                    error
+                );
+
+                alert(
+                    error.message ||
+                    "Something went wrong while approving the tasks."
+                );
+
+            } finally {
+
+                approveAllTasksBtn.disabled = false;
+
+                approveAllTasksBtn.innerHTML =
+                    originalHtml;
+            }
+        }
+    );
+
+}
 
 
     /* ==========================================================

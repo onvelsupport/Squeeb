@@ -38,6 +38,11 @@ a{
     text-decoration:none;
 }
 
+
+/* ==========================================================
+   APP
+========================================================== */
+
 .my-tasks-app{
     min-height:100vh;
     background:
@@ -56,9 +61,9 @@ a{
 }
 
 
-/* =====================================
+/* ==========================================================
    HEADER
-===================================== */
+========================================================== */
 
 .my-tasks-header{
     display:flex;
@@ -90,6 +95,23 @@ a{
     font-size:13px;
 }
 
+
+/* ==========================================================
+   HEADER ACTIONS
+========================================================== */
+
+.my-tasks-actions{
+    display:flex;
+    align-items:center;
+    gap:8px;
+    flex:0 0 auto;
+}
+
+
+/* ==========================================================
+   CREATE TASK BUTTON
+========================================================== */
+
 .create-task-btn{
     min-height:42px;
     padding:0 14px;
@@ -103,12 +125,70 @@ a{
     color:#fff;
     font-size:12px;
     font-weight:900;
+    transition:
+        transform .15s ease,
+        opacity .15s ease,
+        box-shadow .15s ease;
+}
+
+.create-task-btn:hover{
+    transform:translateY(-1px);
+    box-shadow:0 8px 18px rgba(17,19,24,.12);
+}
+
+.create-task-btn:active{
+    transform:translateY(0);
 }
 
 
-/* =====================================
+/* ==========================================================
+   APPROVE ALL TASKS BUTTON
+========================================================== */
+
+.approve-all-btn{
+    min-height:42px;
+    padding:0 14px;
+    border:0;
+    border-radius:12px;
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+    gap:8px;
+    background:var(--tasks-green);
+    color:#fff;
+    font-size:14px;
+    font-weight:900;
+    cursor:pointer;
+    transition:
+        transform .15s ease,
+        opacity .15s ease,
+        box-shadow .15s ease;
+}
+
+.approve-all-btn:hover{
+    transform:translateY(-1px);
+    box-shadow:0 8px 18px rgba(21,128,61,.18);
+}
+
+.approve-all-btn:active{
+    transform:translateY(0);
+}
+
+.approve-all-btn:disabled{
+    opacity:.65;
+    cursor:not-allowed;
+    transform:none;
+    box-shadow:none;
+}
+
+.approve-all-btn i{
+    font-size:13px;
+}
+
+
+/* ==========================================================
    SUMMARY
-===================================== */
+========================================================== */
 
 .tasks-summary{
     display:grid;
@@ -143,9 +223,9 @@ a{
 }
 
 
-/* =====================================
+/* ==========================================================
    SECTION
-===================================== */
+========================================================== */
 
 .my-tasks-section{
     margin-top:0;
@@ -180,9 +260,9 @@ a{
 }
 
 
-/* =====================================
+/* ==========================================================
    TASK LIST
-===================================== */
+========================================================== */
 
 .posted-task-list{
     display:grid;
@@ -287,6 +367,11 @@ a{
     font-weight:800;
 }
 
+
+/* ==========================================================
+   TASK STATS
+========================================================== */
+
 .task-stats{
     display:grid;
     grid-template-columns:repeat(4,minmax(0,1fr));
@@ -352,6 +437,11 @@ a{
     font-size:11px;
 }
 
+
+/* ==========================================================
+   REVIEW SUBMISSIONS
+========================================================== */
+
 .review-submissions-btn{
     min-height:34px;
     margin-top:10px;
@@ -368,9 +458,9 @@ a{
 }
 
 
-/* =====================================
-   COST
-===================================== */
+/* ==========================================================
+   COST / STATUS
+========================================================== */
 
 .task-status{
     min-width:100px;
@@ -400,9 +490,9 @@ a{
 }
 
 
-/* =====================================
+/* ==========================================================
    EMPTY
-===================================== */
+========================================================== */
 
 .empty-task{
     padding:30px 18px;
@@ -429,9 +519,9 @@ a{
 }
 
 
-/* =====================================
+/* ==========================================================
    MOBILE
-===================================== */
+========================================================== */
 
 @media(max-width:700px){
 
@@ -452,6 +542,10 @@ a{
         font-size:12px;
     }
 
+    .my-tasks-actions{
+        gap:6px;
+    }
+
     .create-task-btn{
         width:40px;
         height:40px;
@@ -461,6 +555,18 @@ a{
     }
 
     .create-task-btn span{
+        display:none;
+    }
+
+    .approve-all-btn{
+        width:40px;
+        height:40px;
+        min-height:40px;
+        padding:0;
+        border-radius:12px;
+    }
+
+    .approve-all-btn span{
         display:none;
     }
 
@@ -537,6 +643,11 @@ a{
     }
 }
 
+
+/* ==========================================================
+   VERY SMALL MOBILE
+========================================================== */
+
 @media(max-width:390px){
 
     .posted-task-card{
@@ -562,12 +673,24 @@ a{
         margin:0;
         text-align:right;
     }
+
+    .my-tasks-actions{
+        gap:5px;
+    }
+
+    .approve-all-btn,
+    .create-task-btn{
+        width:38px;
+        height:38px;
+        min-height:38px;
+    }
 }
 
 
 /* ==========================================================
    SQUEEB TYPOGRAPHY V2 — MY TASKS
 ========================================================== */
+
 .my-tasks-kicker,
 .section-heading > div > span{
     font-size:12px;
@@ -578,6 +701,10 @@ a{
 }
 
 .create-task-btn{
+    font-size:14px;
+}
+
+.approve-all-btn{
     font-size:14px;
 }
 
@@ -651,7 +778,13 @@ a{
     font-size:14px;
 }
 
+
+/* ==========================================================
+   MOBILE TYPOGRAPHY V2
+========================================================== */
+
 @media(max-width:700px){
+
     .my-tasks-header h1{
         font-size:29px;
     }

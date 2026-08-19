@@ -5818,6 +5818,154 @@ def approve_task_completion(request, completion_id):
     })
 
 
+
+@csrf_exempt
+@login_required
+@require_POST
+@transaction.atomic
+def approve_all_task_completions(request):
+    """
+    Approve and pay every pending submission belonging
+    to tasks created by the logged-in user.
+    """
+
+    # Get all pending submissions belonging to tasks
+    # created by this user.
+    completions = list(
+        TaskCompletion.objects
+        .select_for_update()
+        .filter(
+            task__creator=request.user,
+            status="pending",
+        )
+        .select_related("task")
+        .order_by("id")
+    )
+
+    if not completions:
+        return JsonResponse({
+            "success": True,
+            "approved_count": 0,
+            "total_paid": "0.00",
+            "message": "There are no pending tasks to approve."
+        })
+
+    approved_count = 0
+    total_paid = Decimal("0.00")
+
+    for completion in completions:
+
+        # Extra safety check.
+        if completion.status != "pending":
+            continue
+
+        reward = (
+            completion.reward_amount
+            or completion.task.worker_reward
+        )
+
+        # Lock the worker so their balance cannot be
+        # modified simultaneously by another request.
+        worker = (
+            User.objects
+            .select_for_update()
+            .get(pk=completion.user_id)
+        )
+
+        # Approve submission.
+        completion.status = "approved"
+        completion.reward_amount = reward
+        completion.reviewed_at = timezone.now()
+
+        completion.save(
+            update_fields=[
+                "status",
+                "reward_amount",
+                "reviewed_at",
+            ]
+        )
+
+        # Pay worker.
+        worker.balance += reward
+        worker.earnings += reward
+        worker.tasks_completed += 1
+
+        worker.save(
+            update_fields=[
+                "balance",
+                "earnings",
+                "tasks_completed",
+            ]
+        )
+
+        # Recent activity.
+        RecentActivity.objects.create(
+            username=worker.username,
+            platform=completion.task.platforms,
+            message=(
+                f"@{worker.username} earned £{reward}"
+            ),
+            amount=reward,
+        )
+
+        # Notification.
+        Notification.objects.create(
+            user=worker,
+            title="Task approved",
+            message=(
+                f"Your proof for "
+                f"'{completion.task.title}' was approved. "
+                f"£{reward} has been added to your balance."
+            ),
+        )
+
+        # Email notification.
+        try:
+            send_account_email(
+                user=worker,
+                subject="Your SQUEEB wallet has been credited",
+                heading="Task reward added",
+                message=(
+                    f"Your proof for "
+                    f"'{completion.task.title}' was approved "
+                    "and your reward has been added to your wallet."
+                ),
+                details=[
+                    {
+                        "label": "Reward",
+                        "value": f"£{reward}",
+                    },
+                    {
+                        "label": "New balance",
+                        "value": f"£{worker.balance}",
+                    },
+                    {
+                        "label": "Status",
+                        "value": "Approved",
+                    },
+                ],
+            )
+        except Exception as error:
+            print(
+                "BULK TASK APPROVAL EMAIL ERROR:",
+                repr(error),
+            )
+
+        approved_count += 1
+        total_paid += reward
+
+    return JsonResponse({
+        "success": True,
+        "approved_count": approved_count,
+        "total_paid": str(total_paid),
+        "message": (
+            f"{approved_count} task submission(s) "
+            f"approved successfully. "
+            f"£{total_paid:.2f} paid."
+        ),
+    })
+
+
 @csrf_exempt
 @login_required
 def reject_task_completion(request, completion_id):

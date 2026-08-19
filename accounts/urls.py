@@ -27,6 +27,7 @@ from .views import (
     admin_create_campaign_page,
     api_edit_profile,
     approve_task_completion,
+    approve_all_task_completions,
     approve_withdrawal,
     bank_details,
     bank_details_api,
@@ -264,6 +265,12 @@ urlpatterns = [
         my_tasks,
         name="my_tasks",
     ),
+
+    path(
+    "api/approve-all-task-completions/",
+    approve_all_task_completions,
+    name="approve_all_task_completions",
+),
 
     path(
         "referrals/",

@@ -21,13 +21,24 @@
                 <p>Track progress, review submissions and see what remains.</p>
             </div>
 
-            <a
-                href="{% url 'dashboard' %}#socialTasks"
-                class="create-task-btn"
-            >
-                <i class="fa-solid fa-plus"></i>
-                <span>Create task</span>
-            </a>
+            <div class="my-tasks-actions">
+    <button
+        type="button"
+        id="approveAllTasksBtn"
+        class="approve-all-btn"
+    >
+        <i class="fa-solid fa-check-double"></i>
+        <span>Approve All Tasks</span>
+    </button>
+
+    <a
+        href="{% url 'dashboard' %}#socialTasks"
+        class="create-task-btn"
+    >
+        <i class="fa-solid fa-plus"></i>
+        <span>Create task</span>
+    </a>
+</div>
         </section>
 
         <!-- SUMMARY -->
