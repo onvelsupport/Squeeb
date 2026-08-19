@@ -102,9 +102,9 @@ MARKETPLACE_ALLOWED_COUNTRIES = {
     "scotland",
     "wales",
     "northern ireland",
-    "nigeria",
-    "ng",
-    "nga",
+    #"nigeria",
+    #"ng",
+    #"nga",
 }
 
 
