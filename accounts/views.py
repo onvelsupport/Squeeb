@@ -2927,154 +2927,434 @@ def create_cart_checkout(request):
 
 
 
-def _valid_flutterwave_signature(raw_body, signature):
-    secret_hash = getattr(
-        settings,
-        "FLUTTERWAVE_SECRET_HASH",
-        "",
-    )
+def _valid_flutterwave_signature(request):
+    """
+    Accept Flutterwave's current HMAC-SHA256 webhook signature
+    as well as the legacy verif-hash format.
 
-    if not secret_hash or not signature:
+    The transaction itself is still independently verified
+    through Flutterwave's verification API before any wallet
+    is credited.
+    """
+
+    secret_hash = (
+        getattr(
+            settings,
+            "FLUTTERWAVE_SECRET_HASH",
+            "",
+        )
+        or ""
+    ).strip()
+
+    if not secret_hash:
+        print(
+            "FLUTTERWAVE WEBHOOK ERROR: "
+            "FLUTTERWAVE_SECRET_HASH is not configured."
+        )
         return False
 
-    expected = base64.b64encode(
-        hmac.new(
-            secret_hash.encode("utf-8"),
-            raw_body,
-            hashlib.sha256,
-        ).digest()
-    ).decode("utf-8")
+    # --------------------------------------------------
+    # NEW FLUTTERWAVE WEBHOOK SIGNATURE
+    # --------------------------------------------------
 
-    return hmac.compare_digest(
-        expected,
-        signature,
-    )
+    signature = (
+        request.headers.get("flutterwave-signature")
+        or request.META.get(
+            "HTTP_FLUTTERWAVE_SIGNATURE"
+        )
+        or ""
+    ).strip()
 
+    if signature:
+        expected = base64.b64encode(
+            hmac.new(
+                secret_hash.encode("utf-8"),
+                request.body,
+                hashlib.sha256,
+            ).digest()
+        ).decode("utf-8")
 
-def _verify_flutterwave_transaction(transaction_id):
-    response = _flutterwave_request(
-        f"/transactions/{transaction_id}/verify"
-    )
+        if hmac.compare_digest(
+            expected,
+            signature,
+        ):
+            return True
 
-    if response.get("status") != "success":
-        raise RuntimeError(
-            "Unable to verify the Flutterwave transaction."
+        print(
+            "FLUTTERWAVE HMAC SIGNATURE MISMATCH"
         )
 
-    return response.get("data") or {}
+    # --------------------------------------------------
+    # LEGACY / V3 FLUTTERWAVE SIGNATURE
+    # --------------------------------------------------
+
+    verif_hash = (
+        request.headers.get("verif-hash")
+        or request.META.get(
+            "HTTP_VERIF_HASH"
+        )
+        or ""
+    ).strip()
+
+    if verif_hash:
+        if hmac.compare_digest(
+            verif_hash,
+            secret_hash,
+        ):
+            return True
+
+        print(
+            "FLUTTERWAVE VERIF-HASH MISMATCH"
+        )
+
+    print(
+        "FLUTTERWAVE WEBHOOK REJECTED:",
+        "has_flutterwave_signature=",
+        bool(signature),
+        "has_verif_hash=",
+        bool(verif_hash),
+    )
+
+    return False
 
 
 @csrf_exempt
 @require_POST
 def flutterwave_webhook(request):
     """
-    Credit a Nigerian user's GBP wallet only after:
-    1. webhook signature validation
-    2. Flutterwave transaction verification
-    3. amount/currency/reference comparison
-    4. database row locking / idempotency
+    Handle successful Nigerian SQUEEB wallet funding.
+
+    The wallet is credited only after:
+
+    1. Flutterwave webhook authentication
+    2. Flutterwave transaction verification API
+    3. transaction reference comparison
+    4. currency comparison
+    5. paid amount comparison
+    6. database locking / idempotency
     """
-    signature = request.headers.get(
-        "flutterwave-signature"
-    )
+
+    # ==================================================
+    # VERIFY WEBHOOK
+    # ==================================================
 
     if not _valid_flutterwave_signature(
-        request.body,
-        signature,
+        request
     ):
         return HttpResponse(status=401)
 
+    # ==================================================
+    # PARSE PAYLOAD
+    # ==================================================
+
     try:
         payload = json.loads(
-            request.body.decode("utf-8") or "{}"
+            request.body.decode("utf-8")
+            or "{}"
         )
-    except json.JSONDecodeError:
+
+    except (
+        json.JSONDecodeError,
+        UnicodeDecodeError,
+    ) as exc:
+
+        print(
+            "FLUTTERWAVE WEBHOOK JSON ERROR:",
+            repr(exc),
+        )
+
         return HttpResponse(status=400)
 
     event_data = payload.get("data") or {}
 
-    transaction_id = event_data.get("id")
-    tx_ref = event_data.get("tx_ref")
+    transaction_id = (
+        event_data.get("id")
+        or payload.get("id")
+    )
 
-    if not transaction_id or not tx_ref:
+    tx_ref = (
+        event_data.get("tx_ref")
+        or event_data.get("reference")
+        or ""
+    )
+
+    print(
+        "FLUTTERWAVE WEBHOOK RECEIVED:",
+        "transaction_id=",
+        transaction_id,
+        "tx_ref=",
+        tx_ref,
+    )
+
+    # Some webhook formats may not include tx_ref.
+    # We can retrieve the verified transaction first
+    # and obtain it from Flutterwave.
+
+    if not transaction_id:
+        print(
+            "FLUTTERWAVE WEBHOOK: "
+            "No transaction ID supplied."
+        )
+
         return HttpResponse(status=200)
 
-    try:
-        verified = _verify_flutterwave_transaction(
-            transaction_id
-        )
-    except RuntimeError:
-        # Flutterwave can retry the webhook.
-        return HttpResponse(status=503)
+    # ==================================================
+    # VERIFY DIRECTLY WITH FLUTTERWAVE
+    # ==================================================
 
     try:
+        verified = (
+            _verify_flutterwave_transaction(
+                transaction_id
+            )
+        )
+
+    except RuntimeError as exc:
+
+        print(
+            "FLUTTERWAVE TRANSACTION "
+            "VERIFICATION ERROR:",
+            repr(exc),
+        )
+
+        # Non-200 allows Flutterwave to retry.
+        return HttpResponse(status=503)
+
+    verified_status = str(
+        verified.get("status", "")
+    ).lower()
+
+    verified_currency = str(
+        verified.get("currency", "")
+    ).upper()
+
+    verified_tx_ref = str(
+        verified.get("tx_ref")
+        or verified.get("reference")
+        or tx_ref
+        or ""
+    )
+
+    verified_flw_ref = str(
+        verified.get("flw_ref")
+        or verified.get("id")
+        or transaction_id
+        or ""
+    )
+
+    try:
+        verified_amount = Decimal(
+            str(
+                verified.get(
+                    "amount",
+                    "0",
+                )
+            )
+        )
+
+    except Exception:
+        verified_amount = Decimal(
+            "0.00"
+        )
+
+    print(
+        "FLUTTERWAVE VERIFIED:",
+        "status=",
+        verified_status,
+        "currency=",
+        verified_currency,
+        "amount=",
+        verified_amount,
+        "tx_ref=",
+        verified_tx_ref,
+    )
+
+    # ==================================================
+    # FIND SQUEEB PAYMENT
+    # ==================================================
+
+    payment = (
+        FundingPayment.objects
+        .filter(
+            provider="flutterwave",
+            provider_reference=verified_tx_ref,
+            method="nigeria",
+        )
+        .select_related("user")
+        .first()
+    )
+
+    if payment is None:
+
+        # Older rows may have tx_ref in reference instead.
+        payment = (
+            FundingPayment.objects
+            .filter(
+                provider="flutterwave",
+                reference=verified_tx_ref,
+                method="nigeria",
+            )
+            .select_related("user")
+            .first()
+        )
+
+    if payment is None:
+
+        print(
+            "FLUTTERWAVE PAYMENT NOT FOUND:",
+            verified_tx_ref,
+        )
+
+        # Returning 200 prevents endless retries
+        # for a payment that doesn't belong to us.
+        return HttpResponse(status=200)
+
+    # ==================================================
+    # SECURITY VALIDATION
+    # ==================================================
+
+    expected_amount = (
+        payment.amount_paid
+        or Decimal("0.00")
+    )
+
+    valid_status = (
+        verified_status
+        in [
+            "successful",
+            "succeeded",
+        ]
+    )
+
+    valid_currency = (
+        verified_currency == "NGN"
+    )
+
+    valid_reference = (
+        verified_tx_ref
+        == payment.provider_reference
+        or verified_tx_ref
+        == payment.reference
+    )
+
+    valid_amount = (
+        verified_amount
+        >= expected_amount
+    )
+
+    if not (
+        valid_status
+        and valid_currency
+        and valid_reference
+        and valid_amount
+    ):
+
+        print(
+            "FLUTTERWAVE PAYMENT "
+            "VALIDATION FAILED:",
+            {
+                "payment_id":
+                    payment.id,
+
+                "valid_status":
+                    valid_status,
+
+                "valid_currency":
+                    valid_currency,
+
+                "valid_reference":
+                    valid_reference,
+
+                "valid_amount":
+                    valid_amount,
+
+                "expected_amount":
+                    str(expected_amount),
+
+                "verified_amount":
+                    str(verified_amount),
+
+                "verified_status":
+                    verified_status,
+
+                "verified_currency":
+                    verified_currency,
+
+                "verified_tx_ref":
+                    verified_tx_ref,
+            },
+        )
+
+        return HttpResponse(
+            status=400
+        )
+
+    # ==================================================
+    # CREDIT WALLET EXACTLY ONCE
+    # ==================================================
+
+    try:
+
         with transaction.atomic():
-            payment = (
+
+            locked_payment = (
                 FundingPayment.objects
                 .select_for_update()
                 .select_related("user")
                 .get(
-                    provider="flutterwave",
-                    provider_reference=tx_ref,
+                    id=payment.id
                 )
             )
 
-            if payment.status == "paid":
-                return HttpResponse(status=200)
+            # Already processed.
+            if (
+                locked_payment.status
+                == "paid"
+            ):
 
-            verified_status = str(
-                verified.get("status", "")
-            ).lower()
+                print(
+                    "FLUTTERWAVE PAYMENT "
+                    "ALREADY SETTLED:",
+                    locked_payment.id,
+                )
 
-            verified_currency = str(
-                verified.get("currency", "")
-            ).upper()
+                return HttpResponse(
+                    status=200
+                )
 
-            verified_tx_ref = str(
-                verified.get("tx_ref", "")
-            )
-
-            verified_amount = Decimal(
-                str(verified.get("amount", "0"))
-            )
-
-            expected_amount = (
-                payment.amount_paid
-                or Decimal("0.00")
-            )
-
-            valid_payment = (
-                verified_status == "successful"
-                and verified_currency == "NGN"
-                and verified_tx_ref
-                == payment.provider_reference
-                and verified_amount >= expected_amount
-            )
-
-            if not valid_payment:
-                payment.status = "failed"
-                payment.save(update_fields=["status"])
-                return HttpResponse(status=200)
-
-            user = User.objects.select_for_update().get(
-                pk=payment.user_id
+            user = (
+                User.objects
+                .select_for_update()
+                .get(
+                    id=locked_payment.user_id
+                )
             )
 
             user.balance = (
-                user.balance or Decimal("0.00")
-            ) + payment.amount
+                user.balance
+                or Decimal("0.00")
+            ) + locked_payment.amount
 
-            user.save(update_fields=["balance"])
-
-            payment.status = "paid"
-            payment.paid_at = timezone.now()
-            payment.reference = str(
-                verified.get("flw_ref")
-                or payment.reference
-                or ""
+            user.save(
+                update_fields=[
+                    "balance"
+                ]
             )
 
-            payment.save(
+            locked_payment.status = (
+                "paid"
+            )
+
+            locked_payment.paid_at = (
+                timezone.now()
+            )
+
+            locked_payment.reference = (
+                verified_flw_ref
+                or locked_payment.reference
+            )
+
+            locked_payment.save(
                 update_fields=[
                     "status",
                     "paid_at",
@@ -3082,53 +3362,116 @@ def flutterwave_webhook(request):
                 ]
             )
 
-            Notification.objects.create(
-                user=user,
-                title="Wallet funded",
-                message=(
-                    f"Your Nigerian payment was confirmed. "
-                    f"£{payment.amount} has been added "
-                    "to your SQUEEB wallet."
-                ),
-            )
+        print(
+            "FLUTTERWAVE WALLET "
+            "FUNDING SETTLED:",
+            locked_payment.id,
+            "£",
+            locked_payment.amount,
+            "new_balance=",
+            user.balance,
+        )
 
-            send_account_email(
-                user=user,
-                subject="Your SQUEEB wallet has been funded",
-                heading="Wallet funding successful",
-                message=(
-                    "Your Naira payment was verified and "
-                    "the funds have been added to your wallet."
-                ),
-                details=[
-                    {
-                        "label": "Amount credited",
-                        "value": f"£{payment.amount}",
-                    },
-                    {
-                        "label": "Naira paid",
-                        "value": (
-                            f"₦{payment.amount_paid:,.2f}"
+    except Exception as exc:
+
+        import traceback
+
+        print(
+            "FLUTTERWAVE WALLET "
+            "SETTLEMENT ERROR:",
+            repr(exc),
+        )
+
+        traceback.print_exc()
+
+        return HttpResponse(
+            status=500
+        )
+
+    # ==================================================
+    # NOTIFICATION / EMAIL
+    # ==================================================
+
+    try:
+
+        Notification.objects.create(
+            user=user,
+            title="Wallet funded",
+            message=(
+                f"Your Nigerian payment was "
+                f"confirmed. "
+                f"£{locked_payment.amount} "
+                "has been added to your "
+                "SQUEEB wallet."
+            ),
+        )
+
+    except Exception as exc:
+
+        print(
+            "FLUTTERWAVE NOTIFICATION "
+            "ERROR:",
+            repr(exc),
+        )
+
+    try:
+
+        send_account_email(
+            user=user,
+            subject=(
+                "Your SQUEEB wallet "
+                "has been funded"
+            ),
+            heading=(
+                "Wallet funding successful"
+            ),
+            message=(
+                "Your Naira payment was "
+                "verified and the funds "
+                "have been added to your "
+                "wallet."
+            ),
+            details=[
+                {
+                    "label":
+                        "Amount credited",
+                    "value":
+                        f"£{locked_payment.amount}",
+                },
+                {
+                    "label":
+                        "Naira paid",
+                    "value":
+                        f"₦{locked_payment.amount_paid:,.2f}",
+                },
+                {
+                    "label":
+                        "Exchange rate",
+                    "value":
+                        (
+                            "£1 = "
+                            f"₦{locked_payment.exchange_rate:,.2f}"
                         ),
-                    },
-                    {
-                        "label": "Exchange rate",
-                        "value": (
-                            f"£1 = "
-                            f"₦{payment.exchange_rate:,.2f}"
-                        ),
-                    },
-                    {
-                        "label": "New balance",
-                        "value": f"£{user.balance}",
-                    },
-                ],
-            )
+                },
+                {
+                    "label":
+                        "New balance",
+                    "value":
+                        f"£{user.balance}",
+                },
+            ],
+        )
 
-    except FundingPayment.DoesNotExist:
-        return HttpResponse(status=200)
+    except Exception as exc:
 
-    return HttpResponse(status=200)
+        print(
+            "FLUTTERWAVE EMAIL ERROR:",
+            repr(exc),
+        )
+
+    return HttpResponse(
+        status=200
+    )
 
 
 @csrf_exempt
