@@ -1981,41 +1981,8 @@ def mobile_stripe_config(request):
 
 
 
-def _reconcile_stripe_funding_payment(payment):
-    """Settle a pending native Stripe wallet funding payment if Stripe says it succeeded.
-
-    Safe to call from normal read endpoints (dashboard / history). The database row
-    is locked before crediting, so the immediate confirm endpoint, webhook, and
-    reconciliation can race without ever crediting the wallet twice.
-    """
-    if payment.status == "paid":
-        return True
-    if payment.provider != "stripe" or payment.method != "card" or not payment.provider_reference:
-        return False
-
-    try:
-        intent = stripe.PaymentIntent.retrieve(payment.provider_reference)
-    except Exception:
-        # A read endpoint should still load even when Stripe is temporarily unavailable.
-        return False
-
-    metadata = intent.get("metadata") or {}
-    try:
-        expected_amount = int(payment.total_charged * 100)
-        actual_amount = int(intent.get("amount") or 0)
-    except Exception:
-        return False
-
-    if (
-        intent.get("status") != "succeeded"
-        or intent.get("id") != payment.provider_reference
-        or str(metadata.get("payment_id")) != str(payment.id)
-        or str(metadata.get("user_id")) != str(payment.user_id)
-        or str(intent.get("currency", "")).lower() != "gbp"
-        or actual_amount != expected_amount
-    ):
-        return False
-
+def _settle_stripe_funding_payment(payment):
+    """Credit a Stripe wallet funding payment exactly once."""
     credited = False
     with transaction.atomic():
         locked = FundingPayment.objects.select_for_update().select_related("user").get(id=payment.id)
@@ -2047,9 +2014,86 @@ def _reconcile_stripe_funding_payment(payment):
                 ],
             )
         except Exception:
-            # Settlement must not be rolled back just because a notification/email fails.
             pass
     return True
+
+
+def _reconcile_stripe_funding_payment(payment):
+    """Repair pending Stripe funding from either native PaymentIntent or Checkout Session."""
+    if payment.status == "paid":
+        return True
+    if payment.provider != "stripe" or payment.method != "card":
+        return False
+
+    reference = (payment.provider_reference or payment.stripe_session_id or "").strip()
+    if not reference:
+        return False
+
+    expected_amount = int(payment.total_charged * 100)
+
+    # Native React Native card / Apple Pay flow.
+    if reference.startswith("pi_"):
+        try:
+            intent = stripe.PaymentIntent.retrieve(reference)
+        except Exception:
+            return False
+
+        metadata = intent.get("metadata") or {}
+        try:
+            actual_amount = int(intent.get("amount") or 0)
+        except Exception:
+            return False
+
+        if (
+            intent.get("status") != "succeeded"
+            or intent.get("id") != reference
+            or str(metadata.get("payment_id")) != str(payment.id)
+            or str(metadata.get("user_id")) != str(payment.user_id)
+            or str(intent.get("currency", "")).lower() != "gbp"
+            or actual_amount != expected_amount
+        ):
+            return False
+
+        return _settle_stripe_funding_payment(payment)
+
+    # Website / older mobile Stripe Checkout flow. These references begin cs_.
+    if reference.startswith("cs_") or payment.stripe_session_id:
+        session_id = payment.stripe_session_id or reference
+        try:
+            session = stripe.checkout.Session.retrieve(session_id)
+        except Exception:
+            return False
+
+        metadata = session.get("metadata") or {}
+        try:
+            actual_amount = int(session.get("amount_total") or 0)
+        except Exception:
+            return False
+
+        if (
+            session.get("payment_status") != "paid"
+            or session.get("id") != session_id
+            or str(metadata.get("payment_id")) != str(payment.id)
+            or str(metadata.get("user_id")) != str(payment.user_id)
+            or str(session.get("currency", "")).lower() != "gbp"
+            or actual_amount != expected_amount
+        ):
+            return False
+
+        # Keep both Stripe references coherent for old rows.
+        updates = []
+        if payment.stripe_session_id != session_id:
+            payment.stripe_session_id = session_id
+            updates.append("stripe_session_id")
+        if payment.provider_reference != session_id:
+            payment.provider_reference = session_id
+            updates.append("provider_reference")
+        if updates:
+            payment.save(update_fields=updates)
+
+        return _settle_stripe_funding_payment(payment)
+
+    return False
 
 
 def _reconcile_pending_stripe_funding_for_user(user):
