@@ -1979,6 +1979,96 @@ def mobile_stripe_config(request):
     })
 
 
+
+
+def _reconcile_stripe_funding_payment(payment):
+    """Settle a pending native Stripe wallet funding payment if Stripe says it succeeded.
+
+    Safe to call from normal read endpoints (dashboard / history). The database row
+    is locked before crediting, so the immediate confirm endpoint, webhook, and
+    reconciliation can race without ever crediting the wallet twice.
+    """
+    if payment.status == "paid":
+        return True
+    if payment.provider != "stripe" or payment.method != "card" or not payment.provider_reference:
+        return False
+
+    try:
+        intent = stripe.PaymentIntent.retrieve(payment.provider_reference)
+    except Exception:
+        # A read endpoint should still load even when Stripe is temporarily unavailable.
+        return False
+
+    metadata = intent.get("metadata") or {}
+    try:
+        expected_amount = int(payment.total_charged * 100)
+        actual_amount = int(intent.get("amount") or 0)
+    except Exception:
+        return False
+
+    if (
+        intent.get("status") != "succeeded"
+        or intent.get("id") != payment.provider_reference
+        or str(metadata.get("payment_id")) != str(payment.id)
+        or str(metadata.get("user_id")) != str(payment.user_id)
+        or str(intent.get("currency", "")).lower() != "gbp"
+        or actual_amount != expected_amount
+    ):
+        return False
+
+    credited = False
+    with transaction.atomic():
+        locked = FundingPayment.objects.select_for_update().select_related("user").get(id=payment.id)
+        if locked.status != "paid":
+            user = locked.user
+            user.balance = (user.balance or Decimal("0.00")) + locked.amount
+            user.save(update_fields=["balance"])
+            locked.status = "paid"
+            locked.paid_at = timezone.now()
+            locked.save(update_fields=["status", "paid_at"])
+            credited = True
+
+    if credited:
+        try:
+            Notification.objects.create(
+                user=locked.user,
+                title="Wallet funded",
+                message=f"£{locked.amount} has been added to your SQUEEB wallet.",
+            )
+            send_account_email(
+                user=locked.user,
+                subject="Your SQUEEB wallet has been funded",
+                heading="Wallet funding successful",
+                message="Your card or Apple Pay payment was successful and the funds have been added to your wallet.",
+                details=[
+                    {"label": "Amount credited", "value": f"£{locked.amount}"},
+                    {"label": "Funding fee", "value": f"£{locked.fee}"},
+                    {"label": "New balance", "value": f"£{locked.user.balance}"},
+                ],
+            )
+        except Exception:
+            # Settlement must not be rolled back just because a notification/email fails.
+            pass
+    return True
+
+
+def _reconcile_pending_stripe_funding_for_user(user):
+    """Repair any succeeded Stripe card/Apple Pay deposits left as pending."""
+    payments = FundingPayment.objects.filter(
+        user=user,
+        status="pending",
+        provider="stripe",
+        method="card",
+    ).exclude(provider_reference="")[:10]
+    changed = False
+    for payment in payments:
+        if _reconcile_stripe_funding_payment(payment):
+            changed = True
+    if changed:
+        user.refresh_from_db(fields=["balance"])
+    return changed
+
+
 @login_required
 def create_mobile_funding_intent(request):
     """Create a Stripe PaymentIntent for native React Native card / Apple Pay funding."""
@@ -2455,6 +2545,8 @@ def transaction_history(request):
 
 @login_required
 def transaction_history_api(request):
+    # Keep transaction status accurate even if Stripe's webhook delivery was delayed.
+    _reconcile_pending_stripe_funding_for_user(request.user)
     transactions = []
 
     # Wallet funding / deposits
@@ -4028,6 +4120,9 @@ from .models import Follow, TaskCompletion, Referral
 
 @login_required
 def user_info(request):
+    # Self-heal successful native card / Apple Pay deposits if a webhook was delayed.
+    _reconcile_pending_stripe_funding_for_user(request.user)
+
     followers_count = Follow.objects.filter(
         following=request.user
     ).count()
