@@ -2550,8 +2550,10 @@ def create_funding_checkout(request):
                 "method": method,
             },
             success_url=(
-                f"{site_url}/dashboard/?funding=success"
-            ),
+    f"{site_url}"
+    f"{reverse('stripe_funding_success')}"
+    "?session_id={CHECKOUT_SESSION_ID}"
+),
             cancel_url=(
                 f"{site_url}/dashboard/?funding=cancelled"
             ),
@@ -3185,6 +3187,72 @@ def stripe_webhook(request):
     return HttpResponse(status=200)
 
 
+
+@login_required
+def stripe_funding_success(request):
+    session_id = (request.GET.get("session_id") or "").strip()
+
+    if not session_id:
+        return redirect("/dashboard/?funding=error")
+
+    try:
+        session = stripe.checkout.Session.retrieve(session_id)
+
+        metadata = session.get("metadata") or {}
+        payment_id = metadata.get("payment_id")
+        purpose = metadata.get("purpose")
+
+        if purpose != "wallet_funding" or not payment_id:
+            return redirect("/dashboard/?funding=error")
+
+        payment = FundingPayment.objects.filter(
+            id=payment_id,
+            user=request.user,
+            method="card",
+        ).first()
+
+        if payment is None:
+            return redirect("/dashboard/?funding=error")
+
+        # Confirm Stripe actually received the money.
+        if session.get("payment_status") != "paid":
+            return redirect("/dashboard/?funding=pending")
+
+        # Security: confirm amount and currency.
+        expected_total = int(payment.total_charged * 100)
+
+        if int(session.get("amount_total") or 0) != expected_total:
+            return redirect("/dashboard/?funding=error")
+
+        if str(session.get("currency") or "").lower() != "gbp":
+            return redirect("/dashboard/?funding=error")
+
+        updates = []
+
+        if payment.provider != "stripe":
+            payment.provider = "stripe"
+            updates.append("provider")
+
+        if payment.stripe_session_id != session_id:
+            payment.stripe_session_id = session_id
+            updates.append("stripe_session_id")
+
+        if payment.provider_reference != session_id:
+            payment.provider_reference = session_id
+            updates.append("provider_reference")
+
+        if updates:
+            payment.save(update_fields=updates)
+
+        # This is idempotent, so webhook + success callback
+        # cannot credit the wallet twice.
+        _settle_stripe_funding_payment(payment)
+
+        return redirect("/dashboard/?funding=success")
+
+    except Exception as exc:
+        print("STRIPE FUNDING SUCCESS ERROR:", exc)
+        return redirect("/dashboard/?funding=error")
 
 
 

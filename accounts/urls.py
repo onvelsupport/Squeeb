@@ -87,6 +87,7 @@ from .views import (
     signup_page,
     squeeb_admin_dashboard,
     stripe_webhook,
+    stripe_funding_success,
     submit_campaign,
     support_page,
     task_submission_reviews,
@@ -637,6 +638,12 @@ path(
         create_funding_checkout,
         name="create_funding_checkout",
     ),
+
+    path(
+    "funding/stripe/success/",
+    stripe_funding_success,
+    name="stripe_funding_success",
+),
 
     path(
         "api/mobile/stripe-config/",
