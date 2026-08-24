@@ -2022,9 +2022,12 @@ def _reconcile_stripe_funding_payment(payment):
     """Repair pending Stripe funding from either native PaymentIntent or Checkout Session."""
     if payment.status == "paid":
         return True
-    if payment.provider != "stripe" or payment.method != "card":
+    if payment.method != "card":
         return False
 
+    # Older SQUEEB Stripe rows may have provider="" even though their stored
+    # reference is a Stripe Checkout Session / PaymentIntent. Trust the actual
+    # Stripe-shaped reference here and backfill provider after verification.
     reference = (payment.provider_reference or payment.stripe_session_id or "").strip()
     if not reference:
         return False
@@ -2054,6 +2057,9 @@ def _reconcile_stripe_funding_payment(payment):
         ):
             return False
 
+        if payment.provider != "stripe":
+            payment.provider = "stripe"
+            payment.save(update_fields=["provider"])
         return _settle_stripe_funding_payment(payment)
 
     # Website / older mobile Stripe Checkout flow. These references begin cs_.
@@ -2088,6 +2094,9 @@ def _reconcile_stripe_funding_payment(payment):
         if payment.provider_reference != session_id:
             payment.provider_reference = session_id
             updates.append("provider_reference")
+        if payment.provider != "stripe":
+            payment.provider = "stripe"
+            updates.append("provider")
         if updates:
             payment.save(update_fields=updates)
 
@@ -2233,6 +2242,7 @@ def confirm_mobile_funding_intent(request):
     try:
         data = json.loads(request.body.decode("utf-8") or "{}")
         payment_id = int(data.get("payment_id"))
+        client_intent_id = str(data.get("payment_intent_id") or "").strip()
     except Exception:
         return JsonResponse({"error": "Invalid payment"}, status=400)
 
@@ -2240,7 +2250,6 @@ def confirm_mobile_funding_intent(request):
         payment = FundingPayment.objects.get(
             id=payment_id,
             user=request.user,
-            provider="stripe",
             method="card",
         )
     except FundingPayment.DoesNotExist:
@@ -2256,24 +2265,39 @@ def confirm_mobile_funding_intent(request):
             "balance": str(request.user.balance or Decimal("0.00")),
         })
 
-    if not payment.provider_reference:
-        return JsonResponse({"error": "Stripe payment reference is missing"}, status=409)
+    # The mobile app returns the exact PaymentIntent ID created by this endpoint.
+    # Use it as a recovery path if an older deploy failed to persist
+    # provider_reference, but never trust it without validating Stripe metadata.
+    intent_id = (payment.provider_reference or client_intent_id or "").strip()
+    if not intent_id.startswith("pi_"):
+        return JsonResponse({"error": "Stripe PaymentIntent reference is missing"}, status=409)
 
     try:
-        intent = stripe.PaymentIntent.retrieve(payment.provider_reference)
+        intent = stripe.PaymentIntent.retrieve(intent_id)
     except Exception as exc:
         return JsonResponse({"error": f"Could not verify payment with Stripe: {exc}"}, status=502)
 
     metadata = intent.get("metadata") or {}
     expected_amount = int(payment.total_charged * 100)
     if (
-        intent.get("id") != payment.provider_reference
+        intent.get("id") != intent_id
         or str(metadata.get("payment_id")) != str(payment.id)
         or str(metadata.get("user_id")) != str(request.user.id)
         or str(intent.get("currency", "")).lower() != "gbp"
         or int(intent.get("amount") or 0) != expected_amount
     ):
         return JsonResponse({"error": "Stripe payment details do not match this funding request"}, status=409)
+
+    # Backfill Stripe identifiers for rows created during an older deploy.
+    updates = []
+    if payment.provider != "stripe":
+        payment.provider = "stripe"
+        updates.append("provider")
+    if payment.provider_reference != intent_id:
+        payment.provider_reference = intent_id
+        updates.append("provider_reference")
+    if updates:
+        payment.save(update_fields=updates)
 
     stripe_status = intent.get("status")
     if stripe_status != "succeeded":
@@ -3105,46 +3129,36 @@ def stripe_webhook(request):
         session_id = session.get("id")
 
         try:
-            with transaction.atomic():
-                payment = FundingPayment.objects.select_for_update().get(
-                    stripe_session_id=session_id
-                )
+            metadata = session.get("metadata") or {}
+            payment_id = metadata.get("payment_id")
+            payment = None
+            if payment_id:
+                payment = FundingPayment.objects.filter(id=payment_id, method="card").first()
+            if payment is None and session_id:
+                payment = FundingPayment.objects.filter(stripe_session_id=session_id, method="card").first()
+            if payment is None and session_id:
+                payment = FundingPayment.objects.filter(provider_reference=session_id, method="card").first()
+            if payment is None:
+                # Return 200 so Stripe does not endlessly retry a legacy/unmatched row.
+                return HttpResponse(status=200)
 
-                if payment.status != "paid":
-                    user = payment.user
-                    user.balance = (user.balance or Decimal("0")) + payment.amount
-                    user.save(update_fields=["balance"])
+            updates = []
+            if payment.provider != "stripe":
+                payment.provider = "stripe"
+                updates.append("provider")
+            if payment.stripe_session_id != session_id:
+                payment.stripe_session_id = session_id
+                updates.append("stripe_session_id")
+            if payment.provider_reference != session_id:
+                payment.provider_reference = session_id
+                updates.append("provider_reference")
+            if updates:
+                payment.save(update_fields=updates)
 
-                    payment.status = "paid"
-                    payment.paid_at = timezone.now()
-                    payment.save(update_fields=["status", "paid_at"])
-
-                    send_account_email(
-    user=user,
-    subject="Your SQUEEB wallet has been funded",
-    heading="Wallet funding successful",
-    message=(
-        "Your card payment was successful and the funds "
-        "have been added to your wallet."
-    ),
-    details=[
-        {
-            "label": "Amount credited",
-            "value": f"£{payment.amount}",
-        },
-        {
-            "label": "Funding fee",
-            "value": f"£{payment.fee}",
-        },
-        {
-            "label": "New balance",
-            "value": f"£{user.balance}",
-        },
-    ],
-)
-
-        except FundingPayment.DoesNotExist:
-            return HttpResponse(status=404)
+            _settle_stripe_funding_payment(payment)
+        except Exception:
+            # Stripe will retry transient webhook failures; never expose an app crash.
+            return HttpResponse(status=500)
 
     elif event["type"] == "payment_intent.succeeded":
         intent = event["data"]["object"]
@@ -3152,29 +3166,21 @@ def stripe_webhook(request):
 
         if payment_id:
             try:
-                with transaction.atomic():
-                    payment = FundingPayment.objects.select_for_update().get(id=payment_id)
-                    if payment.status != "paid":
-                        user = payment.user
-                        user.balance = (user.balance or Decimal("0")) + payment.amount
-                        user.save(update_fields=["balance"])
-                        payment.status = "paid"
-                        payment.paid_at = timezone.now()
-                        payment.provider_reference = intent.get("id", payment.provider_reference)
-                        payment.save(update_fields=["status", "paid_at", "provider_reference"])
-                        send_account_email(
-                            user=user,
-                            subject="Your SQUEEB wallet has been funded",
-                            heading="Wallet funding successful",
-                            message="Your card or Apple Pay payment was successful and the funds have been added to your wallet.",
-                            details=[
-                                {"label": "Amount credited", "value": f"£{payment.amount}"},
-                                {"label": "Funding fee", "value": f"£{payment.fee}"},
-                                {"label": "New balance", "value": f"£{user.balance}"},
-                            ],
-                        )
-            except FundingPayment.DoesNotExist:
-                return HttpResponse(status=404)
+                payment = FundingPayment.objects.filter(id=payment_id, method="card").first()
+                if payment is not None:
+                    intent_id = intent.get("id")
+                    updates = []
+                    if payment.provider != "stripe":
+                        payment.provider = "stripe"
+                        updates.append("provider")
+                    if intent_id and payment.provider_reference != intent_id:
+                        payment.provider_reference = intent_id
+                        updates.append("provider_reference")
+                    if updates:
+                        payment.save(update_fields=updates)
+                    _settle_stripe_funding_payment(payment)
+            except Exception:
+                return HttpResponse(status=500)
 
     return HttpResponse(status=200)
 
