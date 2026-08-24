@@ -2097,19 +2097,41 @@ def _reconcile_stripe_funding_payment(payment):
 
 
 def _reconcile_pending_stripe_funding_for_user(user):
-    """Repair any succeeded Stripe card/Apple Pay deposits left as pending."""
-    payments = FundingPayment.objects.filter(
-        user=user,
-        status="pending",
-        provider="stripe",
-        method="card",
-    ).exclude(provider_reference="")[:10]
+    """Best-effort repair of successful Stripe deposits without breaking normal APIs."""
+    try:
+        payments = (
+            FundingPayment.objects.filter(
+                user=user,
+                status="pending",
+                method="card",
+            )
+            .filter(
+                Q(provider="stripe")
+                | Q(provider_reference__startswith="pi_")
+                | Q(provider_reference__startswith="cs_")
+                | Q(stripe_session_id__startswith="cs_")
+            )
+            .order_by("-created_at")[:10]
+        )
+    except Exception:
+        # Transaction history / dashboard must never fail because reconciliation failed.
+        return False
+
     changed = False
     for payment in payments:
-        if _reconcile_stripe_funding_payment(payment):
-            changed = True
+        try:
+            if _reconcile_stripe_funding_payment(payment):
+                changed = True
+        except Exception:
+            # One malformed/legacy Stripe record must not block the remaining records
+            # or make user-facing APIs return HTTP 500.
+            continue
+
     if changed:
-        user.refresh_from_db(fields=["balance"])
+        try:
+            user.refresh_from_db(fields=["balance"])
+        except Exception:
+            pass
     return changed
 
 
@@ -2589,8 +2611,11 @@ def transaction_history(request):
 
 @login_required
 def transaction_history_api(request):
-    # Keep transaction status accurate even if Stripe's webhook delivery was delayed.
-    _reconcile_pending_stripe_funding_for_user(request.user)
+    # Best-effort only: never let Stripe reconciliation break transaction history.
+    try:
+        _reconcile_pending_stripe_funding_for_user(request.user)
+    except Exception:
+        pass
     transactions = []
 
     # Wallet funding / deposits
@@ -4164,8 +4189,11 @@ from .models import Follow, TaskCompletion, Referral
 
 @login_required
 def user_info(request):
-    # Self-heal successful native card / Apple Pay deposits if a webhook was delayed.
-    _reconcile_pending_stripe_funding_for_user(request.user)
+    # Best-effort self-heal; balance API must remain available even if Stripe is down.
+    try:
+        _reconcile_pending_stripe_funding_for_user(request.user)
+    except Exception:
+        pass
 
     followers_count = Follow.objects.filter(
         following=request.user
