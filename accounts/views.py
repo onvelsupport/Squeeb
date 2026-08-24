@@ -2550,10 +2550,10 @@ def create_funding_checkout(request):
                 "method": method,
             },
             success_url=(
-    f"{site_url}"
-    f"{reverse('stripe_funding_success')}"
-    "?session_id={CHECKOUT_SESSION_ID}"
-),
+                f"{site_url}"
+                f"{reverse('stripe_funding_success')}"
+                "?session_id={{CHECKOUT_SESSION_ID}}"
+            ),
             cancel_url=(
                 f"{site_url}/dashboard/?funding=cancelled"
             ),
