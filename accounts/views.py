@@ -1398,6 +1398,28 @@ def mark_notifications_read(request):
 stripe.api_key = settings.STRIPE_SECRET_KEY
 
 
+def _stripe_value(obj, key, default=None):
+    """
+    Read a field from Stripe objects safely.
+
+    Recent Stripe SDK objects do not reliably support dict-style .get().
+    Attribute access is the preferred path, with [] as a compatibility
+    fallback for dict-like objects.
+    """
+    if obj is None:
+        return default
+
+    try:
+        value = getattr(obj, key)
+    except (AttributeError, TypeError):
+        try:
+            value = obj[key]
+        except (KeyError, TypeError, AttributeError):
+            return default
+
+    return default if value is None else value
+
+
 
 @login_required
 def global_search(request):
@@ -2041,18 +2063,18 @@ def _reconcile_stripe_funding_payment(payment):
         except Exception:
             return False
 
-        metadata = intent.get("metadata") or {}
+        metadata = _stripe_value(intent, "metadata", {}) or {}
         try:
-            actual_amount = int(intent.get("amount") or 0)
+            actual_amount = int(_stripe_value(intent, "amount", 0) or 0)
         except Exception:
             return False
 
         if (
-            intent.get("status") != "succeeded"
-            or intent.get("id") != reference
-            or str(metadata.get("payment_id")) != str(payment.id)
-            or str(metadata.get("user_id")) != str(payment.user_id)
-            or str(intent.get("currency", "")).lower() != "gbp"
+            _stripe_value(intent, "status") != "succeeded"
+            or _stripe_value(intent, "id") != reference
+            or str(_stripe_value(metadata, "payment_id", "")) != str(payment.id)
+            or str(_stripe_value(metadata, "user_id", "")) != str(payment.user_id)
+            or str(_stripe_value(intent, "currency", "")).lower() != "gbp"
             or actual_amount != expected_amount
         ):
             return False
@@ -2070,18 +2092,18 @@ def _reconcile_stripe_funding_payment(payment):
         except Exception:
             return False
 
-        metadata = session.get("metadata") or {}
+        metadata = _stripe_value(session, "metadata", {}) or {}
         try:
-            actual_amount = int(session.get("amount_total") or 0)
+            actual_amount = int(_stripe_value(session, "amount_total", 0) or 0)
         except Exception:
             return False
 
         if (
-            session.get("payment_status") != "paid"
-            or session.get("id") != session_id
-            or str(metadata.get("payment_id")) != str(payment.id)
-            or str(metadata.get("user_id")) != str(payment.user_id)
-            or str(session.get("currency", "")).lower() != "gbp"
+            _stripe_value(session, "payment_status") != "paid"
+            or _stripe_value(session, "id") != session_id
+            or str(_stripe_value(metadata, "payment_id", "")) != str(payment.id)
+            or str(_stripe_value(metadata, "user_id", "")) != str(payment.user_id)
+            or str(_stripe_value(session, "currency", "")).lower() != "gbp"
             or actual_amount != expected_amount
         ):
             return False
@@ -2277,14 +2299,14 @@ def confirm_mobile_funding_intent(request):
     except Exception as exc:
         return JsonResponse({"error": f"Could not verify payment with Stripe: {exc}"}, status=502)
 
-    metadata = intent.get("metadata") or {}
+    metadata = _stripe_value(intent, "metadata", {}) or {}
     expected_amount = int(payment.total_charged * 100)
     if (
-        intent.get("id") != intent_id
-        or str(metadata.get("payment_id")) != str(payment.id)
-        or str(metadata.get("user_id")) != str(request.user.id)
-        or str(intent.get("currency", "")).lower() != "gbp"
-        or int(intent.get("amount") or 0) != expected_amount
+        _stripe_value(intent, "id") != intent_id
+        or str(_stripe_value(metadata, "payment_id", "")) != str(payment.id)
+        or str(_stripe_value(metadata, "user_id", "")) != str(request.user.id)
+        or str(_stripe_value(intent, "currency", "")).lower() != "gbp"
+        or int(_stripe_value(intent, "amount", 0) or 0) != expected_amount
     ):
         return JsonResponse({"error": "Stripe payment details do not match this funding request"}, status=409)
 
@@ -2299,7 +2321,7 @@ def confirm_mobile_funding_intent(request):
     if updates:
         payment.save(update_fields=updates)
 
-    stripe_status = intent.get("status")
+    stripe_status = _stripe_value(intent, "status")
     if stripe_status != "succeeded":
         return JsonResponse({
             "status": "pending",
@@ -2318,7 +2340,7 @@ def confirm_mobile_funding_intent(request):
             user.save(update_fields=["balance"])
             payment.status = "paid"
             payment.paid_at = timezone.now()
-            payment.provider_reference = intent.get("id", payment.provider_reference)
+            payment.provider_reference = _stripe_value(intent, "id", payment.provider_reference)
             payment.save(update_fields=["status", "paid_at", "provider_reference"])
             credited = True
 
@@ -3111,11 +3133,12 @@ def flutterwave_webhook(request):
 
 @csrf_exempt
 def stripe_webhook(request):
-    """Handle Stripe wallet-funding events safely and idempotently.
+    """
+    Stripe webhook for SQUEEB wallet funding.
 
-    Card / Apple Pay wallet funding should be credited immediately after Stripe
-    confirms payment. Bank transfers are not handled here and still require
-    manual verification.
+    Card and Apple Pay payments are credited immediately after Stripe confirms
+    payment. The settlement helper is idempotent, so retries, the success-return
+    view, and the mobile confirmation endpoint cannot double-credit a wallet.
     """
     payload = request.body
     sig_header = request.META.get("HTTP_STRIPE_SIGNATURE")
@@ -3141,38 +3164,38 @@ def stripe_webhook(request):
         print("STRIPE WEBHOOK CONSTRUCT ERROR:", repr(exc))
         return HttpResponse(status=500)
 
-    event_type = event.get("type", "")
-    obj = (event.get("data") or {}).get("object") or {}
+    event_type = str(_stripe_value(event, "type", "") or "")
+    event_data = _stripe_value(event, "data", None)
+    obj = _stripe_value(event_data, "object", None)
 
     try:
-        # --------------------------------------------------------------
-        # WEBSITE STRIPE CHECKOUT
-        # --------------------------------------------------------------
         if event_type in (
             "checkout.session.completed",
             "checkout.session.async_payment_succeeded",
         ):
             session = obj
-            session_id = str(session.get("id") or "").strip()
-            metadata = session.get("metadata") or {}
-            payment_id = metadata.get("payment_id")
-            purpose = str(metadata.get("purpose") or "").strip()
+            session_id = str(_stripe_value(session, "id", "") or "").strip()
+            metadata = _stripe_value(session, "metadata", {}) or {}
+            payment_id = _stripe_value(metadata, "payment_id", None)
+            purpose = str(_stripe_value(metadata, "purpose", "") or "").strip()
 
-            # Ignore unrelated Stripe Checkout events such as marketplace sales.
             if purpose != "wallet_funding":
                 return HttpResponse(status=200)
 
-            if session.get("payment_status") != "paid":
+            payment_status = str(
+                _stripe_value(session, "payment_status", "") or ""
+            ).lower()
+
+            if payment_status != "paid":
                 print(
                     "STRIPE WALLET FUNDING NOT PAID:",
                     session_id,
                     "payment_status=",
-                    session.get("payment_status"),
+                    payment_status,
                 )
                 return HttpResponse(status=200)
 
             payment = None
-
             if payment_id:
                 payment = FundingPayment.objects.filter(
                     id=payment_id,
@@ -3199,12 +3222,13 @@ def stripe_webhook(request):
                     "payment_id=",
                     payment_id,
                 )
-                # Do not retry forever for an unmatched/legacy event.
                 return HttpResponse(status=200)
 
-            # Verify ownership metadata when present.
-            metadata_user_id = metadata.get("user_id")
-            if metadata_user_id and str(metadata_user_id) != str(payment.user_id):
+            metadata_user_id = _stripe_value(metadata, "user_id", None)
+            if (
+                metadata_user_id
+                and str(metadata_user_id) != str(payment.user_id)
+            ):
                 print(
                     "STRIPE WALLET FUNDING USER MISMATCH:",
                     payment.id,
@@ -3213,10 +3237,9 @@ def stripe_webhook(request):
                 )
                 return HttpResponse(status=400)
 
-            # Verify the amount and currency before crediting the wallet.
             expected_amount = int(payment.total_charged * 100)
-            actual_amount = int(session.get("amount_total") or 0)
-            currency = str(session.get("currency") or "").lower()
+            actual_amount = int(_stripe_value(session, "amount_total", 0) or 0)
+            currency = str(_stripe_value(session, "currency", "") or "").lower()
 
             if actual_amount != expected_amount or currency != "gbp":
                 print(
@@ -3232,19 +3255,15 @@ def stripe_webhook(request):
                 return HttpResponse(status=400)
 
             updates = []
-
             if payment.provider != "stripe":
                 payment.provider = "stripe"
                 updates.append("provider")
-
             if session_id and payment.stripe_session_id != session_id:
                 payment.stripe_session_id = session_id
                 updates.append("stripe_session_id")
-
             if session_id and payment.provider_reference != session_id:
                 payment.provider_reference = session_id
                 updates.append("provider_reference")
-
             if updates:
                 payment.save(update_fields=updates)
 
@@ -3257,17 +3276,13 @@ def stripe_webhook(request):
             )
             return HttpResponse(status=200)
 
-        # --------------------------------------------------------------
-        # NATIVE APP PAYMENT INTENT / APPLE PAY
-        # --------------------------------------------------------------
         if event_type == "payment_intent.succeeded":
             intent = obj
-            intent_id = str(intent.get("id") or "").strip()
-            metadata = intent.get("metadata") or {}
-            payment_id = metadata.get("payment_id")
-            purpose = str(metadata.get("purpose") or "").strip()
+            intent_id = str(_stripe_value(intent, "id", "") or "").strip()
+            metadata = _stripe_value(intent, "metadata", {}) or {}
+            payment_id = _stripe_value(metadata, "payment_id", None)
+            purpose = str(_stripe_value(metadata, "purpose", "") or "").strip()
 
-            # Ignore unrelated PaymentIntents.
             if purpose != "wallet_funding":
                 return HttpResponse(status=200)
 
@@ -3291,8 +3306,11 @@ def stripe_webhook(request):
                 )
                 return HttpResponse(status=200)
 
-            metadata_user_id = metadata.get("user_id")
-            if metadata_user_id and str(metadata_user_id) != str(payment.user_id):
+            metadata_user_id = _stripe_value(metadata, "user_id", None)
+            if (
+                metadata_user_id
+                and str(metadata_user_id) != str(payment.user_id)
+            ):
                 print(
                     "STRIPE PAYMENT INTENT USER MISMATCH:",
                     payment.id,
@@ -3302,8 +3320,14 @@ def stripe_webhook(request):
                 return HttpResponse(status=400)
 
             expected_amount = int(payment.total_charged * 100)
-            actual_amount = int(intent.get("amount_received") or intent.get("amount") or 0)
-            currency = str(intent.get("currency") or "").lower()
+            amount_received = _stripe_value(intent, "amount_received", None)
+            intent_amount = _stripe_value(intent, "amount", 0)
+            actual_amount = int(
+                amount_received
+                if amount_received is not None
+                else (intent_amount or 0)
+            )
+            currency = str(_stripe_value(intent, "currency", "") or "").lower()
 
             if actual_amount != expected_amount or currency != "gbp":
                 print(
@@ -3319,15 +3343,12 @@ def stripe_webhook(request):
                 return HttpResponse(status=400)
 
             updates = []
-
             if payment.provider != "stripe":
                 payment.provider = "stripe"
                 updates.append("provider")
-
             if intent_id and payment.provider_reference != intent_id:
                 payment.provider_reference = intent_id
                 updates.append("provider_reference")
-
             if updates:
                 payment.save(update_fields=updates)
 
@@ -3343,8 +3364,6 @@ def stripe_webhook(request):
         return HttpResponse(status=200)
 
     except Exception as exc:
-        # IMPORTANT: expose the real exception in Render logs so a Stripe 500
-        # can be diagnosed instead of being silently swallowed.
         import traceback
         print(
             "STRIPE WEBHOOK ERROR:",
@@ -3360,6 +3379,13 @@ def stripe_webhook(request):
 
 @login_required
 def stripe_funding_success(request):
+    """
+    Browser return route for successful Stripe Checkout wallet funding.
+
+    This independently verifies the Checkout Session with Stripe and settles
+    the wallet immediately. The webhook remains the primary server-to-server
+    path and both routes are safe to run because settlement is idempotent.
+    """
     session_id = (request.GET.get("session_id") or "").strip()
 
     if not session_id:
@@ -3368,9 +3394,9 @@ def stripe_funding_success(request):
     try:
         session = stripe.checkout.Session.retrieve(session_id)
 
-        metadata = session.get("metadata") or {}
-        payment_id = metadata.get("payment_id")
-        purpose = metadata.get("purpose")
+        metadata = _stripe_value(session, "metadata", {}) or {}
+        payment_id = _stripe_value(metadata, "payment_id", None)
+        purpose = str(_stripe_value(metadata, "purpose", "") or "").strip()
 
         if purpose != "wallet_funding" or not payment_id:
             return redirect("/dashboard/?funding=error")
@@ -3384,45 +3410,75 @@ def stripe_funding_success(request):
         if payment is None:
             return redirect("/dashboard/?funding=error")
 
-        # Confirm Stripe actually received the money.
-        if session.get("payment_status") != "paid":
+        payment_status = str(
+            _stripe_value(session, "payment_status", "") or ""
+        ).lower()
+
+        if payment_status != "paid":
             return redirect("/dashboard/?funding=pending")
 
-        # Security: confirm amount and currency.
         expected_total = int(payment.total_charged * 100)
+        actual_total = int(_stripe_value(session, "amount_total", 0) or 0)
+        currency = str(_stripe_value(session, "currency", "") or "").lower()
 
-        if int(session.get("amount_total") or 0) != expected_total:
+        if actual_total != expected_total:
+            print(
+                "STRIPE FUNDING SUCCESS AMOUNT MISMATCH:",
+                payment.id,
+                expected_total,
+                actual_total,
+            )
             return redirect("/dashboard/?funding=error")
 
-        if str(session.get("currency") or "").lower() != "gbp":
+        if currency != "gbp":
+            print(
+                "STRIPE FUNDING SUCCESS CURRENCY MISMATCH:",
+                payment.id,
+                currency,
+            )
+            return redirect("/dashboard/?funding=error")
+
+        metadata_user_id = _stripe_value(metadata, "user_id", None)
+        if (
+            metadata_user_id
+            and str(metadata_user_id) != str(request.user.id)
+        ):
+            print(
+                "STRIPE FUNDING SUCCESS USER MISMATCH:",
+                payment.id,
+                metadata_user_id,
+                request.user.id,
+            )
             return redirect("/dashboard/?funding=error")
 
         updates = []
-
         if payment.provider != "stripe":
             payment.provider = "stripe"
             updates.append("provider")
-
         if payment.stripe_session_id != session_id:
             payment.stripe_session_id = session_id
             updates.append("stripe_session_id")
-
         if payment.provider_reference != session_id:
             payment.provider_reference = session_id
             updates.append("provider_reference")
-
         if updates:
             payment.save(update_fields=updates)
 
-        # This is idempotent, so webhook + success callback
-        # cannot credit the wallet twice.
         _settle_stripe_funding_payment(payment)
 
+        print(
+            "STRIPE FUNDING SUCCESS SETTLED:",
+            payment.id,
+            session_id,
+        )
         return redirect("/dashboard/?funding=success")
 
     except Exception as exc:
         import traceback
-        print("STRIPE FUNDING SUCCESS ERROR:", repr(exc))
+        print(
+            "STRIPE FUNDING SUCCESS ERROR:",
+            repr(exc),
+        )
         traceback.print_exc()
         return redirect("/dashboard/?funding=error")
 
