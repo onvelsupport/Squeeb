@@ -102,9 +102,9 @@ MARKETPLACE_ALLOWED_COUNTRIES = {
     "scotland",
     "wales",
     "northern ireland",
-    #"nigeria",
-    #"ng",
-    #"nga",
+    "nigeria",
+    "ng",
+    "nga",
 }
 
 
@@ -2063,6 +2063,113 @@ def create_mobile_funding_intent(request):
 
 
 @login_required
+def confirm_mobile_funding_intent(request):
+    """Verify a native Stripe PaymentIntent and credit the wallet immediately.
+
+    The Stripe webhook remains the backup settlement path. This endpoint never
+    trusts the mobile client for payment status; it retrieves the PaymentIntent
+    directly from Stripe and only credits a matching, succeeded intent owned by
+    the authenticated user.
+    """
+    if request.method != "POST":
+        return JsonResponse({"error": "POST method required"}, status=400)
+
+    try:
+        data = json.loads(request.body.decode("utf-8") or "{}")
+        payment_id = int(data.get("payment_id"))
+    except Exception:
+        return JsonResponse({"error": "Invalid payment"}, status=400)
+
+    try:
+        payment = FundingPayment.objects.get(
+            id=payment_id,
+            user=request.user,
+            provider="stripe",
+            method="card",
+        )
+    except FundingPayment.DoesNotExist:
+        return JsonResponse({"error": "Funding payment not found"}, status=404)
+
+    # If the webhook already settled this payment, simply return the current
+    # balance. This makes the webhook and this endpoint safe to race.
+    if payment.status == "paid":
+        request.user.refresh_from_db(fields=["balance"])
+        return JsonResponse({
+            "status": "paid",
+            "wallet_amount": str(payment.amount),
+            "balance": str(request.user.balance or Decimal("0.00")),
+        })
+
+    if not payment.provider_reference:
+        return JsonResponse({"error": "Stripe payment reference is missing"}, status=409)
+
+    try:
+        intent = stripe.PaymentIntent.retrieve(payment.provider_reference)
+    except Exception as exc:
+        return JsonResponse({"error": f"Could not verify payment with Stripe: {exc}"}, status=502)
+
+    metadata = intent.get("metadata") or {}
+    expected_amount = int(payment.total_charged * 100)
+    if (
+        intent.get("id") != payment.provider_reference
+        or str(metadata.get("payment_id")) != str(payment.id)
+        or str(metadata.get("user_id")) != str(request.user.id)
+        or str(intent.get("currency", "")).lower() != "gbp"
+        or int(intent.get("amount") or 0) != expected_amount
+    ):
+        return JsonResponse({"error": "Stripe payment details do not match this funding request"}, status=409)
+
+    stripe_status = intent.get("status")
+    if stripe_status != "succeeded":
+        return JsonResponse({
+            "status": "pending",
+            "stripe_status": stripe_status,
+            "message": "Stripe has not confirmed this payment yet.",
+        }, status=202)
+
+    credited = False
+    with transaction.atomic():
+        payment = FundingPayment.objects.select_for_update().select_related("user").get(
+            id=payment.id
+        )
+        user = payment.user
+        if payment.status != "paid":
+            user.balance = (user.balance or Decimal("0.00")) + payment.amount
+            user.save(update_fields=["balance"])
+            payment.status = "paid"
+            payment.paid_at = timezone.now()
+            payment.provider_reference = intent.get("id", payment.provider_reference)
+            payment.save(update_fields=["status", "paid_at", "provider_reference"])
+            credited = True
+
+    if credited:
+        Notification.objects.create(
+            user=user,
+            title="Wallet funded",
+            message=f"£{payment.amount} has been added to your SQUEEB wallet.",
+        )
+        send_account_email(
+            user=user,
+            subject="Your SQUEEB wallet has been funded",
+            heading="Wallet funding successful",
+            message="Your card or Apple Pay payment was successful and the funds have been added to your wallet.",
+            details=[
+                {"label": "Amount credited", "value": f"£{payment.amount}"},
+                {"label": "Funding fee", "value": f"£{payment.fee}"},
+                {"label": "New balance", "value": f"£{user.balance}"},
+            ],
+        )
+
+    return JsonResponse({
+        "status": "paid",
+        "wallet_amount": str(payment.amount),
+        "fee": str(payment.fee),
+        "total_charged": str(payment.total_charged),
+        "balance": str(user.balance or Decimal("0.00")),
+    })
+
+
+@login_required
 def create_funding_checkout(request):
     if request.method != "POST":
         return JsonResponse(
@@ -3949,6 +4056,8 @@ def user_info(request):
         "balance": str(request.user.balance),
         "earnings": str(request.user.earnings),
 
+        "squeebers": followers_count,
+        "connections": following_count,
         "followers": followers_count,
         "following": following_count,
 
@@ -5815,154 +5924,6 @@ def approve_task_completion(request, completion_id):
     return JsonResponse({
         "success": True,
         "message": "Task approved and worker paid"
-    })
-
-
-
-@csrf_exempt
-@login_required
-@require_POST
-@transaction.atomic
-def approve_all_task_completions(request):
-    """
-    Approve and pay every pending submission belonging
-    to tasks created by the logged-in user.
-    """
-
-    # Get all pending submissions belonging to tasks
-    # created by this user.
-    completions = list(
-        TaskCompletion.objects
-        .select_for_update()
-        .filter(
-            task__creator=request.user,
-            status="pending",
-        )
-        .select_related("task")
-        .order_by("id")
-    )
-
-    if not completions:
-        return JsonResponse({
-            "success": True,
-            "approved_count": 0,
-            "total_paid": "0.00",
-            "message": "There are no pending tasks to approve."
-        })
-
-    approved_count = 0
-    total_paid = Decimal("0.00")
-
-    for completion in completions:
-
-        # Extra safety check.
-        if completion.status != "pending":
-            continue
-
-        reward = (
-            completion.reward_amount
-            or completion.task.worker_reward
-        )
-
-        # Lock the worker so their balance cannot be
-        # modified simultaneously by another request.
-        worker = (
-            User.objects
-            .select_for_update()
-            .get(pk=completion.user_id)
-        )
-
-        # Approve submission.
-        completion.status = "approved"
-        completion.reward_amount = reward
-        completion.reviewed_at = timezone.now()
-
-        completion.save(
-            update_fields=[
-                "status",
-                "reward_amount",
-                "reviewed_at",
-            ]
-        )
-
-        # Pay worker.
-        worker.balance += reward
-        worker.earnings += reward
-        worker.tasks_completed += 1
-
-        worker.save(
-            update_fields=[
-                "balance",
-                "earnings",
-                "tasks_completed",
-            ]
-        )
-
-        # Recent activity.
-        RecentActivity.objects.create(
-            username=worker.username,
-            platform=completion.task.platforms,
-            message=(
-                f"@{worker.username} earned £{reward}"
-            ),
-            amount=reward,
-        )
-
-        # Notification.
-        Notification.objects.create(
-            user=worker,
-            title="Task approved",
-            message=(
-                f"Your proof for "
-                f"'{completion.task.title}' was approved. "
-                f"£{reward} has been added to your balance."
-            ),
-        )
-
-        # Email notification.
-        try:
-            send_account_email(
-                user=worker,
-                subject="Your SQUEEB wallet has been credited",
-                heading="Task reward added",
-                message=(
-                    f"Your proof for "
-                    f"'{completion.task.title}' was approved "
-                    "and your reward has been added to your wallet."
-                ),
-                details=[
-                    {
-                        "label": "Reward",
-                        "value": f"£{reward}",
-                    },
-                    {
-                        "label": "New balance",
-                        "value": f"£{worker.balance}",
-                    },
-                    {
-                        "label": "Status",
-                        "value": "Approved",
-                    },
-                ],
-            )
-        except Exception as error:
-            print(
-                "BULK TASK APPROVAL EMAIL ERROR:",
-                repr(error),
-            )
-
-        approved_count += 1
-        total_paid += reward
-
-    return JsonResponse({
-        "success": True,
-        "approved_count": approved_count,
-        "total_paid": str(total_paid),
-        "message": (
-            f"{approved_count} task submission(s) "
-            f"approved successfully. "
-            f"£{total_paid:.2f} paid."
-        ),
     })
 
 

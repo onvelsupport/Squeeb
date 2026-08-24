@@ -27,7 +27,6 @@ from .views import (
     admin_create_campaign_page,
     api_edit_profile,
     approve_task_completion,
-    approve_all_task_completions,
     approve_withdrawal,
     bank_details,
     bank_details_api,
@@ -38,6 +37,7 @@ from .views import (
     create_cart_checkout,
     create_funding_checkout,
     create_mobile_funding_intent,
+    confirm_mobile_funding_intent,
     mobile_stripe_config,
     create_task,
     dashboard,
@@ -265,12 +265,6 @@ urlpatterns = [
         my_tasks,
         name="my_tasks",
     ),
-
-    path(
-    "api/approve-all-task-completions/",
-    approve_all_task_completions,
-    name="approve_all_task_completions",
-),
 
     path(
         "referrals/",
@@ -655,6 +649,13 @@ path(
         create_mobile_funding_intent,
         name="create_mobile_funding_intent",
     ),
+
+    path(
+        "api/mobile/funding-intent/confirm/",
+        confirm_mobile_funding_intent,
+        name="confirm_mobile_funding_intent",
+    ),
+
 
     path(
         "stripe/webhook/",
